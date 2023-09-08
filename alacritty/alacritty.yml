@@ -128,15 +128,15 @@ window:
   # Specified in number of columns/lines, not pixels.
   # If both are `0`, this setting is ignored.
   dimensions:
-    columns: 80
-    lines: 52
+    columns: 104
+    lines: 58
 
   # Window position (changes require restart)
   #
   # Specified in number of pixels.
   # If the position is not set, the window manager will handle the placement.
   position:
-    x: 960
+    x: 0
     y: 0
 
   # Window padding (changes require restart)
@@ -229,7 +229,8 @@ live_config_reload: true
 #   - (Linux/BSD) user login shell
 #   - (Windows) powershell
 shell:
-  program: /usr/bin/fish
+  program: /usr/local/bin/fish
+  
   args:
     - -l
     - -c

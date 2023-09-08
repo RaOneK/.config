@@ -110,7 +110,7 @@ telescope.setup {
       format = '',
       -- Format to use for citation label.
       -- Try to match the filetype by default, or use 'plain'
-      global_files = {'~/texmf/bibtex/bib/Zotero.bib'},
+      global_files = {'~/Library/texmf/bibtex/bib/Zotero.bib'},
       -- Path to global bibliographies (placed outside of the project)
       search_keys = { 'author', 'year', 'title' },
       -- Define the search keys to use in the picker

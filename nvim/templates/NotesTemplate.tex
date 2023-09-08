@@ -1,0 +1,80 @@
+\documentclass{article}
+\LARGE
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+
+
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=cyan]{hyperref}
+%\numberwithin{equation}{subsection}
+\usepackage{graphicx,wrapfig,lipsum,subfigure,sidecap,epsfig}
+\usepackage{caption}
+\usepackage{cancel}
+%\usepackage{graphicx,subfigure,sidecap,epsfig} % Rouslan's subfig package
+\usepackage{soul}
+%\usepackage[colorlinks=true,linkcolor=red]{hyperref}%
+
+\graphicspath{{figures/}}
+
+
+%%% Todos
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+\marginpar{\textsc{\tiny \hspace{0.5cm} ToDo}} \framebox{\begin{minipage}[c]{0.95
+\textwidth} \small \tt #1 \end{minipage}}\vspace{5 mm}\par}
+
+
+
+\title{Title goes here}
+\author{Rauan}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Abstract goes here
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction} \label{sec:introduction}
+
+
+\todo{
+\begin{itemize}
+    \item Need to do the action A. 
+    \item \st{Action B is done.} 
+  \end{itemize}
+}
+
+
+\bibliographystyle{plain}
+\bibliography{Zotero}
+
+\appendix
+
+\section{Appendix}
+
+
+\end{document}

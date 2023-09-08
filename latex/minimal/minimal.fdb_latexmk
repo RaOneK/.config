@@ -1,0 +1,16 @@
+# Fdb version 4
+["pdflatex"] 1694124827 "minimal.tex" "minimal.pdf" "minimal" 1694124828 0
+  "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
+  "/usr/local/texlive/2023/texmf-dist/tex/latex/base/minimal.cls" 1622581934 1937 f64a713749df7c7d746527fbcb8cc65a ""
+  "/usr/local/texlive/2023/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def" 1673989714 30429 213676d4c7327a21d91ddaed900e7b81 ""
+  "/usr/local/texlive/2023/texmf-dist/web2c/texmf.cnf" 1677365944 40745 87bb86a62d462f93a1efc6b0c65c872e ""
+  "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1694016973 4623355 b8cad38412faebe1ce5b780a45db67bd ""
+  "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1694016708 7883462 20ed8f8f005253255f2e3b618d08e812 ""
+  "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
+  "minimal.aux" 1694124828 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "minimal.tex" 1672322634 3588 385497195a6fb55c089171a0c050f831 ""
+  (generated)
+  "minimal.aux"
+  "minimal.log"
+  "minimal.pdf"
+  (rewritten before read)

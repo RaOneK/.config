@@ -1,250 +1,82 @@
 
-%%%%%%%%%%%%%%%%%%%%%%%% PREAMBLE %%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\LARGE
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
 
-%%% FORMATTING %%%
-\documentclass[11pt]{article} %%Font size and document presets
-\usepackage[a4paper, margin=4cm]{geometry} %Annina style
-\usepackage[protrusion=true,expansion=true]{microtype} %% Makes subtle line spacing shifts
-\usepackage{enumitem} %%Enables control over enumerate and itemize environments
-\setenumerate{label=(\arabic*), wide=\parindent} %%Changes enumeration style: use \begin{enumerate}
-\usepackage{setspace} %%Enables \doublespacing command for double linespacing
-% \usepackage{multicol} %% Use \begin{multicols}{3} for three columns and \end{multicols} after
-% \usepackage{adjmulticol}
-\usepackage{verbatim} %% Enables \begin{comment} ... \end{comment}
-% \usepackage{rotating} %% Enables rotating symbols
-% \usepackage{lplfitch} %% logic package 
-% \usepackage{bold-extra} %% bold+small caps
-% \usepackage{bussproofs}
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
 
-%%% HEADER %%%
-\usepackage{fancyhdr} %%Permits \pagestyle{fancy}
-\pagestyle{fancy} %%Header style
-\usepackage{titlesec} %%Header style
-\titlespacing*{\subsection}{\parindent}{.25in}{\wordsep}% Reduces spacing after headings
-\rhead{Benjamin Brast-McKie} %%Right header
-\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}} %%Left header command
-\lhead{\nouppercase{$\S$\rightmark}} %%Left header
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
 
 
-%%% SECTIONS %%%
-\usepackage{hyperref}
-% \usepackage{tocloft}%change alignment of subsubsection in toc
-% \cftsetindents{subsubsection}{0.228in}{0.346in} %change alignment of subsubsection in toc
-\newcommand{\hypsection}[1]{\section[#1]{\hyperlink{toc}{#1}}} %%use to jump back to toc
-\newcommand{\hypsubsection}[1]{\subsection[#1]{\hyperlink{toc}{#1}}} %%use to jump back to toc
-\newcommand{\hypsubsubsection}[1]{\subsubsection[#1]{\hyperlink{toc}{#1}}} %%use to jump back to toc
 
 
-%%% FOOTNOTES %%%
-\usepackage{scrextend} %%Allows for changes to foodnotes
-\deffootnote[1em]{0in}{1em}{\textsuperscript{\thefootnotemark \ }} %%Footnote style
-\setlength{\footnotesep}{0.125in} %%Space between footnotes
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=cyan]{hyperref}
+%\numberwithin{equation}{subsection}
+\usepackage{graphicx,wrapfig,lipsum,subfigure,sidecap,epsfig}
+\usepackage{caption}
+\usepackage{cancel}
+%\usepackage{graphicx,subfigure,sidecap,epsfig} % Rouslan's subfig package
+\usepackage{soul}
+%\usepackage[colorlinks=true,linkcolor=red]{hyperref}%
+
+\graphicspath{{figures/}}
 
 
-%%% SYMBOLS %%%
-\usepackage{amssymb,amsmath,mathrsfs,mathabx,colonequals} %%Math packages
-\usepackage{tipa}
-%%% GLOSSARY %%%
-% \usepackage[automake,%builds index
-%   nogroupskip,% makes spacing of entries uniform
-%   postpunc={dot},% full stop after description
-%   nostyles,% don't load default style packages
-%   % load glossaries-extra-stylemods.sty and glossary-tree.sty:
-%   stylemods={tree}
-%   ]{glossaries-extra}
-% \loadglsentries{Glossary}% sources file from local project folder
-% \newcommand{\g}{\glssymbol*}% unstar to allow hyperlinks
-% \makeglossaries
-
-% \printglossary[style={index}] %Add to end
+%%% Todos
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+\marginpar{\textsc{\tiny \hspace{0.5cm} ToDo}} \framebox{\begin{minipage}[c]{0.95
+\textwidth} \small \tt #1 \end{minipage}}\vspace{5 mm}\par}
 
 
-%%% GRAPHICS %%%
-% \usepackage{graphicx}
-% \DeclareGraphicsExtensions{.pdf,.jpeg,.jpg}
-% \usepackage{fancybox}
-	% \begin{figure}[ht]
-	% \shadowbox{\includegraphics{figure-file}}}
-	% \end{figure}
 
-
-%%% CITATIONS %%%
-% \usepackage{bibentry} %%Replace \bibliography{} with \nobibliography{} for no bib
-\usepackage[round]{natbib} %%Or change 'round' to 'square' for square backers
-\setcitestyle{aysep={}}
- %   \citet{key} ==>>                Jones et al. (1990)
- %   \citet*{key} ==>>               Jones, Baker, and Smith (1990)
- %   \citep{key} ==>>                (Jones et al., 1990)
- %   \citep*{key} ==>>               (Jones, Baker, and Smith, 1990)
- %   \citep[chap. 2]{key} ==>>       (Jones et al., 1990, chap. 2)
- %   \citep[e.g.][]{key} ==>>        (e.g. Jones et al., 1990)
- %   \citep[e.g.][p. 32]{key} ==>>   (e.g. Jones et al., p. 32)
- %   \citeauthor{key} ==>>           Jones et al.
- %   \citeauthor*{key} ==>>          Jones, Baker, and Smith
- %   \citeyear{key} ==>>             1990
-\usepackage{etoolbox} %%For \citepos
-\usepackage{xstring} %%For \citepos
-
-\makeatletter %definition of \citepos
-% \patchcmd{\NAT@test}{\else \NAT@nm}{\else \NAT@nmfmt{\NAT@nm}}{}{} %turn on for numeric citations
-\DeclareRobustCommand\citepos% define \citepos
-  {\begingroup
-   \let\NAT@nmfmt\NAT@posfmt% same as for citet except with a different name format
-   \NAT@swafalse\let\NAT@ctype\z@\NAT@partrue
-   \@ifstar{\NAT@fulltrue\NAT@citetp}{\NAT@fullfalse\NAT@citetp}
-  }
-   
-\let\NAT@orig@nmfmt\NAT@nmfmt %makes adapt to last names ending with an 's'.
-\def\NAT@posfmt#1{%
-  \StrRemoveBraces{#1}[\NAT@temp]%
-  \IfEndWith{\NAT@temp}{s}
-    {\NAT@orig@nmfmt{#1'}}
-    {\NAT@orig@nmfmt{#1's}}}
-\makeatother
-
-%%% DEFINITIONS FOR LOGICAL SYMBOLS AND QUOTES %%%
-% \newcommand{\corner}[1]{\ulcorner#1\urcorner} %%Corner quotes
-% \newcommand{\tuple}[1]{\langle#1\rangle} %%Angle brackets
-% \newcommand{\set}[1]{\lbrace#1\rbrace} %%Set brackets
-% \newcommand{\qedp}[0]{$\hfill\Diamond$} %%Box at end of proofs
-% \newcommand{\ceil}[1]{\lceil#1\rceil} %%Corner quotes
-% \newcommand{\floor}[1]{\lfloor#1\rfloor} %%Corner quotes
-
-
-%%% ENVIRONMENTS %%%
-\usepackage{amsthm}
-
-\newtheoremstyle{theorem}
-{}                % Space above
-{}                % Space below
-{\normalfont}        % Theorem body font % (default is "\upshape")
-{}                % Indent amount
-{\bfseries}       % Theorem head font % (default is \mdseries)
-{}               % Punctuation after theorem head % default: no punctuation
-{.18in}               % Space after theorem head
-{}                % Theorem head spec
-\theoremstyle{theorem}
-\newtheorem{theorem}{}% theorem counter resets every \subsection
-\renewcommand{\thetheorem}{T\arabic{theorem}}% Remove subsection from theorem counter representation
-
-
-\newtheoremstyle{Lthm}
-{}                % Space above
-{}                % Space below
-{\normalfont}        % Theorem body font % (default is "\upshape")
-{}                % Indent amount
-{\bfseries}       % Theorem head font % (default is \mdseries)
-{}               % Punctuation after theorem head % default: no punctuation
-{.18in}               % Space after theorem head
-{}                % Theorem head spec
-\theoremstyle{Lthm}
-\newtheorem{Lthm}{}[subsection]% theorem counter resets every \subsection
-\renewcommand{\theLthm}{L\arabic{Lthm}}% Remove subsection from theorem counter representation
-
-\newtheoremstyle{Pthm}
-{}                % Space above
-{}                % Space below
-{\normalfont}        % Theorem body font % (default is "\upshape")
-{}                % Indent amount
-{\bfseries}       % Theorem head font % (default is \mdseries)
-{}               % Punctuation after theorem head % default: no punctuation
-{.18in}               % Space after theorem head
-{}                % Theorem head spec
-\theoremstyle{Pthm}
-\newtheorem{Pthm}{}[subsection]% theorem counter resets every \subsection
-\renewcommand{\thePthm}{P\arabic{Pthm}}% Remove subsection from theorem counter representation
-
-\usepackage{calc}
-\makeatletter
-\newcommand{\labelalign@original@item}{}
-\let\labelalign@original@item\item
-\newcommand*{\labelalign@envir}{labelalign}
-\newlength{\labelalign@totalleftmargin}
-\newlength{\labelalign@linewidth}
-\newcommand{\labelalign@makelabel}[1]{\llap{#1}}%
-\newcommand{\labelalign@item}[1][]{%
-  \setlength{\@totalleftmargin}%
-       {\labelalign@totalleftmargin+\widthof{\textbf{#1 }}+.25in-\leftmargin}%
-  \setlength{\linewidth}
-       {\labelalign@linewidth-\widthof{\textbf{#1 }}-.25in+\leftmargin}%
-  \par\parshape \@ne \@totalleftmargin \linewidth
-  \labelalign@original@item[\textbf{#1}]%
-}
-\newenvironment{labelalign}
-  {\list{}{\setlength{\labelwidth}{0in}%
-           \let\makelabel\labelalign@makelabel}%
-   \setlength{\labelalign@totalleftmargin}{\@totalleftmargin}%
-   \setlength{\labelalign@linewidth}{\linewidth}%
-   \renewcommand{\item}{\ifx\@currenvir\labelalign@envir
-                           \expandafter\labelalign@item
-                        \else
-                           \expandafter\labelalign@original@item
-                        \fi}}
-  {\endlist}
-\makeatother
-
-%%% CROSS REFERENCES %%%
-\newcounter{acount}
-\newcommand{\aitem}[1]{%
-  \item[\bf #1] \refstepcounter{acount}\label{#1}
-}
-\newcommand{\aref}[1]{\hyperref[#1]{#1}}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%% TITLE %%%%%%%%%%%%%%%%%%%%%%%%%
-
+\title{Title goes here}
+\author{Rauan}
 
 \begin{document}
-\title{\sc TITLE} %\thanks{}
-\author{\it Benjamin Brast-McKie} 
-\date{\today}
 \maketitle
-\thispagestyle{empty}
-% \vspace{.1in}
-
 
 \begin{abstract}
-\noindent
-ABSTRACT
+Abstract goes here
 \end{abstract}
 
+\tableofcontents
+
+\section{Introduction} \label{sec:introduction}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%
+\todo{
+\begin{itemize}
+    \item Need to do the action A. 
+    \item \st{Action B is done.} 
+  \end{itemize}
+}
 
-\hypsection{Introduction}\label{Intro}
+\cite{Biringen:2011}
 
-Hi my name is Johnny.
-La gente esta buy loca.
-Mr saxobeat.
-Muy muy loca.
+\bibliographystyle{plain}
+\bibliography{Zotero}
 
-You make me feel. 
+\appendix
 
-\cite{Chang:2002}
-\cite{Chang:2002}
-\cite{Chang:2002}
-
-
-
+\section{Appendix}
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%% GLOSSARY %%%%%%%%%%%%%%%%%%%%%%%%%
-
-% \printglossary[style={index}] %Add to end
-
-%%%%%%%%%%%%%%%%%%%%%%% BIBLIOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%
-
-
-\newpage
-\begin{footnotesize} %%Makes bib footnotesize text size
-\singlespacing %%Makes single spaced
-\bibliographystyle{Phil_Review} %%bib style found in bst folder, in bibtex folder, in texmf folder.
-\setlength{\bibsep}{5pt} %%Changes spacing between bib entries
-\bibliography{Zotero} %%bib database found in bib folder, in bibtex folder
-\thispagestyle{empty} %%Removes page numbers
-\end{footnotesize} %%End makes bib small text size
-
-\end{document}\cite{changAnalysisExactFractional2002a}
+\end{document}

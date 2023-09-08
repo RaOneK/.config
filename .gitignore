@@ -5,3 +5,12 @@ omf/
 nvim/session/
 tmux/
 nvim/autoload/plugged
+latex/testFile.aux
+latex/testFile.bbl
+latex/testFile.blg
+latex/testFile.fdb_latexmk
+latex/testFile.fls
+latex/testFile.log
+latex/testFile.out
+latex/testFile.pdf
+latex/testFile.synctex.gz

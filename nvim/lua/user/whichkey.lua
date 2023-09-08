@@ -173,6 +173,10 @@ local mappings = {
   t = {
     name = "TEMPLATES",
     c = { "<cmd>PackerCompile<CR>", "Compile" },
+    n = { 
+      "<cmd>read ~/.config/nvim/templates/NotesTemplate.tex<CR>", 
+      "NotesTemplate.tex",
+    },
     p = { 
       "<cmd>read ~/.config/nvim/templates/PhilPaper.tex<CR>", 
       "PhilPaper.tex",
