@@ -323,6 +323,15 @@ Build the pdf with `<space>b` checking to see if Skim loads.
 After building, you can view locations within the pdf with `<space>v` in NeoVim.
 Similarly, you can locate lines in the LaTeX document with `Command + Shift + Left-click` in Skim.
 
+Neovim starts the server each time its launched and `nvr` helps skim to detect the right instance of `nvim`
+In order for the inverse search to work run the following command
+
+```
+brew  install neovim-remote
+```
+
+
+
 If you want to use Zathura as your primary pdf viewer and only launching Skim from the VimTex Context menu, follow the instructions given by running the following NeoVim command:
 
 ```
