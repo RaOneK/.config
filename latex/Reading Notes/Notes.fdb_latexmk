@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex Notes"] 1694194518 "Notes.aux" "Notes.bbl" "Notes" 1694310848 0
+["bibtex Notes"] 1694893034 "Notes.aux" "Notes.bbl" "Notes" 1694896108 0
+  "/Users/sarabek/Library/texmf/bibtex/bib/Zotero.bib" 1694557144 6949 beea60f876d818a96e124387850f3d0b ""
   "/usr/local/texlive/2023/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "Notes.aux" 1694310847 13400 a6c821522be614407434af976cbca54c "pdflatex"
-  "Zotero.bib" 0 -1 0 ""
+  "Notes.aux" 1694896107 13917 5fb4cc57cc9b2951da92ccb6b4191935 "pdflatex"
   (generated)
   "Notes.bbl"
   "Notes.blg"
   (rewritten before read)
-["pdflatex"] 1694310847 "Notes.tex" "Notes.pdf" "Notes" 1694310848 0
+["pdflatex"] 1694896104 "Notes.tex" "Notes.pdf" "Notes" 1694896108 2
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1136768653 1536 06717a2b50de47d4087ac0e6cd759455 ""
@@ -218,19 +218,21 @@
   "/usr/local/texlive/2023/texmf-dist/tex/latex/wrapfig/wrapfig.sty" 1137111090 26220 3701aebf80ccdef248c0c20dd062fea9 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/xcolor/xcolor.sty" 1655066402 56148 51a9a8571c07b9921892ae11063ae853 ""
   "/usr/local/texlive/2023/texmf-dist/web2c/texmf.cnf" 1677365944 40745 87bb86a62d462f93a1efc6b0c65c872e ""
-  "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1693973395 4623355 b8cad38412faebe1ce5b780a45db67bd ""
-  "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1693973373 7883466 9b30d830a011c474d160c7f6dba6b536 ""
+  "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1694016973 4623355 b8cad38412faebe1ce5b780a45db67bd ""
+  "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1694016708 7883462 20ed8f8f005253255f2e3b618d08e812 ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "Notes.aux" 1694310847 13400 a6c821522be614407434af976cbca54c "pdflatex"
-  "Notes.bbl" 1694278486 4374 b9be24b967e3376aaa7abd6a406e3e99 "bibtex Notes"
-  "Notes.out" 1694310847 5251 4d923bc2e8d95e3d9267d83c9be0ee8b "pdflatex"
-  "Notes.tex" 1694278486 81667 4bfa3bf60013f1e857a0d318dfd5ab0a ""
-  "Notes.toc" 1694310847 2145 7b547205c5b82a2725999034ed16aebb "pdflatex"
-  "figures//1Dcollocated.png" 1694278486 118353 e88bd371cf5b53be542771a7c32edb7f ""
-  "figures//1Dstaggered.png" 1694278486 208932 8dde9bc84447113d7cee2de821647415 ""
-  "figures//advectionGrid.jpg" 1694278486 8795117 ac7ecf289da3c360618e23aea1d4d4ef ""
-  "figures//grid-MAC.jpg" 1694278486 34472 826ff50fb347fd00ce76a1bb622be6b5 ""
-  "figures//grid-staggered.jpg" 1694278486 41092 d541e5b80d544e24d12480d926fb340d ""
+  "Figures/D-C-DC.png" 1694559044 117830 31b5aea6c2706d47862d3e16de083116 ""
+  "Figures/advectionGridNew.png" 1694892456 263789 66d109d42de8a20b2c6d491206a0a7e7 ""
+  "Notes.aux" 1694896107 13917 5fb4cc57cc9b2951da92ccb6b4191935 "pdflatex"
+  "Notes.bbl" 1694893034 4374 b9be24b967e3376aaa7abd6a406e3e99 "bibtex Notes"
+  "Notes.out" 1694896107 5251 4d923bc2e8d95e3d9267d83c9be0ee8b "pdflatex"
+  "Notes.tex" 1694896104 83344 7946c8d805af33ccdf32cf2e6374c10c ""
+  "Notes.toc" 1694896107 2145 62b09f99a5ce763f495ac15362e31bb2 "pdflatex"
+  "figures//1Dcollocated.png" 1667253154 118353 e88bd371cf5b53be542771a7c32edb7f ""
+  "figures//1Dstaggered.png" 1667253133 208932 8dde9bc84447113d7cee2de821647415 ""
+  "figures//advectionGrid.jpg" 1686522650 8795117 ac7ecf289da3c360618e23aea1d4d4ef ""
+  "figures//grid-MAC.jpg" 1664122866 34472 826ff50fb347fd00ce76a1bb622be6b5 ""
+  "figures//grid-staggered.jpg" 1664122412 41092 d541e5b80d544e24d12480d926fb340d ""
   (generated)
   "Notes.aux"
   "Notes.log"

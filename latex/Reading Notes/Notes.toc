@@ -13,10 +13,10 @@
 \contentsline {section}{\numberline {7}Discrete Streamfunction method}{11}{section.7}%
 \contentsline {subsection}{\numberline {7.1}Symmetricity}{11}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}Nullspace method}{12}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Resulting algorithm}{12}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Finding a particular solution to discrete continuity equation}{13}{subsection.7.4}%
-\contentsline {subsubsection}{\numberline {7.4.1}Particular solution using Lagrange multipliers}{13}{subsubsection.7.4.1}%
-\contentsline {subsubsection}{\numberline {7.4.2}Particular solution using Graph Theory}{13}{subsubsection.7.4.2}%
-\contentsline {section}{\numberline {8}Other interesting methods for solving Naver Stokes (may include algorithms from articles \cite {Brown:2001, Dukowicz:1992, Kim:1985, Perot:1993})}{14}{section.8}%
-\contentsline {section}{\numberline {9}Vorticity-Streamfunction formulation}{14}{section.9}%
-\contentsline {section}{\numberline {A}Appendix}{16}{appendix.A}%
+\contentsline {subsection}{\numberline {7.3}Resulting algorithm}{13}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Finding a particular solution to discrete continuity equation}{14}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Particular solution using Lagrange multipliers}{14}{subsubsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.2}Particular solution using Graph Theory}{14}{subsubsection.7.4.2}%
+\contentsline {section}{\numberline {8}Other interesting methods for solving Naver Stokes (may include algorithms from articles \cite {Brown:2001, Dukowicz:1992, Kim:1985, Perot:1993})}{15}{section.8}%
+\contentsline {section}{\numberline {9}Vorticity-Streamfunction formulation}{15}{section.9}%
+\contentsline {section}{\numberline {A}Appendix}{17}{appendix.A}%

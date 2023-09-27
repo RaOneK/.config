@@ -654,8 +654,9 @@ Then the matrices in equation~\eqref{eqn:nse-matrix} are:
 
 Let us attack the system~\eqref{eqn:nse-matrix} with the following (listed in appendix) schemes:
 \begin{enumerate}
-	\item[\textbf{Viscous}]: Implicit trapezoidal - Crank Nicholson~\eqref{eqn:crank-nicholson} scheme.
-	\item[\textbf{Nonlinear (advect.)}]: Explicit Adams-Bashforth~\eqref{eqn:adams-bashforth}.
+	\item[\textbf{Viscous}]: Implicit trapezoidal - Crank Nicholson~\eqref{eqn:crank-nicholson} scheme.  
+  \item[\textbf{Nonlinear (advect.)}]: Explicit Adams-Bashforth~\eqref{eqn:adams-bashforth} as in Figure~\ref{fig:Advection-discretization}. The term highlighted in orange belongs to the Dirichlet inlet boundary and shall be discarded. On the other hand term highlighted in yellow belongs to the outlet boundary and is unknown, hence it should be kept ($\frac{uu_{ghost}-uu_{rightMost}}{\Delta x}=0$ means $uu_{ghost}=uu_{rightMost}$ which can be used for simplification of the outlet terms). 
+
 	\item[\textbf{Pressure}]: Implicit Euler~\eqref{eqn:implicit-euler}, however the pressure variable is not used in computations. 
 \end{enumerate}
 
@@ -702,6 +703,17 @@ After introduction of new variables $\hat{A}$ and $\hat{r}^n$ the above system c
 		\hat{bc}_2
 	\end{pmatrix}.
 \end{equation}
+
+
+\begin{figure}
+\begin{center}
+  \includegraphics[width=0.75\textwidth]{Figures/advectionGridNew}
+\end{center}
+\caption{Advection discretization.}
+\label{fig:Advection-discretization}
+\end{figure}
+
+
 
 \subsection{Symmetricity}
 For simplicity, let us denote discretization matrices with hat symbol ( $\hat{}$ ) having non-integer coefficients and without hat with integer ($\pm1$) coefficients. 
@@ -771,11 +783,23 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 
 \subsection{Nullspace method}
 
-Chang~\cite{Chang:2002} describes that in the system~\eqref{eqn:nse-normalized} from previous subsection matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space. Define the nullspace matrix as $C$. 
+Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} say that in the system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space. Define the nullspace matrix as $C$. 
 
-The number of rows in the nullspace $C$ is $N_f$, which is the number of faces. In two dimensions $C$ has $N_n$ columns, which is the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns, where $N_e$ is the number of edges. 
+The number of rows in the nullspace $C$ is $N_f$, which is the number of faces with unknown velocities. In two dimensions $C$ has $N_n$ columns, which is the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns, where $N_e$ is the number of edges. 
 
 In the 2D case the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
+
+Matrix $C$ is obtained by considering a counterclockwise vorticity around the nodes inside the domain and in some cases the boundary. In case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has dimension of unknown velocities (including the open boundary ones) times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ in 4x4 grid case with open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$. 
+
+
+\begin{figure}
+\begin{center}
+  \includegraphics[width=0.75\textwidth]{Figures/D-C-DC}
+\end{center}
+\caption{Divergence and Curl matrices.}
+\label{fig:DC}
+\end{figure}
+
 
 \subsection{Resulting algorithm}\label{sec:algorithm}
 
@@ -808,7 +832,8 @@ The algorithm to solve the discrete Navier-Stokes system of equation~\eqref{eqn:
 	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.
 	\item Compute $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
 	\item Repeat the steps (3-7).
-\end{enumerate} 
+\end{enumerate}
+
 
 
 \subsection{Finding a particular solution to discrete continuity equation}\label{sec:continuity-particular-solution}
@@ -874,6 +899,9 @@ The procedure for finding a particular solution is as follows:
 \end{enumerate}
 
 
+
+$4+44$
+$$
 %Let us take our momentum equation and apply the equation~\eqref{eqn:non-homogeneous} to it.
 %	\begin{equation}
 %	\begin{aligned}
