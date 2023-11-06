@@ -716,7 +716,7 @@ After introduction of new variables $\hat{A}$ and $\hat{r}^n$ the above system c
 
 
 \subsection{Symmetricity}
-For simplicity, let us denote discretization matrices with hat symbol ( $\hat{}$ ) having non-integer coefficients and without hat with integer ($\pm1$) coefficients. 
+Let us denote discretization matrices prior scaling with hat symbol ( $\hat{}$ ).
 
 Most effective methods of solving system of linear equations require symmetric matrices, hence, symmetricity is a desired property. It is possible to construct divergence and gradient matrices to contain solely $\pm 1$ coefficients. Let us introduce the diagonal scaling matrix $\hat{M}$ and diagonal flux matrix $R$, s.t.:
 \begin{align*}
@@ -729,7 +729,7 @@ R &\equiv\left[\begin{array}{cc}
 0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
 \end{array}\right],
 \end{align*}
-which results in $q^{n+1}=R\boldsymbol{v}^{n+1}\implies \boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$ and $\hat{D}R^{-1}=-(\hat{M}\hat{G})^T$.
+which results in $q^{n+1}=R\boldsymbol{v}^{n+1}\implies \boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$ and $\hat{D}R^{-1}=-(\hat{M}\hat{G})^T$. More detailed explanation can be found in Appendix~\ref{appendix:symmetric-laplacian}.
 
 Using the above transformation we can modify the initial system of linear equations
 \begin{equation}
@@ -779,7 +779,7 @@ r^n \\
 {b c}_2
 \end{array}\right),
 \end{equation}
-where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$.
+where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$. 
 
 \subsection{Nullspace method}
 
@@ -898,10 +898,6 @@ The procedure for finding a particular solution is as follows:
 	\item The process is completed after using the continuity equation at the root to determine the final velocity of the boundary link.
 \end{enumerate}
 
-
-
-$4+44$
-$$
 %Let us take our momentum equation and apply the equation~\eqref{eqn:non-homogeneous} to it.
 %	\begin{equation}
 %	\begin{aligned}
@@ -1030,11 +1026,13 @@ Citing Colonius~\cite{Colonius:2008} The second type of error associated with vo
 
 
 \bibliographystyle{plain}
-\bibliography{Zotero}
+\bibliography{Zotero.bib}
 
 \appendix
 
 \section{Appendix}
+
+\subsection{Transient schemes}
 In the schemes below, the left-hand side contains transient terms; the right-hand side is represented by all other terms combined into $F$.
 
 \textbf{Implicit trapezoidal - Crank Nicholson} (second-order method in time):
@@ -1053,7 +1051,7 @@ In the schemes below, the left-hand side contains transient terms; the right-han
 	\frac{u^{n+1}-u^{n}}{\Delta t} = F^{n+1}.
 \end{equation}
 
-\textbf{Non-uniform second derivative}(second order):
+\subsection{Diffusion discretization for non-uniform grids}
 
 \textbf{Inner part.}
 Without loss of generality, consider the discretization of $u$ in $x$ direction. Write Taylor expansions of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ w.r.t. to $u_i$ at node $x_i$ as follows
@@ -1106,7 +1104,9 @@ which can be plugged into the boundary value in laplacian discretization \eqref{
 
 \textbf{Left boundary.} Since the value of the left boundary is known in a Boundary Layer problem it is possible to move the corresponding term to the right hand side of the linear system and treat the values explicitly. 
 
-\textbf{Top boundary.} Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
+\textbf{Top boundary.} 
+
+Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
 
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c}.
@@ -1141,7 +1141,7 @@ Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
 \end{aligned}
 \end{equation}
 
-\textbf{Advection Discretization} (explicit)
+\subsection{Advection Discretization (explicit)}
 
 \begin{figure}
 \centering
@@ -1149,5 +1149,54 @@ Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
 \caption{\small Advection on staggered grid.}\label{fig:advectionGrid}
 \end{figure}
 Photo in figure~\ref{fig:advectionGrid} displays the discretization of nonlinear terms on a 4x4 staggered grid. Values of $uu$ and $vv$ are defined in cell centres using the (left/right) interpolation, $uv=vu$ values are defined on grid corners using cross (left/right times up/down) interpolation. The edges and outer corners are dropped at the end since the system of linear equations is determined on the inner velocity values. 
+\subsection{Laplacian symmetrization in depth}\label{appendix:symmetric-laplacian}
+
+In order to get symmetric diffusion matrix we need to move to the new variables. 
+
+Let us have $m$ intervals in $x$ direction and $n$ intervals in $y$ direction. For the case when the face velocities are unknown on a boundary the method words the same way, need to add extra velocities. The number of unknowns is equal to the number of face velocities in the interior of the domain excluding the boundaries. Rewrite $\boldsymbol{u}$ as a vector of unknowns
+
+$$\boldsymbol{u} = [\underbrace{u_1;u_2;\dotsc;u_{m-1};u_1;u_2;\dotsc;u_{m-1};\dotsc;u_1;u_2;\dotsc;u_{m-1}}_{n\text{ times for each }1...m-1\text{ block}}, \underbrace{v_1;v_2;\dotsc;v_{m};v_1;v_2;\dotsc;v_{m};\dotsc;v_1;v_2;\dotsc;v_{m}}_{n-1 \text{ of each }1,\dotsc,m\text{ block}}].$$
+
+To maintain consistency - indexation goes left to right from bottom to top.
+
+Define matrices 
+
+$\Delta y_j=diag([\underbrace{\Delta y_1; \Delta y_1; \dotsc;\Delta y_1}_{m-1\text{ times}}; \underbrace{\Delta y_2; \Delta y_2; \dotsc;\Delta y_2}_{m-1\text{ times}};\dotsc;\underbrace{\Delta y_n; \Delta y_n; \dotsc;\Delta y_n}_{m-1\text{ times}}]),$
+
+$ \Delta x_i=diag([\underbrace{\Delta x_1; \Delta x_2;\dotsc\Delta x_m;\Delta x_1; \Delta x_2;\dotsc\Delta x_m; \dotsc;\Delta x_1; \Delta x_2;\dotsc;\Delta x_m}_{n\text{ times}}])$
+
+\begin{equation*}
+R =\left[\begin{array}{cc}
+\Delta y_j & 0 \\
+0 & \Delta x_i
+\end{array}\right].
+\end{equation*}
+
+Let the new vector variable of unknowns (something like mass flux) be defined as
+
+$$\boldsymbol{q} = R\boldsymbol{u},$$ 
+where $R$ is a diagonal matrix of size $(m-1)n\times m(n-1)$ defined above. 
+
+Next, we need to define the difference matrices to cancel out the $\frac{x_{i+1}−x_{i-1}}{2}$ central term in diffusion discretization. Define the diagonal matrices
+
+${\Delta x_i+\Delta x_{i-1}} = diag[\underbrace{\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_m-\Delta x_{m-1};...;\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_m-\Delta x_{m-1}}_{n\text{ times for each block of } \Delta x_2+\Delta x_1\text{ to }\Delta x_m-\Delta x_{m-1}}]$
+
+${\Delta y_j+\Delta y_{j-1}} = diag[\underbrace{\Delta y_2+\Delta y_1;  \dotsc \Delta y_2+\Delta y_1;}_{m\text{ times}} \underbrace{\Delta y_3+\Delta y_2; \dotsc \Delta y_3+\Delta y_2;}_{m\text{ times}} \underbrace{\Delta y_n+\Delta y_{n-1}\dotsc \Delta y_n+\Delta y_{n-1}}_{m\text{ times}}],$
+
+\begin{equation*}
+\hat{M} =\left[\begin{array}{cc}
+\frac{1}{2}\left(\Delta x_i+\Delta x_{i-1}\right) & 0 \\
+0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
+\end{array}\right].
+\end{equation*}
+
+Now, since $\boldsymbol{q}=R\boldsymbol{u}$ then $\boldsymbol{u}=R^{-1}\boldsymbol{q}$, Going back to Laplacian matrix
+
+$$L\boldsymbol{u}= LR^{-1}\boldsymbol{q},$$ 
+premultiply by $\hat M$, the expression will become 
+
+$$\hat MLR^{-1}\boldsymbol{q},$$ 
+where $\hat M L R^{-1}$ is symmetric by construction.  
+
 
 \end{document}
