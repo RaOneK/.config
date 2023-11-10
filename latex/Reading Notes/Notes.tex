@@ -611,7 +611,35 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 
 \section{Discrete Streamfunction method}\label{sec:discrete-streamfunction}
 
-We can rewrite our initial problem \eqref{eqs:NSE} as system of linear equations
+\subsection{Problem Statement}
+
+\begin{subequations}
+\label{eqs:NSE-dsm-bl}
+\begin{align}
+\label{eqn:momentum}
+\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0\\
+\label{eqn:continuity-dsm-bl}
+\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0 \\
+\label{eqn:NSE-dsm-bl-bc-freestream}
+\text{Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\left({u_0} + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A,k,\omega, \phi_0\}\subset \mathbb{R}\\
+\label{eqn:NSE-dsm-bl-bc-noslip}
+\text{Noslip BC: } & \boldsymbol{v}(t,x,0)=(0,0) \\
+\label{eqn:NSE-dsm-bl-bc-outlet}
+\text{Outlet BC: } & \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0, v=\boldsymbol{h}(t,y), &  (x=1).
+\end{align}
+\end{subequations}
+
+\subsection{Domain discretization}\label{subsec:dsm-domain}
+
+The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. To make things easier, label the cells by counting from the bottom left corner of the domain, going from left to right, and moving upwards, until reaching the top right corner of the domain.
+
+In the context of two-dimensional analysis, the velocity vector $\boldsymbol{v}=(u,v)$ is characterized by two components in $x$ and $y$ direction respectively. Specifically, the value for $u$ is stored at the center of the left face, while the value for $v$ is stored at the center of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
+
+The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In the given problem statement \ref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. The counting process follows the same sequence as for cells, first for $u$ and then for $v$. These resultant arrays are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
+
+\subsection{Discrete operators}
+
+The initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
 
 \begin{equation}\label{eqn:nse-matrix}
             \begin{bmatrix}
@@ -638,87 +666,216 @@ We can rewrite our initial problem \eqref{eqs:NSE} as system of linear equations
                   0
             \end{pmatrix} + \text{bc}_{\boldsymbol{v},p},
         \end{equation}
-where the subscript ${\boldsymbol{v},p}$ stands for operators acting on pressure-velocity variables (they include $\Delta x,\Delta y$ in denominators). 
-        
-Overall, we have $N_u=(N_x-1)N_y$ elements of $u$ and $N_v=N_x(N_y-1)$ elements of $v$ velocity components. Define $N_{tot}=N_u+N_v$.
-               
-Then the matrices in equation~\eqref{eqn:nse-matrix} are:
-\begin{itemize}
-	\item[$\mathbf{I}$] - [$N_{tot}\times N_{tot}$];
-	\item[$\hat{D}$] - [$(N_xN_y)\times(N_{tot})$];
-	\item[$\hat{G}$] - [$(N_{tot})\times(N_xN_y)$];
-	\item[$\mathbf{\hat{H}}$] - [$N_{tot}\times 1$];
-	\item[$\hat{L}$] - [$N_{tot}\times N_{tot}$];
-	\item[bc] - [$N_{tot}\times 1$], which are inhomogeneous terms from Boundary Conditions vector.
-\end{itemize}        
+where boundary conditions are in terms of pressure and velocity. In the following subsections, each of the discretization operators is described individually. 
 
-Let us attack the system~\eqref{eqn:nse-matrix} with the following (listed in appendix) schemes:
-\begin{enumerate}
-	\item[\textbf{Viscous}]: Implicit trapezoidal - Crank Nicholson~\eqref{eqn:crank-nicholson} scheme.  
-  \item[\textbf{Nonlinear (advect.)}]: Explicit Adams-Bashforth~\eqref{eqn:adams-bashforth} as in Figure~\ref{fig:Advection-discretization}. The term highlighted in orange belongs to the Dirichlet inlet boundary and shall be discarded. On the other hand term highlighted in yellow belongs to the outlet boundary and is unknown, hence it should be kept ($\frac{uu_{ghost}-uu_{rightMost}}{\Delta x}=0$ means $uu_{ghost}=uu_{rightMost}$ which can be used for simplification of the outlet terms). 
+\subsubsection{Laplacian}
 
-	\item[\textbf{Pressure}]: Implicit Euler~\eqref{eqn:implicit-euler}, however the pressure variable is not used in computations. 
-\end{enumerate}
+Laplacian matrix can be rewritten as blocks
 
-The above discretization schemes result in the following discretized system:
-\begin{equation*}
-	\begin{bmatrix}
-		\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
-		\hat{D} & 0
-	\end{bmatrix}
-	\begin{pmatrix}
-		\boldsymbol{v}^{n+1} \\ 
-		p
-	\end{pmatrix}
-	=
-	\begin{pmatrix}
-		\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right]u^n - \left[\frac{3}{2}\hat{N}(\boldsymbol{v}^n) - \frac{1}{2}\hat{N}(\boldsymbol{v}^{n-1})\right]\\
-		0
-	\end{pmatrix}
-	+
-	\begin{pmatrix}
-		\hat{bc}_1\\
-		\hat{bc}_2
-	\end{pmatrix}.
-\end{equation*}
-
-After introduction of new variables $\hat{A}$ and $\hat{r}^n$ the above system can be rewritten as
 \begin{equation}
+	\hat L=
 	\begin{bmatrix}
-		\hat{A} & \hat{G} \\
-		\hat{D} & 0
-	\end{bmatrix}
-	\begin{pmatrix}
-		\boldsymbol{v}^{n+1} \\ 
-		p
-	\end{pmatrix}
-	=
-	\begin{pmatrix}
-		\hat{r}^n \\
-		0
-	\end{pmatrix}
-	+
-	\begin{pmatrix}
-		\hat{bc}_1\\
-		\hat{bc}_2
-	\end{pmatrix}.
+  \hat{L}_{uxx}+\hat{L}_{uyy} & 0 \\
+  0 & \hat{L}_{vxx}+\hat{L}_{vyy}
+\end{bmatrix}.
+\end{equation}
+
+Each pair of matrices $\hat{L}_{uxx},\hat{L}_{vxx}$ and $\hat{L}_{uyy},\hat{L}_{vyy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below, we will discuss how the Laplacian matrix is constructed at different parts of the grid.
+
+\textbf{Inner part.}
+Without loss of generality, let us show how to compute $L_{uxx}$, for the other three matrices the distance between each velocity component is different on non-uniform grids, the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
+\begin{equation}\label{eqn:Taylor right} 
+	u_{i+1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right),
+\end{equation}
+
+\begin{equation}\label{eqn:Taylor left} 
+	u_{i-1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
+\end{equation}
+
+We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by canceling the first derivative, which results in
+
+\begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
+\left(\frac{\partial^2 u}{\partial x^2}\right)_i & \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x)\\
+& \approx \frac{1}{h_c h_r}u_{i+1} + \frac{2}{h_l h_r}u_i + \frac{1}{h_c h_l}u_{i-1} + O(\Delta x).
+\end{align}
+where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$ and the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are put into the corresponding matrix elements.
+
+%The discretization for such grids is reduced to 
+%\begin{equation}\label{eqn: second derivative uniform}
+%\left(\frac{\partial^2 u}{\partial x^2}\right)_i \approx \frac{u_{i+1}-2 u_i+u_{i-1}}{(\Delta x)^2} + O(\Delta x^2).
+%\end{equation}
+
+
+\textbf{Right boundary.} 
+%The aim is to make a second order scheme for the first derivative to keep consistency with the discretization of the inner part. Take the right most nodes, the aim is to eliminate the second derivative in equations below, cross multiply by coefficients to make up a common factor at second derivative, then subtract the equations. 
+%	\begin{equation}
+%	\begin{aligned}
+%	& u_m=u_{m+1}+\left.\left(x_m-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_m-x_{m+1}\right)^2}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/\frac{\left(x_{m-1}-x_{m+1}\right)^2}{2}. \\
+%	& u_{m-1}=u_{m+1}+\left.\left(x_{m-1}-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_{m-1}-x_{m+1}\right.}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/ \frac{\left(x_m-x_{m+1}\right)^2}{2}.
+%	\end{aligned}
+%	\end{equation}
+%
+%After subtracting and simplifying the expression for the first partial derivative reduces to
+%\begin{equation}
+%\frac{\partial u}{\partial x}\bigg|_{m+1}=\frac{-u_{m-1}{\left(x_m-x_{m+1}\right)^2}+u_m{\left(x_{m-1}-x_{m+1}\right)^2}-u_{m+1}{\left(x_{m-1}-x_m\right)\left(\left[x_{m-1}-x_{m+1}\right]+\left[x_m-x_{m+1}\right]\right)}}{{\left(x_m-x_{m+1}\right)\left(x_{m-1}-x_{m+1}\right)\left(x_{m-1}-x_m\right)}}.
+%\end{equation}
+%
+%By applying simple Neumann boundary condition $\frac{\partial u}{\partial x}\big|_{m+1}=0$ we can express the right most value of the velocity with respect to the other two as
+%\begin{equation}
+%u_{m+1}=\frac{-u_{m-1}\left(x_m-x_{m+1}\right)^2+u_m\left(x_{m-1}-x_{m+1}\right)^2}{\left(x_{m-1}-x_m\right)\left(x_{m-1}-x_{m+1}+x_m-x_{m+1}\right)},
+%\end{equation}
+%which can be plugged into the boundary value in laplacian discretization \eqref{eqn:laplacian-discretization-non-uniform-dx} to obtain
+%
+%\begin{equation}
+%\begin{aligned}
+%\left.\frac{\partial^2 u}{\partial x^2}\right|_m & =\frac{\left[u_{m-1} \frac{-h_e^2}{h_w\left(2 h_e+h_w\right)}+u_m \frac{\left(h_e+h_w\right)^2}{h_w\left(2 h_e+h_w\right)}\right] h_w-u_m ( 2 h_c)+u_{m-1} (h_e)}{h_e h_w h_c}, \\
+%& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
+%\end{aligned}
+%\end{equation}
+ To be determined.
+
+
+\textbf{Left boundary.} Since the exact value of the left boundary is known in a Boundary Layer problem it is possible to move the corresponding term together with the coefficient to the right-hand side of the linear system and treat the values explicitly. 
+
+\textbf{Top boundary.} 
+
+The top boundary only affects the $\hat{L}_{uyy}$ and $\hat{L}_{vyy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}_{uyy}$ in this part, the $\hat{L}_{vyy}$ is done similarly with the only exception being the distances between the $v$ velocities due to non-uniform grid. Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
+\begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
+\left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c},
+\end{equation}
+where $h_s=y_J-y_{J-1}, h_c = \frac{y_{J+1}-y_{J-1}}{2}, h_n = y_{J+1}-y_J$.
+
+Since the value of $u_g$ at the centre of the topmost face lies outside the domain on a staggered grid, interpolation is necessary. The value of $u$ along the top edge is known to be $U$, interpolation of $U = \frac{u_g+u_J}{2}\implies u_g=2U-u_J$, which we can plug into the equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
+
+\begin{equation}
+\begin{aligned}
+& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(-\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c h_c}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}, \\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c{ }^2}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}.
+\end{aligned}
+\end{equation}
+
+The first summand from the above equation is treated explicitly (moved to the rhs), and the other two coefficients are used as elements for the $\hat{L}_{uyy}$ matrix.
+
+\textbf{Bottom boundary.} 
+\begin{equation}
+\begin{aligned}
+&\left.\frac{\partial 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{u_n h_s}\right)+u_g\left(\frac{1}{u_s h_c}\right).\\
+\end{aligned}
+\end{equation}
+
+Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
+
+\begin{equation}
+\begin{aligned}
+\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right), \\
+& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
+ & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{2 h_c-2 h_n}{h_n h_c h_c}\right).
+\end{aligned}
+\end{equation}
+
+The coefficients are distributed into the $\hat{L}_{uyy}$ matrix similarly to the boundaries at the left and top of the domain.
+
+
+
+\subsubsection{Divergence}
+
+The second line of the system~\ref{eqn:nse-matrix} reads
+\begin{equation}
+\begin{gathered}
+\hat{D}\boldsymbol{v}=bc_2\\
+\frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=bc_2 \\
+\frac{1}{\Delta x \Delta y}\left[\begin{array}{ll}
+D_x & D_y
+\end{array}\right]\left[\begin{array}{l}
+u \Delta y \\
+v \Delta x
+\end{array}\right]=\frac{1}{\Delta x \Delta y} D q=bc_2
+\end{gathered}
 \end{equation}
 
 
-\begin{figure}
-\begin{center}
-  \includegraphics[width=0.75\textwidth]{Figures/advectionGridNew}
-\end{center}
-\caption{Advection discretization.}
-\label{fig:Advection-discretization}
-\end{figure}
+
+        
+%Overall, we have $N_x, N_y$ nodes in the $x$ and $y$ direction respectively. 
+%There are $N_u=(N_x-1)N_y+N_y$ elements of $u$, where extra $N_y$ is added to account for the unknown outlet boundary velocities. $N_v=N_x(N_y-1)$ represents the number of velocity components within vector $v$. Define $N_{tot}=N_u+N_v$.
+%               
+%Then the matrices in equation~\eqref{eqn:nse-matrix} have dimensions of:
+%\begin{itemize}
+%	\item[$\mathbf{I}$] - [$N_{tot}\times N_{tot}$];
+%	\item[$\hat{D}$] - [$(N_xN_y)\times(N_{tot})$];
+%	\item[$\hat{G}$] - [$(N_{tot})\times(N_xN_y)$];
+%	\item[$\mathbf{\hat{H}}$] - [$N_{tot}\times 1$];
+%	\item[$\hat{L}$] - [$N_{tot}\times N_{tot}$];
+%	\item[bc] - [$N_{tot}\times 1$], which are inhomogeneous terms from the Boundary Conditions vector.
+%\end{itemize}        
+%
+%Attack the system~\eqref{eqn:nse-matrix} with the following (listed in the appendix) schemes:
+%\begin{enumerate}
+%	\item[\textbf{Viscous}]: Implicit trapezoidal - Crank Nicholson~\eqref{eqn:crank-nicholson} scheme.  
+%  \item[\textbf{Nonlinear (advect.)}]: Explicit Adams-Bashforth~\eqref{eqn:adams-bashforth} as in Figure~\ref{fig:Advection-discretization}. 
+%	\item[\textbf{Pressure}]: Implicit Euler~\eqref{eqn:implicit-euler}, however the pressure variable is not used in computations. 
+%\end{enumerate}
+%
+%The above discretization schemes result in the following discretized system:
+%\begin{equation*}
+%	\begin{bmatrix}
+%		\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
+%		\hat{D} & 0
+%	\end{bmatrix}
+%	\begin{pmatrix}
+%		\boldsymbol{v}^{n+1} \\ 
+%		p
+%	\end{pmatrix}
+%	=
+%	\begin{pmatrix}
+%		\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right]u^n - \left[\frac{3}{2}\hat{N}(\boldsymbol{v}^n) - \frac{1}{2}\hat{N}(\boldsymbol{v}^{n-1})\right]\\
+%		0
+%	\end{pmatrix}
+%	+
+%	\begin{pmatrix}
+%		\hat{bc}_1\\
+%		\hat{bc}_2
+%	\end{pmatrix}.
+%\end{equation*}
+%
+%After introduction of new variables $\hat{A}$ and $\hat{r}^n$ the above system can be rewritten as
+%\begin{equation}
+%	\begin{bmatrix}
+%		\hat{A} & \hat{G} \\
+%		\hat{D} & 0
+%	\end{bmatrix}
+%	\begin{pmatrix}
+%		\boldsymbol{v}^{n+1} \\ 
+%		p
+%	\end{pmatrix}
+%	=
+%	\begin{pmatrix}
+%		\hat{r}^n \\
+%		0
+%	\end{pmatrix}
+%	+
+%	\begin{pmatrix}
+%		\hat{bc}_1\\
+%		\hat{bc}_2
+%	\end{pmatrix}.
+%\end{equation}
+%
+%
+%\begin{figure}
+%\begin{center}
+%  \includegraphics[width=0.75\textwidth]{Figures/advectionGridNew}
+%\end{center}
+%\caption{Advection discretization.}
+%\label{fig:Advection-discretization}
+%\end{figure}
+%
 
 
+\subsection{Symmetrization}
+Let us denote discretization matrices prior to scaling with the hat symbol ( $\hat{}$ ).
 
-\subsection{Symmetricity}
-Let us denote discretization matrices prior scaling with hat symbol ( $\hat{}$ ).
-
-Most effective methods of solving system of linear equations require symmetric matrices, hence, symmetricity is a desired property. It is possible to construct divergence and gradient matrices to contain solely $\pm 1$ coefficients. Let us introduce the diagonal scaling matrix $\hat{M}$ and diagonal flux matrix $R$, s.t.:
+Most effective methods of solving a system of linear equations require symmetric matrices, hence, symmetricity is a desired property. It is possible to construct divergence and gradient matrices to contain solely $\pm 1$ coefficients. Let us introduce the diagonal scaling matrix $\hat{M}$ and diagonal flux matrix $R$, s.t.:
 \begin{align*}
 R &\equiv\left[\begin{array}{cc}
 \Delta y_j & 0 \\
@@ -1051,95 +1208,95 @@ In the schemes below, the left-hand side contains transient terms; the right-han
 	\frac{u^{n+1}-u^{n}}{\Delta t} = F^{n+1}.
 \end{equation}
 
-\subsection{Diffusion discretization for non-uniform grids}
-
-\textbf{Inner part.}
-Without loss of generality, consider the discretization of $u$ in $x$ direction. Write Taylor expansions of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ w.r.t. to $u_i$ at node $x_i$ as follows
-\begin{equation}\label{eqn:Taylor right} 
-	u_{i+1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right).
-\end{equation}
-
-\begin{equation}\label{eqn:Taylor left} 
-	u_{i-1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
-\end{equation}
-
-Now, using the method of Combination of Taylor Series Approximations, we can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by cancelling the first derivative, which results in
-
-\begin{equation}\label{eqn:laplacian-discretization-non-uniform-dx}
-\left(\frac{\partial^2 u}{\partial x^2}\right)_i \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x),
-\end{equation}
-where the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The discretization for such grids is reduced to 
-\begin{equation}\label{eqn: second derivative uniform}
-\left(\frac{\partial^2 u}{\partial x^2}\right)_i \approx \frac{u_{i+1}-2 u_i+u_{i-1}}{(\Delta x)^2}.
-\end{equation}
-
-
-\textbf{Right boundary.} The aim is to make a second order scheme for the first derivative to keep consistency with the discretization of the inner part. Take the right most nodes, the aim is to eliminate the second derivative in equations below, cross multiply by coefficients to make up a common factor at second derivative, then subtract the equations. 
-	\begin{equation}
-	\begin{aligned}
-	& u_m=u_{m+1}+\left.\left(x_m-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_m-x_{m+1}\right)^2}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/\frac{\left(x_{m-1}-x_{m+1}\right)^2}{2}. \\
-	& u_{m-1}=u_{m+1}+\left.\left(x_{m-1}-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_{m-1}-x_{m+1}\right.}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/ \frac{\left(x_m-x_{m+1}\right)^2}{2}.
-	\end{aligned}
-	\end{equation}
-
-After subtracting and simplifying the expression for the first partial derivative reduces to
-\begin{equation}
-\frac{\partial u}{\partial x}\bigg|_{m+1}=\frac{-u_{m-1}{\left(x_m-x_{m+1}\right)^2}+u_m{\left(x_{m-1}-x_{m+1}\right)^2}-u_{m+1}{\left(x_{m-1}-x_m\right)\left(\left[x_{m-1}-x_{m+1}\right]+\left[x_m-x_{m+1}\right]\right)}}{{\left(x_m-x_{m+1}\right)\left(x_{m-1}-x_{m+1}\right)\left(x_{m-1}-x_m\right)}}.
-\end{equation}
-
-By applying simple Neumann boundary condition $\frac{\partial u}{\partial x}\big|_{m+1}=0$ we can express the right most value of the velocity with respect to the other two as
-\begin{equation}
-u_{m+1}=\frac{-u_{m-1}\left(x_m-x_{m+1}\right)^2+u_m\left(x_{m-1}-x_{m+1}\right)^2}{\left(x_{m-1}-x_m\right)\left(x_{m-1}-x_{m+1}+x_m-x_{m+1}\right)},
-\end{equation}
-which can be plugged into the boundary value in laplacian discretization \eqref{eqn:laplacian-discretization-non-uniform-dx} to obtain
-
-\begin{equation}
-\begin{aligned}
-\left.\frac{\partial^2 u}{\partial x^2}\right|_m & =\frac{\left[u_{m-1} \frac{-h_e^2}{h_w\left(2 h_e+h_w\right)}+u_m \frac{\left(h_e+h_w\right)^2}{h_w\left(2 h_e+h_w\right)}\right] h_w-u_m ( 2 h_c)+u_{m-1} (h_e)}{h_e h_w h_c}, \\
-& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
-\end{aligned}
-\end{equation}
-
-
-
-\textbf{Left boundary.} Since the value of the left boundary is known in a Boundary Layer problem it is possible to move the corresponding term to the right hand side of the linear system and treat the values explicitly. 
-
-\textbf{Top boundary.} 
-
-Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
-
-\begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c}.
-\end{equation}
-
-Since the value of $u_g$ at the centre of top most face lies outside the domain on a staggered grid, interpolation is necessary. The value of $u$ along the top edge is known to be $U$, interpolation of $U = \frac{u_g+u_J}{2}\implies u_g=2U-u_J$, which we can plug into the equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
-
-\begin{equation}
-\begin{aligned}
-& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(-\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c h_c}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}, \\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c{ }^2}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}.
-\end{aligned}
-\end{equation}
-
-\textbf{Bottom boundary.} 
-\begin{equation}
-\begin{aligned}
-&\left.\frac{\partial 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{u_n h_s}\right)+u_g\left(\frac{1}{u_s h_c}\right).\\
-\end{aligned}
-\end{equation}
-
-
-
-Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
-
-\begin{equation}
-\begin{aligned}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right), \\
-& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
- & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{2 h_c-2 h_n}{h_n h_c h_c}\right).
-\end{aligned}
-\end{equation}
+%\subsection{Diffusion discretization for non-uniform grids}
+%
+%\textbf{Inner part.}
+%Without loss of generality, consider the discretization of $u$ in $x$ direction. Write Taylor expansions of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ w.r.t. to $u_i$ at node $x_i$ as follows
+%\begin{equation}\label{eqn:Taylor right} 
+%	u_{i+1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right).
+%\end{equation}
+%
+%\begin{equation}\label{eqn:Taylor left} 
+%	u_{i-1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
+%\end{equation}
+%
+%Now, using the method of Combination of Taylor Series Approximations, we can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by cancelling the first derivative, which results in
+%
+%\begin{equation}\label{eqn:laplacian-discretization-non-uniform-dx}
+%\left(\frac{\partial^2 u}{\partial x^2}\right)_i \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x),
+%\end{equation}
+%where the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The discretization for such grids is reduced to 
+%\begin{equation}\label{eqn: second derivative uniform}
+%\left(\frac{\partial^2 u}{\partial x^2}\right)_i \approx \frac{u_{i+1}-2 u_i+u_{i-1}}{(\Delta x)^2}.
+%\end{equation}
+%
+%
+%\textbf{Right boundary.} The aim is to make a second order scheme for the first derivative to keep consistency with the discretization of the inner part. Take the right most nodes, the aim is to eliminate the second derivative in equations below, cross multiply by coefficients to make up a common factor at second derivative, then subtract the equations. 
+%	\begin{equation}
+%	\begin{aligned}
+%	& u_m=u_{m+1}+\left.\left(x_m-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_m-x_{m+1}\right)^2}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/\frac{\left(x_{m-1}-x_{m+1}\right)^2}{2}. \\
+%	& u_{m-1}=u_{m+1}+\left.\left(x_{m-1}-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_{m-1}-x_{m+1}\right.}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/ \frac{\left(x_m-x_{m+1}\right)^2}{2}.
+%	\end{aligned}
+%	\end{equation}
+%
+%After subtracting and simplifying the expression for the first partial derivative reduces to
+%\begin{equation}
+%\frac{\partial u}{\partial x}\bigg|_{m+1}=\frac{-u_{m-1}{\left(x_m-x_{m+1}\right)^2}+u_m{\left(x_{m-1}-x_{m+1}\right)^2}-u_{m+1}{\left(x_{m-1}-x_m\right)\left(\left[x_{m-1}-x_{m+1}\right]+\left[x_m-x_{m+1}\right]\right)}}{{\left(x_m-x_{m+1}\right)\left(x_{m-1}-x_{m+1}\right)\left(x_{m-1}-x_m\right)}}.
+%\end{equation}
+%
+%By applying simple Neumann boundary condition $\frac{\partial u}{\partial x}\big|_{m+1}=0$ we can express the right most value of the velocity with respect to the other two as
+%\begin{equation}
+%u_{m+1}=\frac{-u_{m-1}\left(x_m-x_{m+1}\right)^2+u_m\left(x_{m-1}-x_{m+1}\right)^2}{\left(x_{m-1}-x_m\right)\left(x_{m-1}-x_{m+1}+x_m-x_{m+1}\right)},
+%\end{equation}
+%which can be plugged into the boundary value in laplacian discretization \eqref{eqn:laplacian-discretization-non-uniform-dx} to obtain
+%
+%\begin{equation}
+%\begin{aligned}
+%\left.\frac{\partial^2 u}{\partial x^2}\right|_m & =\frac{\left[u_{m-1} \frac{-h_e^2}{h_w\left(2 h_e+h_w\right)}+u_m \frac{\left(h_e+h_w\right)^2}{h_w\left(2 h_e+h_w\right)}\right] h_w-u_m ( 2 h_c)+u_{m-1} (h_e)}{h_e h_w h_c}, \\
+%& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
+%\end{aligned}
+%\end{equation}
+%
+%
+%
+%\textbf{Left boundary.} Since the value of the left boundary is known in a Boundary Layer problem it is possible to move the corresponding term to the right hand side of the linear system and treat the values explicitly. 
+%
+%\textbf{Top boundary.} 
+%
+%Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
+%
+%\begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
+%\left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c}.
+%\end{equation}
+%
+%Since the value of $u_g$ at the centre of top most face lies outside the domain on a staggered grid, interpolation is necessary. The value of $u$ along the top edge is known to be $U$, interpolation of $U = \frac{u_g+u_J}{2}\implies u_g=2U-u_J$, which we can plug into the equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
+%
+%\begin{equation}
+%\begin{aligned}
+%& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(-\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
+%& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c h_c}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}, \\
+%& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c{ }^2}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}.
+%\end{aligned}
+%\end{equation}
+%
+%\textbf{Bottom boundary.} 
+%\begin{equation}
+%\begin{aligned}
+%&\left.\frac{\partial 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{u_n h_s}\right)+u_g\left(\frac{1}{u_s h_c}\right).\\
+%\end{aligned}
+%\end{equation}
+%
+%
+%
+%Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
+%
+%\begin{equation}
+%\begin{aligned}
+%\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right), \\
+%& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
+% & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{2 h_c-2 h_n}{h_n h_c h_c}\right).
+%\end{aligned}
+%\end{equation}
 
 \subsection{Advection Discretization (explicit)}
 
@@ -1153,17 +1310,17 @@ Photo in figure~\ref{fig:advectionGrid} displays the discretization of nonlinear
 
 In order to get symmetric diffusion matrix we need to move to the new variables. 
 
-Let us have $m$ intervals in $x$ direction and $n$ intervals in $y$ direction. For the case when the face velocities are unknown on a boundary the method words the same way, need to add extra velocities. The number of unknowns is equal to the number of face velocities in the interior of the domain excluding the boundaries. Rewrite $\boldsymbol{u}$ as a vector of unknowns
+Let us have $N_x=m$ intervals in $x$ direction and $N_y=n$ intervals in $y$ direction. The number of unknowns then will be $N_u=(N_x-1)N_y+N_y=mn$ and $N_v=N_x(N_y-1)=m(n-1)$. The number of unknowns is equal to the number of face velocities in the interior of the domain plus the outlet boundary (extra $N_y$ in $N_u$). Rewrite $\boldsymbol{v}$ as a vector of unknowns
 
-$$\boldsymbol{u} = [\underbrace{u_1;u_2;\dotsc;u_{m-1};u_1;u_2;\dotsc;u_{m-1};\dotsc;u_1;u_2;\dotsc;u_{m-1}}_{n\text{ times for each }1...m-1\text{ block}}, \underbrace{v_1;v_2;\dotsc;v_{m};v_1;v_2;\dotsc;v_{m};\dotsc;v_1;v_2;\dotsc;v_{m}}_{n-1 \text{ of each }1,\dotsc,m\text{ block}}].$$
+$$\boldsymbol{v} = [\underbrace{u_1;u_2;\dotsc;u_{m};u_1;u_2;\dotsc;u_{m};\dotsc;u_1;u_2;\dotsc;u_{m}}_{n\text{ times for each }1...m\text{ block}}, \underbrace{v_1;v_2;\dotsc;v_{m};v_1;v_2;\dotsc;v_{m};\dotsc;v_1;v_2;\dotsc;v_{m}}_{n-1 \text{ of each }1,\dotsc,m\text{ block}}].$$
 
 To maintain consistency - indexation goes left to right from bottom to top.
 
 Define matrices 
 
-$\Delta y_j=diag([\underbrace{\Delta y_1; \Delta y_1; \dotsc;\Delta y_1}_{m-1\text{ times}}; \underbrace{\Delta y_2; \Delta y_2; \dotsc;\Delta y_2}_{m-1\text{ times}};\dotsc;\underbrace{\Delta y_n; \Delta y_n; \dotsc;\Delta y_n}_{m-1\text{ times}}]),$
+$\Delta y_j=diag([\underbrace{\Delta y_1; \Delta y_1; \dotsc;\Delta y_1}_{m\text{ times}}; \underbrace{\Delta y_2; \Delta y_2; \dotsc;\Delta y_2}_{m\text{ times}};\dotsc;\underbrace{\Delta y_n; \Delta y_n; \dotsc;\Delta y_n}_{m\text{ times}}]),$
 
-$ \Delta x_i=diag([\underbrace{\Delta x_1; \Delta x_2;\dotsc\Delta x_m;\Delta x_1; \Delta x_2;\dotsc\Delta x_m; \dotsc;\Delta x_1; \Delta x_2;\dotsc;\Delta x_m}_{n\text{ times}}])$
+$ \Delta x_i=diag([\underbrace{\Delta x_1; \Delta x_2;\dotsc\Delta x_m;\Delta x_1; \Delta x_2;\dotsc\Delta x_m; \dotsc;\Delta x_1; \Delta x_2;\dotsc;\Delta x_m}_{n-1\text{ times}}])$
 
 \begin{equation*}
 R =\left[\begin{array}{cc}
@@ -1174,14 +1331,21 @@ R =\left[\begin{array}{cc}
 
 Let the new vector variable of unknowns (something like mass flux) be defined as
 
-$$\boldsymbol{q} = R\boldsymbol{u},$$ 
-where $R$ is a diagonal matrix of size $(m-1)n\times m(n-1)$ defined above. 
+$$\boldsymbol{q} = R\boldsymbol{v},$$ 
+where $R$ is a diagonal matrix of size $mn\times m(n-1)$ defined above. 
 
 Next, we need to define the difference matrices to cancel out the $\frac{x_{i+1}−x_{i-1}}{2}$ central term in diffusion discretization. Define the diagonal matrices
 
-${\Delta x_i+\Delta x_{i-1}} = diag[\underbrace{\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_m-\Delta x_{m-1};...;\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_m-\Delta x_{m-1}}_{n\text{ times for each block of } \Delta x_2+\Delta x_1\text{ to }\Delta x_m-\Delta x_{m-1}}]$
+\begin{equation*}
+{\Delta x_i+\Delta x_{i-1}} = diag[\underbrace{\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_{m+1}+\Delta x_{m}; ...;\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_{m+1}+\Delta x_{m}}_{n\text{ times for each block of } \Delta x_2+\Delta x_1\text{ to }\Delta x_{m+1}+\Delta x_{m}}],
+\end{equation*}
+where the $x_{m+1}=x_m$ is a ghost interval lying outside the domain. 
 
-${\Delta y_j+\Delta y_{j-1}} = diag[\underbrace{\Delta y_2+\Delta y_1;  \dotsc \Delta y_2+\Delta y_1;}_{m\text{ times}} \underbrace{\Delta y_3+\Delta y_2; \dotsc \Delta y_3+\Delta y_2;}_{m\text{ times}} \underbrace{\Delta y_n+\Delta y_{n-1}\dotsc \Delta y_n+\Delta y_{n-1}}_{m\text{ times}}],$
+
+\begin{equation*}
+{\Delta y_j+\Delta y_{j-1}} = diag[\underbrace{\Delta y_2+\Delta y_1;  \dotsc \Delta y_2+\Delta y_1;}_{m\text{ times}} \underbrace{\Delta y_3+\Delta y_2; \dotsc \Delta y_3+\Delta y_2;}_{m\text{ times}} \underbrace{\Delta y_n+\Delta y_{n-1}\dotsc \Delta y_n+\Delta y_{n-1}}_{m\text{ times}}],	
+\end{equation*}
+
 
 \begin{equation*}
 \hat{M} =\left[\begin{array}{cc}
@@ -1190,9 +1354,9 @@ ${\Delta y_j+\Delta y_{j-1}} = diag[\underbrace{\Delta y_2+\Delta y_1;  \dotsc \
 \end{array}\right].
 \end{equation*}
 
-Now, since $\boldsymbol{q}=R\boldsymbol{u}$ then $\boldsymbol{u}=R^{-1}\boldsymbol{q}$, Going back to Laplacian matrix
+Now, since $\boldsymbol{q}=R\boldsymbol{v}$ then $\boldsymbol{v}=R^{-1}\boldsymbol{q}$, Going back to Laplacian matrix
 
-$$L\boldsymbol{u}= LR^{-1}\boldsymbol{q},$$ 
+$$L\boldsymbol{v}= LR^{-1}\boldsymbol{q},$$ 
 premultiply by $\hat M$, the expression will become 
 
 $$\hat MLR^{-1}\boldsymbol{q},$$ 
