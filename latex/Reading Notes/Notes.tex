@@ -609,21 +609,21 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 			\end{equation}
 \end{enumerate}
 
-\section{Discrete Streamfunction method}\label{sec:discrete-streamfunction}
+\section{Discrete streamfunction method}\label{sec:discrete-streamfunction}
 
-\subsection{Problem Statement}
-
+\subsection{Problem statement}
+Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a unit square domain together with boundary conditions:
 \begin{subequations}
 \label{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
-\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0\\
+\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0,\\
 \label{eqn:continuity-dsm-bl}
-\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0 \\
+\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0, \\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\left({u_0} + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A,k,\omega, \phi_0\}\subset \mathbb{R}\\
+\text{Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\left({u_0} + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A,k,\omega, \phi_0\}\subset \mathbb{R},\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
-\text{Noslip BC: } & \boldsymbol{v}(t,x,0)=(0,0) \\
+\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
 \text{Outlet BC: } & \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0, v=\boldsymbol{h}(t,y), &  (x=1).
 \end{align}
@@ -631,12 +631,16 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
 
-The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. To make things easier, label the cells by counting from the bottom left corner of the domain, going from left to right, and moving upwards, until reaching the top right corner of the domain.
+The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. To make things easier, label the cells by counting from the bottom left corner of the domain, going from left to right, and moving upwards after we reach the end of a row until we hit the top right corner of the domain.
 
-In the context of two-dimensional analysis, the velocity vector $\boldsymbol{v}=(u,v)$ is characterized by two components in $x$ and $y$ direction respectively. Specifically, the value for $u$ is stored at the center of the left face, while the value for $v$ is stored at the center of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
+In the context of two-dimensional analysis, the velocity vector $\boldsymbol{v}=(u,v)$ is characterized by two components in $x$ and $y$ direction respectively. Specifically, in each cell, the value for $u$ is stored at the center of the left face, while the value for $v$ is stored at the center of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
 
 The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In the given problem statement \ref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. The counting process follows the same sequence as for cells, first for $u$ and then for $v$. These resultant arrays are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
 
+Grid indexation starts at $x_1=y_1=(0,0)$ and ends at $x_{m+1}=(1,0)$, $y_{n+1}=(0,1)$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. For the grid refinement the standard constant ratio $k_x,k_y,$ $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ is used in both $x$ and $y$ directions.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discrete operators}
 
 The initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
@@ -666,12 +670,56 @@ The initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using di
                   0
             \end{pmatrix} + \text{bc}_{\boldsymbol{v},p},
         \end{equation}
-where boundary conditions are in terms of pressure and velocity. In the following subsections, each of the discretization operators is described individually. 
+where boundary conditions are in terms of pressure and velocity. In the following subsections, each of the discrete operators is described individually. 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Transient terms}
+Attack the system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
+\begin{enumerate}
+	\item[\textbf{Viscous}] - Implicit trapezoidal - Crank Nicholson scheme (second-order method in time).  
+	\begin{equation}\label{eqn:crank-nicholson}
+		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}=\frac{1}{2}\left[F^{n+1}+F^n\right].
+	\end{equation}
+
+	\item[\textbf{Nonlinear}] - Explicit Adams-Bashforth (second-order method in time).
+	\begin{equation}\label{eqn:adams-bashforth}
+		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = \frac{3}{2}F^{n} - \frac{1}{2}F^{n-1}.
+	\end{equation}
+
+	\item[\textbf{Pressure}] - Implicit Euler, though the pressure variable will be later eliminated in the algorithm (first-order method in time). 
+	\begin{equation}\label{eqn:implicit-euler} 
+		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = F^{n+1}.
+	\end{equation}
+\end{enumerate}
+
+The above schemes result in the following discretized system:
+\begin{equation}\label{eqn:NSE-dsm-bl-system-schemes}
+	\begin{bmatrix}
+		\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
+		\hat{D} & 0
+	\end{bmatrix}
+	\begin{pmatrix}
+		\boldsymbol{v}^{n+1} \\ 
+		p
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+		\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \boldsymbol{v}^n - \left[\frac{3}{2}\hat{\mathbf{H}}(\boldsymbol{v}^n) - \frac{1}{2}\hat{\mathbf{H}}(\boldsymbol{v}^{n-1})\right]\\
+		0
+	\end{pmatrix}
+	+
+	\begin{pmatrix}
+		\hat{bc}_1\\
+		\hat{bc}_2
+	\end{pmatrix}.
+\end{equation}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Laplacian}
 
-Laplacian matrix can be rewritten as blocks
-
+Laplacian can be rewritten as block matrix:
 \begin{equation}
 	\hat L=
 	\begin{bmatrix}
@@ -680,10 +728,10 @@ Laplacian matrix can be rewritten as blocks
 \end{bmatrix}.
 \end{equation}
 
-Each pair of matrices $\hat{L}_{uxx},\hat{L}_{vxx}$ and $\hat{L}_{uyy},\hat{L}_{vyy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below, we will discuss how the Laplacian matrix is constructed at different parts of the grid.
+Each pair of the matrices $\hat{L}_{uxx},\hat{L}_{vxx}$ and $\hat{L}_{uyy},\hat{L}_{vyy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
 
 \textbf{Inner part.}
-Without loss of generality, let us show how to compute $L_{uxx}$, for the other three matrices the distance between each velocity component is different on non-uniform grids, the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
+Without loss of generality, let us show how to compute $L_{uxx}$, for the other three matrices the distances between velocity components are different on non-uniform grids, while the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
 \begin{equation}\label{eqn:Taylor right} 
 	u_{i+1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right),
 \end{equation}
@@ -692,13 +740,13 @@ Without loss of generality, let us show how to compute $L_{uxx}$, for the other 
 	u_{i-1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
 \end{equation}
 
-We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by canceling the first derivative, which results in
+We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by canceling the first derivative, which will result in
 
 \begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
 \left(\frac{\partial^2 u}{\partial x^2}\right)_i & \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x)\\
 & \approx \frac{1}{h_c h_r}u_{i+1} + \frac{2}{h_l h_r}u_i + \frac{1}{h_c h_l}u_{i-1} + O(\Delta x).
 \end{align}
-where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$ and the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are put into the corresponding matrix elements.
+where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$. Moreover, the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are placed into the $L_{uxx}$ matrix.
 
 %The discretization for such grids is reduced to 
 %\begin{equation}\label{eqn: second derivative uniform}
@@ -732,14 +780,12 @@ where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$ and t
 %& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
 %\end{aligned}
 %\end{equation}
- To be determined.
+\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
 
 
-\textbf{Left boundary.} Since the exact value of the left boundary is known in a Boundary Layer problem it is possible to move the corresponding term together with the coefficient to the right-hand side of the linear system and treat the values explicitly. 
+\textbf{Left boundary.} Since the exact value on the left boundary is given as a Dirichlet boundary condition, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
 
-\textbf{Top boundary.} 
-
-The top boundary only affects the $\hat{L}_{uyy}$ and $\hat{L}_{vyy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}_{uyy}$ in this part, the $\hat{L}_{vyy}$ is done similarly with the only exception being the distances between the $v$ velocities due to non-uniform grid. Consider the top most value of $u$ at the $J$'th node with $u_g$ being the ghost velocity
+\textbf{Top boundary.} The Dirichlet condition over the top boundary affects only the $\hat{L}_{uyy}$ and $\hat{L}_{vyy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}_{uyy}$ in this part; the $\hat{L}_{vyy}$ is done similarly, except that the distances between the $v$ velocities differ due to the non-uniform grid. Consider the top-most value of $u$ at the $J$'th node, with $u_g$ being the ghost velocity outside the grid. The velocities $u_g$ and $u_J$ are equidistant from the top domain boundary
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
@@ -749,54 +795,160 @@ Since the value of $u_g$ at the centre of the topmost face lies outside the doma
 
 \begin{equation}
 \begin{aligned}
-& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(-\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
+& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
 & \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c h_c}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}, \\
 & \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c{ }^2}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}.
 \end{aligned}
 \end{equation}
 
-The first summand from the above equation is treated explicitly (moved to the rhs), and the other two coefficients are used as elements for the $\hat{L}_{uyy}$ matrix.
+The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in equations~\eqref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}_{uyy}$ matrix.
 
 \textbf{Bottom boundary.} 
 \begin{equation}
 \begin{aligned}
-&\left.\frac{\partial 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{u_n h_s}\right)+u_g\left(\frac{1}{u_s h_c}\right).\\
+&\left.\frac{\partial 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
 \end{aligned}
 \end{equation}
 
-Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=2 u_J$, then
+Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=-2 u_J$, then
 
 \begin{equation}
 \begin{aligned}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right), \\
-& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
- & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{2 h_c-2 h_n}{h_n h_c h_c}\right).
+\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right) \\
+%& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
+ & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2 h_c-2 h_n}{h_s h_c h_n}\right).
 \end{aligned}
 \end{equation}
 
-The coefficients are distributed into the $\hat{L}_{uyy}$ matrix similarly to the boundaries at the left and top of the domain.
+The coefficients are distributed into the $\hat{L}_{uyy}$ matrix similarly to left and top domain cases.
 
 
-
-\subsubsection{Divergence}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Divergence}\label{subsec:divergence}
 
 The second line of the system~\ref{eqn:nse-matrix} reads
 \begin{equation}
 \begin{gathered}
-\hat{D}\boldsymbol{v}=bc_2\\
-\frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=bc_2 \\
+\hat{D}\boldsymbol{v}=bc_2,\\
+\frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=bc_2, \\
 \frac{1}{\Delta x \Delta y}\left[\begin{array}{ll}
 D_x & D_y
 \end{array}\right]\left[\begin{array}{l}
 u \Delta y \\
 v \Delta x
-\end{array}\right]=\frac{1}{\Delta x \Delta y} D q=bc_2
+\end{array}\right]=\frac{1}{\Delta x \Delta y} D q=bc_2,
 \end{gathered}
+\end{equation}
+where the vector $q$ is referred to as velocity flux, and the matrix $D$ is the divergence matrix. The first-order central difference scheme was employed in the construction of this matrix. Now, consider a finite volume $V_{i,j}$  with velocities $u_{i,j}$ and $v_{i,j}$ on the left and bottom faces respectively. Two indices (row, column) are used for illustrative purposes, it is always recommended to use a single array of data, which will enhance the memory access. The continuity equation for the cell center is expressed as
+\begin{equation}
+	\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}=0,
+\end{equation}
+which can be discretized using a central difference scheme into
+
+\begin{equation}
+  \frac{u_{i+1,j} - u_{i,j}}{\Delta x_i}+  \frac{v_{i,j+1} - v_{i,j}}{\Delta y_i}.
+\end{equation}
+
+Since the vector of velocities is $\boldsymbol{v}=[u_{i+1,j}, u_{i,j}, v_{i,j+1}, v_{i,j}]^T$, we can express this equation in matrix form as follows:
+\begin{equation}
+  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
+\end{equation}
+
+The velocity values known at the boundaries can be shifted to the right-hand side and explicitly treated. The divergence matrix contains $\pm1$, as illustrated in the figure~\ref{fig:divergence-matrix}.
+
+\begin{figure}[hbt] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.75\paperwidth]{D-matrix}
+  }
+  \caption{Divergence matrix.}\label{fig:divergence-matrix}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Gradient}\label{subsec:gradient}
+
+Since the unknowns are the velocities, the pressure gradients are computed at the corresponding points. Interestingly, the gradient operator is the transpose of divergence on staggered/MAC grids
+\begin{equation}
+  \hat{G}=-\hat{D^T}.
+\end{equation}
+
+To show why consider velocity $u_{i,j}$, compute pressure gradient across the corresponding point
+\begin{equation}
+	\frac{\partial p}{\partial x}\bigg|_{u_{i,j}} = \frac{p_{i,j}-p_{i-1,j}}{\frac{\Delta x_i- \Delta x_{i-1}}{2}}.
+\end{equation}
+
+The above equation will give 
+\begin{equation}
+  \frac{2}{\Delta x_i- \Delta x_{i-1}}[-1 \quad 1][p_{i-1,j} \quad p_{i,j}]^T,
+\end{equation}
+which in matrix notation for all velocity points will become 
+\begin{equation}
+  \nabla p = \Delta_{xy}\hat{G} 
+  \begin{bmatrix}{}
+  p_1 \\
+  p_2 \\
+  \vdots \\
+  p_{mn}
+\end{bmatrix},
+\end{equation}
+where $\Delta_{xy}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, $\hat{G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. Note that on staggered/MAC grids pressure gradient is computed directly at each velocity coordinate without the need of any interpolation. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Advection}
+
+\begin{figure}
+\centering
+{\includegraphics[width=0.75\paperwidth]{advectionGrid.jpg} }
+\caption{\small Advection on a staggered grid.}\label{fig:advectionGrid}
+\end{figure}
+Photo in the figure~\ref{fig:advectionGrid} displays the discretization of nonlinear terms on a $4\times 4$ staggered grid. Values of $uu$ and $vv$ are defined in cell centres using the (left/right) interpolation, and $uv=vu$ values are defined on grid corners using the cross (left/right times up/down) interpolation. The edges and outer corners are dropped at the end since the system of linear equations is determined by the inner velocity values. 
+
+Inside the domain $x$-momentum advective derivative can be written in a conservative form as
+\begin{align*}
+	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\\
+	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\\
+	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\\
+	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y},\\
+	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{u_{i,j}}&=\frac{(uu)_{i+\frac{1}{2},j}-(uu)_{i- \frac{1}{2},j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i,j+\frac{1}{2}}-(uv)_{i,j-\frac{1}{2}}}{\Delta y_i},
+\end{align*}
+where the half indices correspond to the coordinates at the cell centres for $uu$ and cell edges for $uv$. The computation of $uu,uv$ values is performed using the interpolation, i.e.
+\begin{align*}
+  (uu)_{i,j+\frac{1}{2}}&=\left(\frac{u_{i+1,j}+u_{i,j}}{2}\right)^2,\\
+  (uv)_{i,j-\frac{1}{2}}&=\left(u_{i,j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i,j}-u_{i,j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j}-v_{i-1,j}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
+  &=\left(\frac{u_{i,j}\Delta y_{j-1} +u_{i,j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j}\Delta x_{i-1} +v_{i-1,j}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
+\end{align*}
+
+The advective term in the $y$-momentum equation is computed in a similar manner. After the derivative values are computed they are moved to the right-hand side as in equation~\eqref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
+\subsubsection{Resulting system}
+After applying the above discrete operators we can combine the summands into $\hat{A}$, $\hat{r}^n$; we then rewrite the system~\eqref{eqn:NSE-dsm-bl-system-schemes}  as
+\begin{equation}
+	\begin{bmatrix}
+		\hat{A} & \hat{G} \\
+		\hat{D} & 0
+	\end{bmatrix}
+	\begin{pmatrix}
+		\boldsymbol{v}^{n+1} \\ 
+		p
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+		\hat{r}^n \\
+		0
+	\end{pmatrix}
+	+
+	\begin{pmatrix}
+		\hat{bc}_1\\
+		\hat{bc}_2
+	\end{pmatrix}.
 \end{equation}
 
 
-
-        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%
+%%%%%%		TYPOS CHECK FROM BELOW  %%%%%%%%%%%%
+%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Overall, we have $N_x, N_y$ nodes in the $x$ and $y$ direction respectively. 
 %There are $N_u=(N_x-1)N_y+N_y$ elements of $u$, where extra $N_y$ is added to account for the unknown outlet boundary velocities. $N_v=N_x(N_y-1)$ represents the number of velocity components within vector $v$. Define $N_{tot}=N_u+N_v$.
 %               
@@ -872,10 +1024,9 @@ v \Delta x
 %
 
 
-\subsection{Symmetrization}
-Let us denote discretization matrices prior to scaling with the hat symbol ( $\hat{}$ ).
+\subsection{Symmetrization}\label{subsec:symmetrization}
 
-Most effective methods of solving a system of linear equations require symmetric matrices, hence, symmetricity is a desired property. It is possible to construct divergence and gradient matrices to contain solely $\pm 1$ coefficients. Let us introduce the diagonal scaling matrix $\hat{M}$ and diagonal flux matrix $R$, s.t.:
+The most effective methods for solving systems of linear equations often work optimally with symmetric matrices, making symmetry a desirable property. In order to achieve symmetricity, we introduce two matrices: the diagonal scaling matrix $\hat{M}$ and the diagonal flux matrix $R$. These matrices are defined as
 \begin{align*}
 R &\equiv\left[\begin{array}{cc}
 \Delta y_j & 0 \\
@@ -884,9 +1035,52 @@ R &\equiv\left[\begin{array}{cc}
 \quad \hat{M} & \equiv\left[\begin{array}{cc}
 \frac{1}{2}\left(\Delta x_i+\Delta x_{i-1}\right) & 0 \\
 0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
-\end{array}\right],
+\end{array}\right].
 \end{align*}
-which results in $q^{n+1}=R\boldsymbol{v}^{n+1}\implies \boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$ and $\hat{D}R^{-1}=-(\hat{M}\hat{G})^T$. More detailed explanation can be found in Appendix~\ref{appendix:symmetric-laplacian}.
+Using the above two we can express $q^{n+1}=R\boldsymbol{v}^{n+1}\implies \boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$. % and $\hat{D}R^{-1}=-(\hat{M}\hat{G})^T$. I THINK THIS WRONG BUT WRITTEN IN TAIRA DISSERTATION ON PAGE 101.
+
+The only matrix which is asymmetric in~\eqref{eqn:NSE-dsm-bl-system-schemes} is Laplacian. In order to get a symmetric diffusion matrix we need to move to the new variables. As discussed in \ref{subsec:dsm-domain} the domain has $m$ intervals in $x$ direction and $n$ intervals in $y$ direction. The number of unknown velocities is $N_u=(m-1)n+n=mn$ and $N_v=m(n-1)$. The number of unknowns is equal to the number of face velocities in the interior of the domain plus the outlet boundary (extra $n$ in $N_u$). We can rewrite $\boldsymbol{v}$ as a vector of unknowns
+
+$$\boldsymbol{v} = [\underbrace{u_1;u_2;\dotsc;u_{m};u_1;u_2;\dotsc;u_{m};\dotsc;u_1;u_2;\dotsc;u_{m}}_{n\text{ blocks of }1,...,m}, \underbrace{v_1;v_2;\dotsc;v_{m};v_1;v_2;\dotsc;v_{m};\dotsc;v_1;v_2;\dotsc;v_{m}}_{n-1 \text{ of each }1,\dotsc,m\text{ block}}].$$
+
+In order to maintain consistency - indexation goes left to right from bottom to top as discussed earlier. Define matrices 
+
+$$\Delta y_j=\text{diag}([\underbrace{\Delta y_1; \Delta y_1; \dotsc;\Delta y_1}_{m\text{ times}}; \underbrace{\Delta y_2; \Delta y_2; \dotsc;\Delta y_2}_{m\text{ times}};\dotsc;\underbrace{\Delta y_n; \Delta y_n; \dotsc;\Delta y_n}_{m\text{ times}}]),$$
+
+$$ \Delta x_i=\text{diag}([\underbrace{\Delta x_1; \Delta x_2;\dotsc\Delta x_m;\Delta x_1; \Delta x_2;\dotsc\Delta x_m; \dotsc;\Delta x_1; \Delta x_2;\dotsc;\Delta x_m}_{n-1\text{ blocks of } 1,\dotsc,m}]),$$
+combined into
+\begin{equation*}
+R =\left[\begin{array}{cc}
+\Delta y_j & 0 \\
+0 & \Delta x_i
+\end{array}\right].
+\end{equation*}
+
+Let the new vector variable of unknowns (mass flux) be defined as
+$${q} = R\boldsymbol{v},$$ 
+where $R$ is a diagonal matrix of size $mn\times m(n-1)$. We need to define the difference matrices to cancel out the $\frac{x_{i+1}−x_{i-1}}{2}$ central term in diffusion discretization. Let the diagonal matrices
+\begin{equation*}
+{\Delta x_i+\Delta x_{i-1}} = \text{diag}[\underbrace{\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_{m+1}+\Delta x_{m}; ...;\Delta x_2+\Delta x_1; \Delta x_3+\Delta x_2; \dotsc \Delta x_{m+1}+\Delta x_{m}}_{n\text{ times for each block of } \Delta x_2+\Delta x_1\text{ to }\Delta x_{m+1}+\Delta x_{m}}],
+\end{equation*}
+where the $x_{m+1}=x_m$ is a ghost interval lying outside the domain. 
+\begin{equation*}
+{\Delta y_j+\Delta y_{j-1}} = \text{diag}[\underbrace{\Delta y_2+\Delta y_1;  \dotsc \Delta y_2+\Delta y_1;}_{m\text{ times}} \underbrace{\Delta y_3+\Delta y_2; \dotsc \Delta y_3+\Delta y_2;}_{m\text{ times}} \underbrace{\Delta y_n+\Delta y_{n-1}\dotsc \Delta y_n+\Delta y_{n-1}}_{m\text{ times}}],	
+\end{equation*}
+be combined into
+
+\begin{equation*}
+\hat{M} =\left[\begin{array}{cc}
+\frac{1}{2}\left(\Delta x_i+\Delta x_{i-1}\right) & 0 \\
+0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
+\end{array}\right].
+\end{equation*}
+
+Now, since ${q}=R\boldsymbol{v}$ then $\boldsymbol{v}=R^{-1}{q}$, The Laplacian matrix multiplied by the velocity vector is
+$$L\boldsymbol{v}= LR^{-1}{q},$$ 
+premultiply by $\hat M$, then the expression becomes 
+$$\hat MLR^{-1}{q},$$ 
+where $\hat M L R^{-1}$ is symmetric by construction.  
+
 
 Using the above transformation we can modify the initial system of linear equations
 \begin{equation}
@@ -920,7 +1114,7 @@ p
 \widehat{b c}_2
 \end{array}\right),
 \end{equation}
-which can be rewritten by introducing new "hatless" terms as 
+which can be rewritten as 
 \begin{equation}\label{eqn:nse-normalized}
 \left[\begin{array}{cc}
 A & G \\
@@ -936,18 +1130,25 @@ r^n \\
 {b c}_2
 \end{array}\right),
 \end{equation}
-where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$. 
+where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric. 
 
 \subsection{Nullspace method}
 
-Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} say that in the system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space. Define the nullspace matrix as $C$. 
+Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in the system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
 
-The number of rows in the nullspace $C$ is $N_f$, which is the number of faces with unknown velocities. In two dimensions $C$ has $N_n$ columns, which is the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns, where $N_e$ is the number of edges. 
+The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
 
-In the 2D case the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
+In the two-dimensional case, the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
 
-Matrix $C$ is obtained by considering a counterclockwise vorticity around the nodes inside the domain and in some cases the boundary. In case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has dimension of unknown velocities (including the open boundary ones) times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ in 4x4 grid case with open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$. 
+%A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
 
+A more intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain and along the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity.
+
+The matrix $C$ has dimensions corresponding to unknown velocities multiplied by the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. Yellow squares represent $+1$ entries, while blue squares correspond to $-1$ entries.
+
+The desired product, then, becomes $DC=0$. Since $D=-G^T$, as discussed earlier in subsections~\ref{subsec:divergence} and \ref{subsec:gradient}. The identity leads to important property $(DC)^T=C^TD^T=-C^TG=0$, which is worth keeping in mind for future use.
+
+The final chord of this method is the introduction of another new variable called streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the problem~\eqref{eqn:nse-normalized} from subsection~\ref{subsec:symmetrization} and is discussed in the following subsection~\ref{sec:algorithm}.
 
 \begin{figure}
 \begin{center}
@@ -960,7 +1161,7 @@ Matrix $C$ is obtained by considering a counterclockwise vorticity around the no
 
 \subsection{Resulting algorithm}\label{sec:algorithm}
 
-Let us consider the solution to the discretized initial problem \eqref{eqn:nse-normalized}
+Let us consider the solution to the discretized system \eqref{eqn:nse-normalized}
 \begin{equation}
 	q^{n+1}=q^{n+1}_p+q^{n+1}_h,
 \end{equation}
@@ -968,17 +1169,21 @@ where $q^{n+1}_h$ is a solution to homogeneous continuity equation
 \begin{equation}\label{eqn:discrete-homogeneous-continuity}
 	Dq^{n+1}_h=0,
 \end{equation}
-whereas $q^{n+1}_p$ is a particular solution to non-homogeneous continuity equation
+and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equation
 \begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
 	Dq^{n+1}_p=bc_2.
 \end{equation}
 
-The algorithm to solve the discrete Navier-Stokes system of equation~\eqref{eqn:nse-implicit} can be described as follows:
+%%%%%%%%%%%%%%
+% REMOVE SOURCE TERM BELOW? S_1
+%%%%%%%%%%%%%%
+
+The algorithm to solve the discrete Navier-Stokes system of equations~\eqref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
 	\item Construct matrix $C$, such that $DC=0$ and $q_h=C\psi$.
 	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
-	\item Find $q^{n+1}_p$ using the methods described in the next subsection~\ref{sec:continuity-particular-solution}.
-	\item Split the solution $q^{n+1}$ and eliminate the pressure terms in momentum equation.
+	\item Find $q^{n+1}_p$ from the non-homogeneous continuity equation using the methods described in the next subsection~\ref{sec:continuity-particular-solution}.
+	\item Split the solution $q^{n+1}$ into homogeneous and particular, then eliminate the pressure terms in the momentum equation.
 		\begin{align*}
 			Aq^{n+1}&=-Gp^{n+1}+S_1+bc_1,&\text{ where $S_1$ is momentum source term,}\\
 			A(q^{n+1}_h+q^{n+1}_p)&=D^Tp^{n+1}+S_1+bc_1, &\text{ premultiply by $C^T$,} \\
@@ -988,12 +1193,12 @@ The algorithm to solve the discrete Navier-Stokes system of equation~\eqref{eqn:
 	\item Solve the resulting system from above for $\psi^{n+1}$. 
 	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.
 	\item Compute $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
-	\item Repeat the steps (3-7).
+	\item Repeat the steps (3-7) since the boundary values in $q^{n+1}$ were changed.
 \end{enumerate}
 
 
 
-\subsection{Finding a particular solution to discrete continuity equation}\label{sec:continuity-particular-solution}
+\subsection{A particular solution to the discrete continuity equation}\label{sec:continuity-particular-solution}
 \subsubsection{Particular solution using Lagrange multipliers}
 It is possible to find one particular solution to the discrete non-homogeneous continuity equation~\eqref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
 \begin{equation}\label{eqn:lagrange-multipliers}
@@ -1022,10 +1227,11 @@ plugging the above into~\eqref{eqn:flux-minimum} results in
 \begin{equation}
 q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
 \end{equation}
-where $D^\dagger=D^T\left(D D^T\right)$ is called a pseudo-inverse. In the method above we minimize the square of mass flux, which is equivalent to minimization of kinetic energy. 
+where $D^\dagger=D^T\left(D D^T\right)$ is called a pseudo-inverse. In the method above we minimize the square of mass flux, which is equivalent to the minimization of kinetic energy. 
  
-
-\subsubsection{Particular solution using Graph Theory}
+%%%% REMOVE?$ %%%%%
+\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
+\textbf{TO KEEP OR NOT TO KEEP}
 Another option to find a particular solution to~\eqref{eqn:discrete-non-homogeneous-continuity} was proposed by Hall in~\cite{Hall:1980} and \cite{Hall:1985}. The method uses the spanning tree of graph $\mathcal{N}$ which has nodes and edges corresponding to the cell centres and velocity vectors from our grid. This method is discussed below.
 
 Let us write useful notations:
@@ -1190,23 +1396,8 @@ Citing Colonius~\cite{Colonius:2008} The second type of error associated with vo
 \section{Appendix}
 
 \subsection{Transient schemes}
-In the schemes below, the left-hand side contains transient terms; the right-hand side is represented by all other terms combined into $F$.
-
-\textbf{Implicit trapezoidal - Crank Nicholson} (second-order method in time):
-\begin{equation}\label{eqn:crank-nicholson}
-	\frac{u^{n+1}-u^n}{\Delta t}=\frac{1}{2}\left[F^{n+1}+F^n\right].
-\end{equation}
 
 
-\textbf{Explicit Adams-Bashforth} (second-order method in time):
-\begin{equation}\label{eqn:adams-bashforth}
-	\frac{u^{n+1}-u^{n}}{\Delta t} = \frac{3}{2}F^{n} - \frac{1}{2}F^{n-1}.
-\end{equation}
-
-\textbf{Implicit Euler}(first-order method in time):
-\begin{equation}\label{eqn:implicit-euler} 
-	\frac{u^{n+1}-u^{n}}{\Delta t} = F^{n+1}.
-\end{equation}
 
 %\subsection{Diffusion discretization for non-uniform grids}
 %
@@ -1298,17 +1489,12 @@ In the schemes below, the left-hand side contains transient terms; the right-han
 %\end{aligned}
 %\end{equation}
 
-\subsection{Advection Discretization (explicit)}
+%\subsection{Advection Discretization (explicit)}
 
-\begin{figure}
-\centering
-{\includegraphics[width=0.75\paperwidth]{advectionGrid.jpg} }
-\caption{\small Advection on staggered grid.}\label{fig:advectionGrid}
-\end{figure}
-Photo in figure~\ref{fig:advectionGrid} displays the discretization of nonlinear terms on a 4x4 staggered grid. Values of $uu$ and $vv$ are defined in cell centres using the (left/right) interpolation, $uv=vu$ values are defined on grid corners using cross (left/right times up/down) interpolation. The edges and outer corners are dropped at the end since the system of linear equations is determined on the inner velocity values. 
+
 \subsection{Laplacian symmetrization in depth}\label{appendix:symmetric-laplacian}
 
-In order to get symmetric diffusion matrix we need to move to the new variables. 
+In order to get a symmetric diffusion matrix we need to move to the new variables. 
 
 Let us have $N_x=m$ intervals in $x$ direction and $N_y=n$ intervals in $y$ direction. The number of unknowns then will be $N_u=(N_x-1)N_y+N_y=mn$ and $N_v=N_x(N_y-1)=m(n-1)$. The number of unknowns is equal to the number of face velocities in the interior of the domain plus the outlet boundary (extra $N_y$ in $N_u$). Rewrite $\boldsymbol{v}$ as a vector of unknowns
 
