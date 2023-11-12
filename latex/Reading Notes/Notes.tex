@@ -631,11 +631,19 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
 
+\begin{figure}[h] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{grid-bl}
+  }
+  \caption{Domain discretization}\label{bl-domain-discretization}
+\end{figure}
+
+
 The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. To make things easier, label the cells by counting from the bottom left corner of the domain, going from left to right, and moving upwards after we reach the end of a row until we hit the top right corner of the domain.
 
-In the context of two-dimensional analysis, the velocity vector $\boldsymbol{v}=(u,v)$ is characterized by two components in $x$ and $y$ direction respectively. Specifically, in each cell, the value for $u$ is stored at the center of the left face, while the value for $v$ is stored at the center of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
+In the context of two-dimensional analysis, the component $u$ is stored at the center of the left face, while the value for $v$ is stored at the center of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
 
-The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In the given problem statement \ref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. The counting process follows the same sequence as for cells, first for $u$ and then for $v$. These resultant arrays are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
+The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In the given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. The counting process follows the same sequence as for cells, first for $u$ and then for $v$. These resultant arrays are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
 
 Grid indexation starts at $x_1=y_1=(0,0)$ and ends at $x_{m+1}=(1,0)$, $y_{n+1}=(0,1)$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. For the grid refinement the standard constant ratio $k_x,k_y,$ $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ is used in both $x$ and $y$ directions.
 
@@ -677,18 +685,27 @@ where boundary conditions are in terms of pressure and velocity. In the followin
 Attack the system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
 \begin{enumerate}
 	\item[\textbf{Viscous}] - Implicit trapezoidal - Crank Nicholson scheme (second-order method in time).  
-	\begin{equation}\label{eqn:crank-nicholson}
-		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}=\frac{1}{2}\left[F^{n+1}+F^n\right].
+%	\begin{equation}\label{eqn:crank-nicholson}
+%		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}=\frac{1}{2}\left[F^{n+1}+F^n\right],
+%	\end{equation}
+	\begin{equation}\label{eqn:viscous-crank-nicholson}
+  		\hat{L}\boldsymbol{v}=\frac{1}{2}\left(\hat{L}\boldsymbol{v}^{n+1}+\hat{L}\boldsymbol{v}^n\right)
 	\end{equation}
 
 	\item[\textbf{Nonlinear}] - Explicit Adams-Bashforth (second-order method in time).
-	\begin{equation}\label{eqn:adams-bashforth}
-		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = \frac{3}{2}F^{n} - \frac{1}{2}F^{n-1}.
+%	\begin{equation}\label{eqn:adams-bashforth}
+%		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = \frac{3}{2}F^{n} - \frac{1}{2}F^{n-1}.
+%	\end{equation}
+	\begin{equation}\label{eqn:nonlinear-adams-bashforth}
+		\mathbf{\hat{H}}(\boldsymbol{v}) = \frac{3}{2}\mathbf{\hat{H}}(\boldsymbol{v}^{n}) - \frac{1}{2}\mathbf{\hat{H}}(\boldsymbol{v})^{n-1}.
 	\end{equation}
 
 	\item[\textbf{Pressure}] - Implicit Euler, though the pressure variable will be later eliminated in the algorithm (first-order method in time). 
-	\begin{equation}\label{eqn:implicit-euler} 
-		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = F^{n+1}.
+%	\begin{equation}\label{eqn:implicit-euler} 
+%		\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^{n}}{\Delta t} = F^{n+1}.
+%	\end{equation}
+	\begin{equation}\label{eqn:pressure-implicit-euler} 
+		\hat{G}p = \hat{G}p^{n+1}.
 	\end{equation}
 \end{enumerate}
 
@@ -700,7 +717,7 @@ The above schemes result in the following discretized system:
 	\end{bmatrix}
 	\begin{pmatrix}
 		\boldsymbol{v}^{n+1} \\ 
-		p
+		p^{n+1}
 	\end{pmatrix}
 	=
 	\begin{pmatrix}
@@ -723,30 +740,37 @@ Laplacian can be rewritten as block matrix:
 \begin{equation}
 	\hat L=
 	\begin{bmatrix}
-  \hat{L}_{uxx}+\hat{L}_{uyy} & 0 \\
-  0 & \hat{L}_{vxx}+\hat{L}_{vyy}
+  \hat{L}^u_{xx}+\hat{L}^u_{yy} & 0 \\
+  0 & \hat{L}^v_{xx}+\hat{L}^v_{yy}
 \end{bmatrix}.
 \end{equation}
 
-Each pair of the matrices $\hat{L}_{uxx},\hat{L}_{vxx}$ and $\hat{L}_{uyy},\hat{L}_{vyy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
+Each pair of the matrices $\hat{L}^u_{xx},\hat{L}^v_{xx}$ and $\hat{L}^u_{yy},\hat{L}^v_{yy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
 
 \textbf{Inner part.}
-Without loss of generality, let us show how to compute $L_{uxx}$, for the other three matrices the distances between velocity components are different on non-uniform grids, while the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
+Without loss of generality, let us show how to compute $\hat{L}^u_{xx}$, for the other three matrices the distances between velocity components are different on non-uniform grids, while the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
 \begin{equation}\label{eqn:Taylor right} 
-	u_{i+1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right),
+	u_{i+1}=u_i+\left.\frac{\partial u}{\partial x}\right|_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right),
 \end{equation}
 
 \begin{equation}\label{eqn:Taylor left} 
-	u_{i-1}=u_i+\left(\frac{\partial u}{\partial x}\right)_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left(\frac{\partial^2 u}{\partial x^2}\right)_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
+	u_{i-1}=u_i+\left.\frac{\partial u}{\partial x}\right|_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
 \end{equation}
 
-We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by canceling the first derivative, which will result in
+We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by cancelling the first derivative, which will result in
 
 \begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
-\left(\frac{\partial^2 u}{\partial x^2}\right)_i & \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x)\\
-& \approx \frac{1}{h_c h_r}u_{i+1} + \frac{2}{h_l h_r}u_i + \frac{1}{h_c h_l}u_{i-1} + O(\Delta x).
+\left.\frac{\partial^2 u}{\partial x^2}\right|_i & \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x)\\
+& \approx \frac{1}{h_c h_e}u_{i+1} + \frac{2}{h_w h_e}u_i + \frac{1}{h_c h_w}u_{i-1} + O(\Delta x).
 \end{align}
-where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$. Moreover, the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are placed into the $L_{uxx}$ matrix.
+where $h_w=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_e = x_{i+1}-x_i$ as in figure~\ref{fig:luxx-inner}. Moreover, the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are placed into the $\hat{L}^u_{xx}$ matrix.
+\begin{figure}[h] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.55\paperwidth]{Luxx}
+  }
+  \caption{$\hat{L}^u_{xx}$ inner part.}\label{fig:luxx-inner}
+\end{figure}
+
 
 %The discretization for such grids is reduced to 
 %\begin{equation}\label{eqn: second derivative uniform}
@@ -783,9 +807,16 @@ where $h_l=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_r = x_{i+1}-x_i$. More
 \textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
 
 
-\textbf{Left boundary.} Since the exact value on the left boundary is given as a Dirichlet boundary condition, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
+\textbf{Left boundary.} Since the exact value on the left boundary ($u_1$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
+\begin{figure}[hbt] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.55\paperwidth]{Luxx-left}
+  }
+  \caption{$\hat{L}^u_{xx}$ at the left boundary.}\label{fig:luxx-left}
+\end{figure}
 
-\textbf{Top boundary.} The Dirichlet condition over the top boundary affects only the $\hat{L}_{uyy}$ and $\hat{L}_{vyy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}_{uyy}$ in this part; the $\hat{L}_{vyy}$ is done similarly, except that the distances between the $v$ velocities differ due to the non-uniform grid. Consider the top-most value of $u$ at the $J$'th node, with $u_g$ being the ghost velocity outside the grid. The velocities $u_g$ and $u_J$ are equidistant from the top domain boundary
+
+\textbf{Top boundary.} The Dirichlet condition over the top boundary affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}^u_{yy}$ in this part; the $\hat{L}^v_{yy}$ is done similarly, except that the distances between the $v$ velocities differ due to the non-uniform grid. Consider the top-most value of $u$ at the $J$'th node, with $u_g$ being the ghost velocity outside the grid. The velocities $u_g$ and $u_J$ are equidistant from the top domain boundary
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
@@ -801,32 +832,39 @@ Since the value of $u_g$ at the centre of the topmost face lies outside the doma
 \end{aligned}
 \end{equation}
 
-The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in equations~\eqref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}_{uyy}$ matrix.
+The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in equations~\eqref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix.
 
-\textbf{Bottom boundary.} 
+\textbf{Bottom boundary.}
+We use the equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in figure~\ref{fig:luxx-bottom}, which lead to
+\begin{figure}[h] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.25\paperwidth]{Luxx-bottom}
+  }
+  \caption{$\hat{L}^u_{yy}$ at the bottom boundary.}\label{fig:luxx-bottom}
+\end{figure}
+
 \begin{equation}
 \begin{aligned}
-&\left.\frac{\partial^ 2 u}{\partial y^2}\right|_J=u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
+&\left.\frac{\partial^ 2 u}{\partial y^2}\right|_j=u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
 \end{aligned}
 \end{equation}
 
-Interpolation of $u_{B C} =0=\frac{u_J+u_g}{2} \Rightarrow u_g=-2 u_J$, then
-
+Interpolation of $u_{B C} =0=\frac{u_j+u_g}{2} \Rightarrow u_g=-2 u_j$, then
 \begin{equation}
 \begin{aligned}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_J & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right) \\
+\left.\frac{\partial^2 u}{\partial y^2}\right|_j & =u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right) \\
 %& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
- & =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2 h_c-2 h_n}{h_s h_c h_n}\right).
+ & =u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2 h_c-2 h_n}{h_s h_c h_n}\right).
 \end{aligned}
 \end{equation}
 
-The coefficients are distributed into the $\hat{L}_{uyy}$ matrix similarly to left and top domain cases.
+The coefficients are distributed into the $\hat{L}^u_{yy}$ matrix similarly to left and top domain cases. It is, in fact, possible to use the third velocity from the boundary instead of the ghost $u_g$ outside. However, the order of such a scheme will be reduced due to the large ratio of the distances between the neighbouring velocities. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Divergence}\label{subsec:divergence}
 
-The second line of the system~\ref{eqn:nse-matrix} reads
+The second line of the system~\eqref{eqn:nse-matrix} reads
 \begin{equation}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=bc_2,\\
