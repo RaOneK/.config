@@ -35,6 +35,8 @@
 %\usepackage{graphicx,subfigure,sidecap,epsfig} % Rouslan's subfig package
 \usepackage{soul}
 %\usepackage[colorlinks=true,linkcolor=red]{hyperref}%
+\usepackage{mathtools}
+\usepackage{eqparbox}
 
 \graphicspath{{figures/}}
 
@@ -617,15 +619,15 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \label{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
-\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0,\\
+\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq L, 0\leq y \leq d, t\geq0,\\
 \label{eqn:continuity-dsm-bl}
-\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq 1, 0\leq y \leq 1, t\geq0, \\
+\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq L, 0\leq y \leq d, t\geq0, \\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\left({u_0} + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A,k,\omega, \phi_0\}\subset \mathbb{R},\\
+\text{Inlet and Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,d)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R},\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
-\text{Outlet BC: } & \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0, v=\boldsymbol{h}(t,y), &  (x=1).
+\text{Outlet BC: } & \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0, v=\boldsymbol{h}(t,y), &  (x=L).
 \end{align}
 \end{subequations}
 
@@ -884,49 +886,143 @@ where the vector $q$ is referred to as velocity flux, and the matrix $D$ is the 
 which can be discretized using a central difference scheme into
 
 \begin{equation}
-  \frac{u_{i+1,j} - u_{i,j}}{\Delta x_i}+  \frac{v_{i,j+1} - v_{i,j}}{\Delta y_i}.
+  \frac{u_{i+1,j} - u_{i,j}}{\Delta x_i}+  \frac{v_{i,j+1} - v_{i,j}}{\Delta y_i}=0.
 \end{equation}
 
-Since the vector of velocities is $\boldsymbol{v}=[u_{i+1,j}, u_{i,j}, v_{i,j+1}, v_{i,j}]^T$, we can express this equation in matrix form as follows:
-\begin{equation}
-  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
+In order to provide a good visual example consider $2 \times 2$ grid as in figure~\ref{fig:D-example-2x2} with the same boundary conditions from the equations~\eqref{eqs:NSE-dsm-bl}. The partial derivatives are evaluated at the cell centres as: 
+%\begin{equation}
+%  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
+%\end{equation}
+\begin{alignat*}{2}
+	V_{1,1}:\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0,\\
+	V_{1,2}: \frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0,\\
+	V_{2,1}:\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0,\\
+	V_{2,2}:\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0.
+\end{alignat*}
+
+%\begin{enumerate}
+%	\item[$V_{1,1}$]: $\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0$.
+%	\item[$V_{1,2}$]: $\frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0$.
+%	\item[$V_{2,1}$]: $\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0$.
+%	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
+%\end{enumerate}
+
+After applying the boundary conditions (circled on the figure~\ref{fig:D-example-2x2}) to the above equations, we obtain the system%%%%%%%%%% WRONGGGGGGGG
+\begin{equation}\label{eqn:divergence-matrix}
+	\begin{bmatrix}{}
+		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
+		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
+		0		&0	&\frac{1}{\Delta x_1\Delta y_2}	&0\\
+		0		&0	&0	&\frac{1}{\Delta x_2\Delta y_2}
+	\end{bmatrix}
+	\begin{bmatrix*}[r]{}
+		1	&0	&0	&0	&1	&0\\
+		-1	&1	&0	&0	&0	&1\\
+		0	&0	&1	&0	&-1	&0\\
+		0	&0	&-1	&1	&0	&-1
+	\end{bmatrix*}
+	\begin{bmatrix}{}
+	u_{1,2}	\Delta y_1\\
+	u_{1,3}	\Delta y_1\\
+	u_{2,2}	\Delta y_2\\
+	u_{2,3}	\Delta y_2\\
+	v_{2,1}	\Delta x_1\\
+	v_{2,2}	\Delta x_2\\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}{}
+	\frac{u_{1,1}}{\Delta x_1}+	\frac{v_{1,1}}{\Delta y_1}\\
+	\frac{v_{1,2}}{\Delta y_1}	\\
+	\frac{u_{2,1}}{\Delta x_1} -	\frac{v_{3,1}}{\Delta y_2}\\
+	-\frac{v_{3,2}}{\Delta y_2}
+	\end{bmatrix},
 \end{equation}
+which in general case becomes 
+$\frac{1}{\Delta x \Delta y} D q=bc_2$.
 
-The velocity values known at the boundaries can be shifted to the right-hand side and explicitly treated. The divergence matrix contains $\pm1$, as illustrated in the figure~\ref{fig:divergence-matrix}.
 
-\begin{figure}[hbt] % here, bottom, top
+
+\begin{figure}[h] % here, bottom, top
   \centering{
-  \includegraphics[width=0.75\paperwidth]{D-matrix}
+  \includegraphics[width=0.45\paperwidth]{D-example-2x2}
   }
-  \caption{Divergence matrix.}\label{fig:divergence-matrix}
+  \caption{$2\times 2$ grid example for divergence operator.}\label{fig:D-example-2x2}
 \end{figure}
 
+ 
+%is $\boldsymbol{v}=[u_{i+1,j}, u_{i,j}, v_{i,j+1}, v_{i,j}]^T$, we can express this equation in matrix form as follows:''''''''''''''
+%\begin{equation}
+%  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
+%\end{equation}
+
+The velocity values known at the boundaries can be shifted to the right-hand side and explicitly treated. The divergence matrix contains $\pm1$, as shown in equation~\eqref{eqn:divergence-matrix}.
+
+%\begin{figure}[hbt] % here, bottom, top
+%  \centering{
+%  \includegraphics[width=0.75\paperwidth]{D-matrix}
+%  }
+%  \caption{Divergence matrix.}\label{fig:divergence-matrix}
+%\end{figure}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Gradient}\label{subsec:gradient}
+% MIGHT WANT TO INCLUDE DERIVATION OF NON-UNIFORM DP/DX 
+\subsubsection{Gradient}\label{subsec:gradient} 
 
 Since the unknowns are the velocities, the pressure gradients are computed at the corresponding points. Interestingly, the gradient operator is the transpose of divergence on staggered/MAC grids
 \begin{equation}
   \hat{G}=-\hat{D^T}.
 \end{equation}
 
-To show why consider velocity $u_{i,j}$, compute pressure gradient across the corresponding point
-\begin{equation}
-	\frac{\partial p}{\partial x}\bigg|_{u_{i,j}} = \frac{p_{i,j}-p_{i-1,j}}{\frac{\Delta x_i- \Delta x_{i-1}}{2}}.
-\end{equation}
+As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2}. It is required to determine the pressure derivatives across each unknown velocity:
 
-The above equation will give 
-\begin{equation}
-  \frac{2}{\Delta x_i- \Delta x_{i-1}}[-1 \quad 1][p_{i-1,j} \quad p_{i,j}]^T,
+\begin{alignat*}{2}
+	u_{1,2} &:&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
+	u_{1,3} &:&	\frac{1}{{\Delta x_2}}&\left( P_{1,3}-P_{1,2}\right),\\
+	u_{2,2} &:&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left( P_{2,2}-P_{2,1} \right),\\
+	u_{2,3} &:&	\frac{1}{{\Delta x_2}}&\left( P_{2,3}-P_{2,2} \right),\\
+	v_{2,1} &:&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left(P_{2,1}-P_{1,1} \right),\\
+	v_{2,2} &:&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left( P_{2,2}-P_{1,2} \right).
+\end{alignat*}
+
+The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
+\begin{equation} %%%%%%%% WRONG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	\begin{bmatrix}{}
+		\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	&0	&0	\\
+		0	&\frac{1}{\Delta x_2}	&0	&0	&0	&0	\\
+		0	&0	&\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	\\
+		0	&0	&0	&\frac{1}{\Delta x_2}	&0	&0	\\
+		0	&0	&0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}	&0	\\
+		0	&0	&0	&0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}\\
+	\end{bmatrix}
+	\begin{bmatrix*}[r]
+	-1 & 1 & 0 & 0 \\
+	0 & -1 & 0 & 0 \\
+	0 & 0 & -1 & 1 \\
+	0 & 0 & 0 & -1 \\
+	-1 & 0 & 1 & 0 \\
+	0 & -1 & 0 & 1
+	\end{bmatrix*}
+	=
+	\begin{bmatrix}{}
+		0\\
+		\frac{1}{\Delta x_2}P_{1,3}\\
+		0\\
+		\frac{1}{\Delta x_2}P_{2,3}\\
+		0\\
+		0
+	\end{bmatrix},
 \end{equation}
-which in matrix notation for all velocity points will become 
+which can be rewritten as
 \begin{equation}
-  \nabla p = \Delta_{xy}\hat{G} 
-  \begin{bmatrix}{}
-  p_1 \\
-  p_2 \\
-  \vdots \\
-  p_{mn}
-\end{bmatrix},
+	\nabla p = bc_p\iff
+	\Delta_{xy}\hat{G} 
+	\begin{bmatrix}{}
+  		p_{1,1} \\
+	  	p_{1,2} \\
+	  	\vdots \\
+	  	p_{mn+(n-1)m}
+	\end{bmatrix}
+=bc_p,
 \end{equation}
 where $\Delta_{xy}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, $\hat{G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. Note that on staggered/MAC grids pressure gradient is computed directly at each velocity coordinate without the need of any interpolation. 
 
