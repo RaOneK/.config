@@ -627,15 +627,20 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \label{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
-\text{Momentum: }&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, & 0\leq x \leq L, 0\leq y \leq d, t\geq0,\\
+\text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, \\ 
+					&\nu = \frac{1}{Re},0\leq x \leq L, 0\leq y \leq d, t\geq0,\notag\\
 \label{eqn:continuity-dsm-bl}
-\text{Continuity: }& \nabla \cdot \boldsymbol{v} = 0, & 0\leq x \leq L, 0\leq y \leq d, t\geq0, \\
+\text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
+					&0\leq x \leq L, 0\leq y \leq d, t\geq0, \notag\\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Inlet and Freestream BC: } & \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,d)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right), & \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R},\\
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,d)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R},\notag\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
-\text{Outlet BC: } & \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor(\nu \frac{\partial ^2 u}{\partial y^2}), v=\boldsymbol{h}(t,y)-\text{linear extrapolation},  &(x=L),\\
+\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor(\nu \frac{\partial ^2 u}{\partial y^2}), \\ 
+					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
+					& (x=L),\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0).
 \end{align}
 \end{subequations}
