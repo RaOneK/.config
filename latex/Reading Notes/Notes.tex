@@ -826,11 +826,20 @@ The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\re
   \caption{$\hat{L}^u_{xx}$ at the left boundary.}\label{fig:luxx-left}
 \end{figure}
 
-\textbf{Top boundary. SYMMETRIC CONDITION!}  The Dirichlet condition over the top boundary affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on the $\hat{L}^u_{yy}$ in this part; the $\hat{L}^v_{yy}$ is done similarly, except that the distances between the $v$ velocities differ due to the non-uniform grid. Consider the top-most value of $u$ at the $J$'th node, with $u_g$ being the ghost velocity outside the grid. The velocities $u_g$ and $u_J$ are equidistant from the top domain boundary
+\textbf{Top boundary. SYMMETRIC CONDITION!} The boundary layer thickness can be made shorter than the truncated vertical domain length, thus, we can incorporate symmetric boundary condition over the top. This BC leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
+
+\begin{figure}[h]
+\centering{
+  \includegraphics[width=0.45\paperwidth]{Luxx-top.jpg}
+  }
+  \caption{$\hat{L}^u_{yy}$ at top boundary.}\label{fig:luxx-top}
+\end{figure}
+
+Consider figure~\ref{fig:luxx-top}, where the velocities $u_g$ and $u_{i-\frac{1}{2},n}$ are equidistant from the velocity $u_f$ on top boundary. Resultant equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} for the inner part can be rewritten as
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{u_g\left(h_s\right)+u_J\left(-2 h_c\right)+u_{J-(m-1)}\left(h_n\right)}{h_n h_s h_c},
+\left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{u_g\left(h_s\right)+u_{i-\frac{1}{2},n}\left(-2 h_c\right)+u_{i-\frac{1}{2},n-1}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
-where $h_s=y_J-y_{J-1}, h_c = \frac{y_{J+1}-y_{J-1}}{2}, h_n = y_{J+1}-y_J$.
+where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
 The value of $u_g$ at the centre of the topmost face lies outside the domain on a staggered grid, therefore, interpolation is necessary. The value of $u$ along the top face is known to be $U$, interpolation of $U = \frac{u_g+u_J}{2}\implies u_g=2U-u_J$, which we can plug into the equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
 
