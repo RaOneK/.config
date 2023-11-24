@@ -646,7 +646,7 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{subequations}
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
-The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. To make things easier, label the cells by counting from the bottom left corner of the domain, going from left to right, and moving upwards after we reach the end of a row until we hit the top right corner of the domain.
+The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -655,17 +655,16 @@ The method described below is based on discrete volume formulation. Consider dis
   \caption{Domain discretization}\label{bl-domain-discretization}
 \end{figure}
 
-In two-dimensional case, the component $u$ is stored at the centre of the left face, while the value for $v$ is stored at the centre of the bottom face. To appropriately address boundary conditions, additional ghost cells with zero volume are introduced along the top and right boundaries of the entire domain. 
+In order to eliminate the pressure from our system a staggered grid arrangement is used. Details are discussed in subsections~\ref{subsec:divergence},~\ref{subsec:gradient} and section~\ref{sec:nullspace-method}. The $u$ velocity components are stored at the centres of vertically oriented faces, while the values for $v$ are stored at the centres of horizontal ones. 
 
-The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In the given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. The counting process follows the same sequence as for cells, first for $u$ and then for $v$. These resultant arrays are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
+The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
 
-Grid indexation starts at $x_1=y_1=(0,0)$ and ends at $x_{m+1}=(1,0)$, $y_{n+1}=(0,1)$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. For the grid refinement the standard constant ratio $k_x,k_y,$ $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ is used in both $x$ and $y$ directions.
-
+Grid indexation starts at $x_{\frac{1}{2}}=y_{\frac{1}{2}}=(0,0)$ and ends at $x_{m+\frac{1}{2}},y_{n+\frac{1}{2}}$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. In order to increase the accuracy in certain domain regions we will refine the grid using the standard constant ratio $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discrete operators}
 
-The initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
+Initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
 
 \begin{equation}\label{eqn:nse-matrix}
             \begin{bmatrix}
@@ -692,11 +691,11 @@ The initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using di
                   0
             \end{pmatrix} + \text{bc}_{\boldsymbol{v},p},
         \end{equation}
-where boundary conditions are in terms of pressure and velocity. In the following subsections, each of the discrete operators is described individually. 
+where boundary conditions are in terms of pressure and velocity. In the following subsections, each of discrete operators is described individually. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Transient terms}
-Attack the system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
+Attack system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
 \begin{enumerate}
 	\item[\textbf{Viscous}] - Implicit trapezoidal - Crank Nicholson scheme (second-order method in time).  
 %	\begin{equation}\label{eqn:crank-nicholson}
@@ -762,20 +761,20 @@ Laplacian can be rewritten as block matrix:
 Each pair of the matrices $\hat{L}^u_{xx},\hat{L}^v_{xx}$ and $\hat{L}^u_{yy},\hat{L}^v_{yy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
 
 \textbf{Inner part.}
-Without loss of generality, let us show how to compute $\hat{L}^u_{xx}$, for the other three matrices the distances between velocity components are different on non-uniform grids, while the rest is verbatim. The power series of of $u_{i\pm 1}$ at nodes $x_{i \pm 1}$ with respect to $u_i$ at node $x_i$ are
+The uniform grid refinement $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ makes the order of the scheme consistent throughout the whole domain. Without loss of generality, let us show how to compute $\hat{L}^u_{xx}$, and the other three matrices are constructed in a similar manner. The power series of of $u_{i-\frac{1}{2}\pm 1,j}$ at nodes $x_{i - \frac{1}{2}\pm 1}$ with respect to $u_{i - \frac{1}{2},j}$ at node $x_{i-\frac{1}{2}}$ are
 \begin{equation}\label{eqn:Taylor right} 
-	u_{i+1}=u_i+\left.\frac{\partial u}{\partial x}\right|_i\left(x_{i+1}-x_i\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_i\left(x_{i+1}-x_i\right)^2+O\left(\Delta x^3\right),
+	u_{i-\frac{1}{2}+1,j}=u_{i-\frac{1}{2},j}+\left.\frac{\partial u}{\partial x}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)^2+O\left(\Delta x^3\right),
 \end{equation}
 \begin{equation}\label{eqn:Taylor left} 
-	u_{i-1}=u_i+\left.\frac{\partial u}{\partial x}\right|_i\left(x_{i-1}-x_i\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_i\left(x_{i-1}-x_i\right)^2+O\left(\Delta x^3\right).
+	u_{i-\frac{1}{2}-1,j}=u_{i-\frac{1}{2},j}+\left.\frac{\partial u}{\partial x}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}-1}-x_{i-\frac{1}{2}}\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}-1}-x_{i-\frac{1}{2}}\right)^2+O\left(\Delta x^3\right).
 \end{equation}
 
 We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by cancelling the first derivative, which will result in
 \begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
-\left.\frac{\partial^2 u}{\partial x^2}\right|_i & \approx \frac{u_{i+1}\left(x_i-x_{i-1}\right)-u_i\left(x_{i+1}-x_{i-1}\right)+u_{i-1}\left(x_{i+1}-x_i\right)}{\left(\frac{x_{i+1}-x_{i-1}}{2}\right)\left(x_i-x_{i-1}\right)\left(x_{i+1}-x_i\right)}+O(\Delta x)\\
-& \approx \frac{1}{h_c h_e}u_{i+1} + \frac{2}{h_w h_e}u_i + \frac{1}{h_c h_w}u_{i-1} + O(\Delta x).
+\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j} & \approx \frac{u_{i-\frac{1}{2}+1,j}\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)-u_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}\right)+u_{i-\frac{1}{2}-1,j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}{\left(\frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}\right)\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}+O(\Delta x)\\
+& \approx \frac{1}{h_c h_e}u_{i-\frac{1}{2}+1,j} + \frac{2}{h_w h_e}u_{i-\frac{1}{2}} + \frac{1}{h_c h_w}u_{i-\frac{1}{2}-1} + O(\Delta x).
 \end{align}
-where $h_w=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_e = x_{i+1}-x_i$ as in figure~\ref{fig:luxx-inner}. Moreover, the order of this approximation becomes $2^{\text {nd }}$ for uniform grids. The coefficients in front of the velocity components are placed into the $\hat{L}^u_{xx}$ matrix.
+where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}, h_e = x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}$ as in figure~\ref{fig:luxx-inner}. The coefficients in front of the velocity components are then placed into the $\hat{L}^u_{xx}$ matrix. The order of this approximation becomes $2^{\text {nd }}$ for uniform grids. 
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -819,7 +818,7 @@ where $h_w=x_i-x_{i-1},h_c = \frac{x_{i+1}-x_{i-1}}{2}, h_e = x_{i+1}-x_i$ as in
 
 
 \textbf{Left boundary.} 
-The exact value on the left boundary ($u_1$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
+The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.55\paperwidth]{Luxx-left}
@@ -1336,7 +1335,7 @@ r^n \\
 \end{equation}
 where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric. 
 
-\subsection{Nullspace method}
+\subsection{Nullspace method}\label{sec:nullspace-method}
 
 Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in the system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
 
