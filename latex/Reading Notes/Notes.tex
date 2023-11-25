@@ -818,7 +818,7 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 
 
 \textbf{Left boundary.} 
-The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of the equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
+The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.55\paperwidth]{Luxx-left}
@@ -835,45 +835,45 @@ The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\re
   \caption{$\hat{L}^u_{yy}$ at top boundary.}\label{fig:luxx-top}
 \end{figure}
 
-Consider figure~\ref{fig:luxx-top}, where the velocities $u_g$ and $u_{i-\frac{1}{2},n}$ are equidistant from the velocity $u_f$ on top boundary. Resultant equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} for the inner part can be rewritten as
+Consider the neighbouring cells near the wall as in figure~\ref{fig:luxx-top}. Resultant equation~\eqref{eqn:laplacian-discretization-non-uniform-dx}  can be written as
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{u_g\left(h_s\right)+u_{i-\frac{1}{2},n}\left(-2 h_c\right)+u_{i-\frac{1}{2},n-1}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
 where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
-The value of $u_g$ at the centre of the topmost face lies outside the domain on a staggered grid, therefore, interpolation is necessary. The value of $u$ along the top face is known to be $U$, interpolation of $U = \frac{u_g+u_J}{2}\implies u_g=2U-u_J$, which we can plug into the equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
+It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},n-1}$ are set to be equidistant from $u_{i-\frac{1}{2},n}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of $u_{f} = \frac{u_g+u_{i-\frac{1}{2},n}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},n}$, which we can plug into equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
 
 \begin{equation}
 \begin{aligned}
-& \left.\frac{\partial ^2 u}{\partial y^2}\right|_J=\frac{2 U h_s}{h_n h_s h_c}+u_J\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{J-(m-1)} \frac{h_n}{u_c h_s h},\\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c h_c}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}, \\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_J=\frac{2 U}{h_c{ }^2}+u_J\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{J-(m-1)} \frac{1}{h_s h_c}.
+& \left.\frac{\partial ^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{2 u_f h_s}{h_n h_s h_c}+u_{i-\frac{1}{2},n}\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{i-\frac{1}{2}-1,n} \frac{h_n}{u_c h_s h},\\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{2 u_f}{h_c h_c}+u_{i-\frac{1}{2},n}\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{i-\frac{1}{2}-1,n} \frac{1}{h_s h_c}, \\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{2 u_f}{h_c{ }^2}+u_{i-\frac{1}{2},n}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2}-1,n} \frac{1}{h_s h_c}.
 \end{aligned}
 \end{equation}
 
 The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in equations~\eqref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix.
 
 \textbf{Bottom boundary.}
-We use the equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in figure~\ref{fig:luxx-bottom}, which lead to
+We use equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in figure~\ref{fig:luxx-bottom}, which lead to
 \begin{equation}
 \begin{aligned}
-&\left.\frac{\partial^ 2 u}{\partial y^2}\right|_j=u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
+&\left.\frac{\partial^ 2 u}{\partial y^2}\right|_{i-\frac{1}{2},1}=u_{i-\frac{1}{2},2}\left(\frac{1}{h_n h_c}\right)+u_{i-\frac{1}{2},1}\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
 \end{aligned}
 \end{equation}
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.25\paperwidth]{Luxx-bottom}
+  \includegraphics[width=0.45\paperwidth]{Luxx-bottom}
   }
   \caption{$\hat{L}^u_{yy}$ at the bottom boundary.}\label{fig:luxx-bottom}
 \end{figure}
 
-Interpolation of $u_{B C} =0=\frac{u_j+u_g}{2} \Rightarrow u_g=-2 u_j$, then
+The position of $u_g$ is not fixed, we can make the order of the scheme $O(\Delta y^2)$ if $h_s=h_n$. Interpolation of $u_{w} =\frac{u_{i-\frac{1}{2},1}+u_g}{2}=0 \Rightarrow u_g=-2 u_{i-\frac{1}{2},1}$, then
 \begin{equation}
 \begin{aligned}
-\left.\frac{\partial^2 u}{\partial y^2}\right|_j & =u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right) \\
-%& =u_{J+(m-1)}\left(\frac{1}{h_n h_c}\right)+u_J\left(\frac{-2}{h_s h_c}+\frac{-2}{h_c h_c}\right), \\
- & =u_{j+1}\left(\frac{1}{h_n h_c}\right)+u_j\left(\frac{-2 h_c-2 h_n}{h_s h_c h_n}\right).
+\left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},1} 
+& =u_{i-\frac{1}{2},2}\left(\frac{1}{h_n h_c}\right)+u_{i-\frac{1}{2},1}\left(\frac{-2}{h_n h_s}+\frac{-2}{h_s h_c}\right) \\
+& =u_{i-\frac{1}{2},2}\left(\frac{1}{h_n h_c}\right)+u_{i-\frac{1}{2},1}\left(\frac{-2 h_c-2 h_n}{h_s h_c h_n}\right).
 \end{aligned}
 \end{equation}
 
@@ -883,10 +883,22 @@ The coefficients are distributed into the $\hat{L}^u_{yy}$ matrix similarly to l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Divergence}\label{subsec:divergence}
 
-The second line of the system~\eqref{eqn:nse-matrix} reads
+One of the advantages of the staggered grid is that the discrete divergence $D$ and gradient $G$ operators are equal to the negative transpose of each other. Our goal is to eliminate the pressure from the system, section~\ref{sec:nullspace-method} will explain the use of this property in details. 
+
+The second line of system~\eqref{eqn:nse-matrix} reads
 \begin{equation}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=\hat{bc}_2,\\
+\left[ 
+\begin{array}{ll}
+\hat{D}_x & \hat{D}_y 	
+\end{array}
+\right]\left[\begin{array}{l}
+u\\
+v
+\end{array}
+\right]=\hat{bc}_2
+, \\
 \frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=\hat{bc}_2, \\
 \frac{1}{\Delta x \Delta y}\left[\begin{array}{ll}
 D_x & D_y
@@ -896,14 +908,14 @@ v \Delta x
 \end{array}\right]=\frac{1}{\Delta x \Delta y} D q=\hat{bc}_2,
 \end{gathered}
 \end{equation}
-where the vector $q$ is referred to as velocity flux, and the matrix $D$ is the divergence matrix. The first-order central difference scheme was employed in the construction of this matrix. Now, consider a finite volume $V_{i,j}$  with velocities $u_{i,j}$ and $v_{i,j}$ on the left and bottom faces respectively. Two indices (row, column) are used for illustrative purposes, it is always recommended to use a single array of data, which will enhance the memory access. The continuity equation for the cell centre is expressed as
+where the vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. The first-order central difference scheme was employed in the construction of $D$. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is expressed as
 \begin{equation}
-	\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}=0,
+	\left(\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\right)_{i,j}=0,
 \end{equation}
 which can be discretized using a central difference scheme into
 
 \begin{equation}
-  \frac{u_{i+1,j} - u_{i,j}}{\Delta x_i}+  \frac{v_{i,j+1} - v_{i,j}}{\Delta y_i}=0.
+  \frac{u_{i+\frac{1}{2},j} - u_{i-\frac{1}{2},j}}{\Delta x_i}+  \frac{v_{i,j+\frac{1}{2}} - v_{i,j-\frac{1}{2}}}{\Delta y_j}=0.
 \end{equation}
 
 
@@ -914,15 +926,15 @@ which can be discretized using a central difference scheme into
   \caption{$2\times 2$ grid example for divergence operator.}\label{fig:D-example-2x2}
 \end{figure}
 
-In order to provide a good visual example, consider $2 \times 2$ grid as in figure~\ref{fig:D-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. The partial derivatives are evaluated at the cell centres are then: 
+In order to provide a good visual example, consider $2 \times 2$ grid as in figure~\ref{fig:D-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. The partial derivatives evaluated at cell centres are then: 
 %\begin{equation}
 %  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
 %\end{equation}
 \begin{alignat*}{2}
-	V_{1,1}:\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0,\\
-	V_{1,2}: \frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0,\\
-	V_{2,1}:\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0,\\
-	V_{2,2}:\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0.
+	V_{1,1}:\frac{u_{\frac{3}{2},1} - u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}} - v_{1,\frac{1}{2}}}{\Delta y_1}=0,\\
+	V_{2,1}: \frac{u_{\frac{5}{2},1} - u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}} - v_{2,\frac{1}{2}}}{\Delta y_1}=0,\\
+	V_{1,2}:\frac{u_{\frac{3}{2},2} - u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}} - v_{1,\frac{3}{2}}}{\Delta y_2}=0,\\
+	V_{2,2}:\frac{u_{\frac{5}{2},2} - u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}} - v_{2,\frac{3}{2}}}{\Delta y_2}=0.
 \end{alignat*}
 
 %\begin{enumerate}
@@ -947,19 +959,19 @@ After applying the boundary conditions (circled on the figure~\ref{fig:D-example
 		0	&0	&-1	&1	&0	&-1
 	\end{bmatrix*}
 	\begin{bmatrix}{}
-	u_{1,2}	\Delta y_1\\
-	u_{1,3}	\Delta y_1\\
-	u_{2,2}	\Delta y_2\\
-	u_{2,3}	\Delta y_2\\
-	v_{2,1}	\Delta x_1\\
-	v_{2,2}	\Delta x_2\\
+	u_{\frac{3}{2},1}	\Delta y_1\\
+	u_{\frac{5}{2},1}	\Delta y_1\\
+	u_{\frac{3}{2},2}	\Delta y_2\\
+	u_{\frac{5}{2},2}	\Delta y_2\\
+	v_{1,\frac{3}{2}}	\Delta x_1\\
+	v_{2,\frac{3}{2}}	\Delta x_2\\
 	\end{bmatrix}
 	=
 	\begin{bmatrix}{}
-	\frac{u_{1,1}}{\Delta x_1}+	\frac{v_{1,1}}{\Delta y_1}\\
-	\frac{v_{1,2}}{\Delta y_1}	\\
-	\frac{u_{2,1}}{\Delta x_1} -	\frac{v_{3,1}}{\Delta y_2}\\
-	-\frac{v_{3,2}}{\Delta y_2}
+	\frac{u_{\frac{1}{2},1}}{\Delta x_1}+	\frac{v_{1,\frac{1}{2}}}{\Delta y_1}\\
+	\frac{v_{2,\frac{1}{2}}}{\Delta y_1}	\\
+	\frac{u_{\frac{1}{2},2}}{\Delta x_1} -	\frac{v_{1,\frac{5}{2}}}{\Delta y_2}\\
+	-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
 	\end{bmatrix},
 \end{equation}
 which in general case becomes 
@@ -986,10 +998,11 @@ The velocity values known at the boundaries can be shifted to the right-hand sid
 %% MIGHT ALSO NEED TO CHECK WITH THE PREMULTIPLICATION OF DELTA X
 \subsubsection{Gradient}\label{subsec:gradient} 
 
-The unknowns are the velocities, thus, the pressure gradients are computed at the corresponding points. Interestingly, the gradient operator is the transpose of divergence on staggered/MAC grids
-\begin{equation}
-  \hat{G}=-\hat{D^T}.
+The pressure gradients are computed at the same coordinates as the unknown velocities according to system of linear equations~\eqref{eqn:nse-matrix}. Below we will show that the discrete gradient and divergence operators satisfy
+\begin{equation}\label{eqn:g-dt}
+  {G}=-{D^T}
 \end{equation}
+on staggered/MAC grids. Moreover, the pressure gradients can be evaluated directly using central differences. This calculation does not require any interpolation on such grids, moreover, it is computationally cheaper and simple.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -999,19 +1012,19 @@ The unknowns are the velocities, thus, the pressure gradients are computed at th
 \end{figure}
 
 
-As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2}. It is required to determine the pressure derivatives across each unknown velocity:
+As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (unknown square nodes):
 
 \begin{alignat*}{2}
-	u_{1,2} &:&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
-	u_{1,3} &:&	\frac{1}{{\Delta x_2}}&\left( P_{1,3}-P_{1,2}\right),\\
-	u_{2,2} &:&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left( P_{2,2}-P_{2,1} \right),\\
-	u_{2,3} &:&	\frac{1}{{\Delta x_2}}&\left( P_{2,3}-P_{2,2} \right),\\
-	v_{2,1} &:&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left(P_{2,1}-P_{1,1} \right),\\
-	v_{2,2} &:&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left( P_{2,2}-P_{1,2} \right).
+	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},1} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
+	\left.\frac{\partial P}{\partial x}\right|_{\frac{5}{2},1} &=&	\frac{1}{{\Delta x_2}}&\left( P_{1,3}-P_{1,2}\right),\\
+	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},2} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left( P_{2,2}-P_{2,1} \right),\\
+	\left.\frac{\partial P}{\partial x}\right|_{\frac{5}{2},2} &=&	\frac{1}{{\Delta x_2}}&\left( P_{2,3}-P_{2,2} \right),\\
+	\left.\frac{\partial P}{\partial y}\right|_{1,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left(P_{2,1}-P_{1,1} \right),\\
+	\left.\frac{\partial P}{\partial y}\right|_{2,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left( P_{2,2}-P_{1,2} \right).
 \end{alignat*}
 
 The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
-\begin{equation} %%%%%%%% WRONG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+\begin{equation}\label{eqn:gradient-matrix}
 	\begin{bmatrix}{}
 		\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	&0	&0	\\
 		0	&\frac{1}{\Delta x_2}	&0	&0	&0	&0	\\
@@ -1040,52 +1053,55 @@ The next step is to rewrite the above expressions in matrix form using the press
 \end{equation}
 which can be rewritten as
 \begin{equation}
-	\nabla p = bc_p\iff
-	\Delta_{xy}\hat{G} 
+	\nabla p = \hat{bc}_p\iff
+	\Delta_{xy}{G} 
 	\begin{bmatrix}{}
   		p_{1,1} \\
 	  	p_{1,2} \\
 	  	\vdots \\
 	  	p_{mn+(n-1)m}
 	\end{bmatrix}
-=bc_p,
+=\hat{bc}_p,
 \end{equation}
-where $\Delta_{xy}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, $\hat{G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. Note that on staggered/MAC grids pressure gradient is computed directly at each velocity coordinate without the need of any interpolation. 
+where $\Delta_{xy}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. It can be observed from equations~\eqref{eqn:divergence-matrix}-\eqref{eqn:gradient-matrix} that identity~\eqref{eqn:g-dt} holds and the general case is true by construction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Advection}
-
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.45\paperwidth]{ADV}
-  }
-  \caption{Advection discretization.}\label{fig:ADV}
-\end{figure}
-
 
 %\begin{figure}
 %\centering
 %{\includegraphics[width=0.75\paperwidth]{advectionGrid.jpg} }
 %\caption{\small Advection on a staggered grid.}\label{fig:advectionGrid}
 %\end{figure}
-Values of $uu$ and $vv$ are defined in cell centres using the (left/right) interpolation, and $uv=vu$ values are defined on grid corners using the cross (left/right times up/down) interpolation. Most of the values on the boundary faces and nodes are dropped at the end since the system of linear equations is determined by the inner velocity values (except the outlet). 
+Let us rewrite advective derivatives in conservative form. 
+\begin{align}\label{eqn:advection-conservative}
+	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
+	&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\nonumber\\
+	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\nonumber\\
+	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
+	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
+\end{align}
+Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for equation~\eqref{eqn:advection-conservative}. 
 
-\textbf{Inner part.} Advective derivative from $x$-momentum can be written in a conservative form as
+\textbf{Inner part.} 
+Advective component from $x$-momentum was expressed in conservative form by equation~\eqref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008}:
 \begin{align*}
-	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\\
-	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\\
-	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\\
-	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y},\\
-	\left .u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right|_{i,j}&=\frac{(uu)_{i
-	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i,j+1}-(uv)_{i,j}}{\Delta y_i},
+	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
+	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
 \end{align*}
-which is evaluated at the same point as $u_{i,j}$. We need to evaluate certain values at the nodes, $(uv)_{i,j}$ is located at the lower left corner of the $V_{i,j}$ cell. On the other hand, the values of $uu,vv$ are evaluated at the cell centre of $V_{i,j}$ and have the same subscript indices. The computation of $uu,uv$ values is performed using  linear interpolation, i.e.
+which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in figure~\ref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in figure~\ref{fig:ADV}. Linear interpolation~\cite{Colonius:2008} of these values is
 \begin{align*}
   (uu)_{i,j}&=\left(\frac{u_{i+1,j}+u_{i,j}}{2}\right)^2,\\
-  (uv)_{i,j}&=\left(u_{i,j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i,j}-u_{i,j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j}-v_{i-1,j}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
+  (uv)_{i-\frac{1}{2},j+\frac{1}{2}}&=\left(u_{i,j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i,j}-u_{i,j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j}-v_{i-1,j}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
   &=\left(\frac{u_{i,j}\Delta y_{j-1} +u_{i,j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j}\Delta x_{i-1} +v_{i-1,j}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
 \end{align*}
 
+\begin{figure} % here, bottom, top
+  \centering{
+  \includegraphics[width=0.65\paperwidth]{ADV}
+  }
+  \caption{Advection discretization.}\label{fig:ADV}
+\end{figure}
 
 
 \textbf{Right boundary (outlet).}
