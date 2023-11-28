@@ -1078,7 +1078,7 @@ Let us rewrite advective derivatives in conservative form.
 	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
 	&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\nonumber\\
 	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\nonumber\\
-	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
+	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(u\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
 	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
 \end{align}
 Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for equation~\eqref{eqn:advection-conservative}. 
@@ -1091,12 +1091,12 @@ Advective component from $x$-momentum was expressed in conservative form by equa
 \end{align*}
 which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in figure~\ref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in figure~\ref{fig:ADV}. Linear interpolation~\cite{Colonius:2008} of these values is
 \begin{align*}
-  (uu)_{i,j}&=\left(\frac{u_{i+1,j}+u_{i,j}}{2}\right)^2,\\
-  (uv)_{i-\frac{1}{2},j+\frac{1}{2}}&=\left(u_{i,j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i,j}-u_{i,j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j}-v_{i-1,j}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
-  &=\left(\frac{u_{i,j}\Delta y_{j-1} +u_{i,j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j}\Delta x_{i-1} +v_{i-1,j}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
+  (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
+  (uv)_{i-\frac{1}{2},j-\frac{1}{2}}&=\left(u_{i-\frac{1}{2},j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i-\frac{1}{2},j}-u_{i-\frac{1}{2},j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j-\frac{1}{2}} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j-\frac{1}{2}}-v_{i-1,j-\frac{1}{2}}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
+  &=\left(\frac{u_{i-\frac{1}{2},j}\Delta y_{j-1} +u_{i-\frac{1}{2},j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j-1\frac{1}{2}}\Delta x_{i-1} +v_{i-1,j-\frac{1}{2}}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
 \end{align*}
 
-\begin{figure} % here, bottom, top
+\begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.65\paperwidth]{ADV}
   }
@@ -1111,13 +1111,22 @@ which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in figure
   }
   \caption{Right boundary advection.}\label{fig:ADV-right}
 \end{figure}
-The advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial^2 u}{\partial y^2}$ can be used to express the $u\frac{\partial u}{\partial x}$ term directly. To express the $v\frac{\partial u}{\partial y}$ the velocity component outside the domain has to be used
+One of the advantages of advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ (or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial^2 u}{\partial y^2}$) is that it can be used to express $\frac{\partial uu}{\partial x}$ in terms of transient term as 
 \begin{equation}
-	\left(uv\right)_{m+1,j}=\left(\frac{u_{m+1,j}\Delta y_{j-1} +u_{m+1,j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_g +v_{m,j}}{2}\right),
+	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}\right)_{m+\frac{1}{2},j},
 \end{equation}
-where we linearly extrapolate the ghost $v$ component outside the grid as
+or in terms of transient and diffusive terms
 \begin{equation}
-	v_{g}=v_{m-1,j}+2\frac{v_{m,j}-v_{m-1,j}}{\Delta x_{m-1}+\Delta x_m}\left(\frac{3}{2}\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
+	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}+\nu\frac{\partial ^2 u}{\partial y^2}\right)_{m+\frac{1}{2},j}.
+\end{equation}
+
+The other advection summand
+\begin{equation}
+	\left(\frac{\partial uv}{\partial y}\right)_{m+\frac{1}{2},j}=\frac{\left( uv \right)_{m+\frac{1}{2},j+\frac{1}{2}}-\left( uv\right)_{m+\frac{1}{2},j-\frac{1}{2}}}{\Delta}
+\end{equation}
+requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use two neighbouring $v$ velocities and extrapolate them linearly as 
+\begin{equation}
+	v_{m+\frac{1}{2},j+\frac{1}{2}}=v_{m-1,j\pm\frac{1}{2}}+2\frac{v_{m,j\pm\frac{1}{2}}-v_{m-1,j\pm\frac{1}{2}}}{\Delta x_{m-1}+\Delta x_m}\left(\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
 \end{equation}
 
 \textbf{Left boundary (inlet).} 
@@ -1127,7 +1136,7 @@ where we linearly extrapolate the ghost $v$ component outside the grid as
   }
   \caption{Left boundary advection.}\label{fig:ADV-left}
 \end{figure}
-The exact value of the $uu_g$ element located outside the boundary (figure \ref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{1,j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
+The exact value of the $uu_g$ element located outside the boundary (figure \ref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
 
 \textbf{Top boundary (symmetric).}
 
