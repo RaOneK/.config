@@ -1115,7 +1115,7 @@ One of the advantages of advective boundary condition $\frac{\partial u}{\partia
 \begin{equation}
 	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}\right)_{m+\frac{1}{2},j},
 \end{equation}
-or in terms of transient and diffusive terms
+or in terms of transient and diffusive components
 \begin{equation}
 	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}+\nu\frac{\partial ^2 u}{\partial y^2}\right)_{m+\frac{1}{2},j}.
 \end{equation}
@@ -1124,7 +1124,7 @@ The other advection summand
 \begin{equation}
 	\left(\frac{\partial uv}{\partial y}\right)_{m+\frac{1}{2},j}=\frac{\left( uv \right)_{m+\frac{1}{2},j+\frac{1}{2}}-\left( uv\right)_{m+\frac{1}{2},j-\frac{1}{2}}}{\Delta}
 \end{equation}
-requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use two neighbouring $v$ velocities and extrapolate them linearly as 
+requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use two neighbouring $v$ components and extrapolate them linearly as 
 \begin{equation}
 	v_{m+\frac{1}{2},j+\frac{1}{2}}=v_{m-1,j\pm\frac{1}{2}}+2\frac{v_{m,j\pm\frac{1}{2}}-v_{m-1,j\pm\frac{1}{2}}}{\Delta x_{m-1}+\Delta x_m}\left(\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
 \end{equation}
@@ -1139,6 +1139,18 @@ requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use
 The exact value of the $uu_g$ element located outside the boundary (figure \ref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
 
 \textbf{Top boundary (symmetric).}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.35\paperwidth]{ADV-top}
+  }
+  \caption{Top boundary advection.}\label{fig:ADV-top}
+\end{figure}
+The symmetric boundary condition defines a mirror surface, which has the same effect on the solution as the semi-infinite boundary condition if the boundary layer thickness is less than the truncated domain height. Mathematically such boundary condition can be written as $v=\frac{\partial v}{\partial y}=0,\frac{\partial p}{\partial y}=0$. 
+
+Since the exact value of the velocity $u_{BC}$ and $v_{BC}=0$ in a freestream are known, we can directly use them in our advection term computation making the second summand $uv=0$, in particular
+\begin{equation}
+	\left( \frac{\partial uu}{\partial x}+\frac{\partial uv}{\partial y}\right)_{i-\frac{1}{2},n}=2\frac{\left( uu\right)_{i,n}-\left( uu\right)_{i-1,n}}{\Delta x_i + \Delta x_{i-1}}+0.
+\end{equation}
 
 \textbf{Bottom boundary (no-slip).}
 \begin{figure}[H] % here, bottom, top
@@ -1147,16 +1159,12 @@ The exact value of the $uu_g$ element located outside the boundary (figure \ref{
   }
   \caption{Bottom boundary advection}\label{fig:ADV-bottom}
 \end{figure}
-Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i,1}=0$ on the boundary, due to the $u_{bc}=0$ condition on the plate (purple on figure~\ref{fig:ADV-bottom}).
+Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ on the boundary, due to the $u_{bc}=0$ condition on the plate (purple on figure~\ref{fig:ADV-bottom}).
 
-
-The advective term in the $y$-momentum equation is computed in a similar manner. After the derivative values are evaluated, they are moved to the right-hand side as in equation~\eqref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
-
-
-
+The advective terms in the $y$-momentum equation are computed in a similar manner. After the derivative values are evaluated, they are moved to the right-hand side as in equation~\eqref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
 
 \subsubsection{Resulting system}\label{subsubsec:resulting-algorithm}
-After applying the above discrete operators, we can combine the summands into $\hat{A}$, $\hat{r}^n$; we then rewrite the system~\eqref{eqn:NSE-dsm-bl-system-schemes}  as
+After applying the above discrete operators, we can combine the summands into $\hat{A}$, $\hat{r}^n$; we then rewrite system~\eqref{eqn:NSE-dsm-bl-system-schemes}  as
 \begin{equation}
 	\begin{bmatrix}
 		\hat{A} & \hat{G} \\
@@ -1369,9 +1377,9 @@ r^n \\
 \end{equation}
 where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric. 
 
-\subsection{Nullspace method}\label{sec:nullspace-method}
+\subsection{Nullspace method and pressure elimination}\label{sec:nullspace-method}
 
-Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in the system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
+The goal of this subsection is to show how unknown pressure variables can be eliminated from sytem~\eqref{eqn:nse-normalized}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
 
 The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
 
@@ -1400,11 +1408,11 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
 \end{figure}
 
 
-The matrix $C$ has dimensions corresponding to unknown velocities multiplied by the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. Yellow squares represent $+1$ entries, while blue squares correspond to $-1$ entries. 
+The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
 
-The desired product becomes $DC=0$. $D=-G^T$ (subsections ~\ref{subsec:divergence} and \ref{subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$, which is worth keeping in mind for future use.
+The desired product becomes $DC=0$. $D=-G^T$ (subsections ~\ref{subsec:divergence} and \ref{subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in~\eqref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which eliminates the pressure from our system.
 
-The final chord of this method is the introduction of another new variable called streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the problem~\eqref{eqn:nse-normalized} from subsection~\ref{subsec:symmetrization} and is discussed in the following subsection~\ref{sec:algorithm}.
+In order to make use of efficient solvers, the system $C^TA$ has to become symmetric, thus, we need to multiply it by $C$ from the right. Hence, the final chord of this method is the introduction of another new variable called streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the problem~\eqref{eqn:nse-normalized} from subsection~\ref{subsec:symmetrization} and is discussed in the following subsection~\ref{sec:algorithm}.
 
 \begin{figure}
 \begin{center}
@@ -1417,7 +1425,7 @@ The final chord of this method is the introduction of another new variable calle
 
 \subsection{Resulting algorithm}\label{sec:algorithm}
 
-Let us consider the solution to the discretized system \eqref{eqn:nse-normalized}
+Let us consider the solution to discretized system \eqref{eqn:nse-normalized}
 \begin{equation}
 	q^{n+1}=q^{n+1}_p+q^{n+1}_h,
 \end{equation}
@@ -1486,36 +1494,36 @@ q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
 where $D^\dagger=D^T\left(D D^T\right)$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
  
 %%%% REMOVE?$ %%%%%
-\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
-\textbf{TO KEEP OR NOT TO KEEP}
-Another option to find a particular solution to~\eqref{eqn:discrete-non-homogeneous-continuity} was proposed by Hall in~\cite{Hall:1980} and \cite{Hall:1985}. The method uses the spanning tree of graph $\mathcal{N}$ which has nodes and edges corresponding to the cell centres and velocity vectors from our grid. This method is discussed below.
-
-Let us write useful notations:
-\begin{itemize}
-	\item $\mathcal{N}$ - directed planar network (graph). 
-	\item $K$ - a set of nodes (control volume centres). 
-	
-	$N$ - number of nodes. 
-	\item $\Lambda$ - a set of interior $\Lambda^0$ and boundary $\partial \Lambda$ links (face velocities). 
-		
-		$M$ - total number of links.
-		
-		$M^0$ - number of interior links. 
-	\item Pendant node - a node which is an extremity of only one interior link.  
-	\item $\mathcal{T}$ - a spanning tree of directed network $\mathcal{N}$. $\mathcal{T}$ is a connected partial network of $\mathcal{N}$ which has no cycles.
-\end{itemize}
-
-The procedure for finding a particular solution is as follows:
-\begin{enumerate}
-	\item Construct a spanning tree $\mathcal{T}$ of $\mathcal{N}$ with the pressure specified nodes appended.
-	\item Velocities associated with links not in the tree are set to zero.
-	\item Choose a node in $\mathcal{T}$ which is an extremity of a boundary link and call it root. 
-	\item Set the boundary link velocities equal to zero, except the link incident on the root.
-	\item At each pendant node except the root, the continuity equation was reduced to a simple equation relating the velocity only at the internal connection of the tree to that node.  
-	\item Move from the pendant node along the tree towards the root. At each node the continuity equation involves a single unknown velocity.
-	\item Except the juncture nodes, where the chains from one or more pendant nodes connect. Before solving the continuity equation associated with such a juncture node, the velocities on the chains from pendant nodes to the juncture node have to be determined.
-	\item The process is completed after using the continuity equation at the root to determine the final velocity of the boundary link.
-\end{enumerate}
+%\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
+%\textbf{TO KEEP OR NOT TO KEEP}
+%Another option to find a particular solution to~\eqref{eqn:discrete-non-homogeneous-continuity} was proposed by Hall in~\cite{Hall:1980} and \cite{Hall:1985}. The method uses the spanning tree of graph $\mathcal{N}$ which has nodes and edges corresponding to the cell centres and velocity vectors from our grid. This method is discussed below.
+%
+%Let us write useful notations:
+%\begin{itemize}
+%	\item $\mathcal{N}$ - directed planar network (graph). 
+%	\item $K$ - a set of nodes (control volume centres). 
+%	
+%	$N$ - number of nodes. 
+%	\item $\Lambda$ - a set of interior $\Lambda^0$ and boundary $\partial \Lambda$ links (face velocities). 
+%		
+%		$M$ - total number of links.
+%		
+%		$M^0$ - number of interior links. 
+%	\item Pendant node - a node which is an extremity of only one interior link.  
+%	\item $\mathcal{T}$ - a spanning tree of directed network $\mathcal{N}$. $\mathcal{T}$ is a connected partial network of $\mathcal{N}$ which has no cycles.
+%\end{itemize}
+%
+%The procedure for finding a particular solution is as follows:
+%\begin{enumerate}
+%	\item Construct a spanning tree $\mathcal{T}$ of $\mathcal{N}$ with the pressure specified nodes appended.
+%	\item Velocities associated with links not in the tree are set to zero.
+%	\item Choose a node in $\mathcal{T}$ which is an extremity of a boundary link and call it root. 
+%	\item Set the boundary link velocities equal to zero, except the link incident on the root.
+%	\item At each pendant node except the root, the continuity equation was reduced to a simple equation relating the velocity only at the internal connection of the tree to that node.  
+%	\item Move from the pendant node along the tree towards the root. At each node the continuity equation involves a single unknown velocity.
+%	\item Except the juncture nodes, where the chains from one or more pendant nodes connect. Before solving the continuity equation associated with such a juncture node, the velocities on the chains from pendant nodes to the juncture node have to be determined.
+%	\item The process is completed after using the continuity equation at the root to determine the final velocity of the boundary link.
+%\end{enumerate}
 
 %Let us take our momentum equation and apply the equation~\eqref{eqn:non-homogeneous} to it.
 %	\begin{equation}
