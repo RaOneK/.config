@@ -621,6 +621,17 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 %4. Scaling of G and D operators. 
 %5. Indexation change.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\todo{
+\begin{itemize}
+    \item Non-dimensionalization. \textit{Done on paper, need to typeset.}
+	\item BC discussion (analytic). \textit{Trying to set up a parser for google scholar. Need to add this BC to the Laplacian Operator.}
+	\item Scaling of G and D operators. \textit{Didn't touch.}
+    \item \st{Symmetric BC on top to be included in all operators.}
+    \item \st{Indexing change for equations and figures.}
+    \item \st{Motivation.} Added some where possible. 
+  \end{itemize}
+}
+
 \subsection{Problem statement}
 Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a unit square domain together with boundary conditions:
 \begin{subequations}
@@ -646,7 +657,7 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{subequations}
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
-The method described below is based on discrete volume formulation. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
+Discretization in Computational Fluid Dynamics is a crucial step that transforms the infinite, continuous solutions of fluid flow equations into a finite, manageable form, enabling computers to simulate and analyze complex fluid behaviors effectively. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -663,6 +674,8 @@ Grid indexation starts at $x_{\frac{1}{2}}=y_{\frac{1}{2}}=(0,0)$ and ends at $x
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discrete operators}
+
+This subsection focuses on the specific operators used in the discretization of system~\eqref{eqs:NSE-dsm-bl}, providing the mathematical tools necessary to transform these continuous equations into a form that can be solved numerically.
 
 Initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
 
@@ -694,7 +707,7 @@ Initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discre
 where boundary conditions are in terms of pressure and velocity. In the following subsections, each of discrete operators is described individually. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Transient terms}
+\subsubsection{Transient terms}\label{subsec:transient}
 Attack system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
 \begin{enumerate}
 	\item[\textbf{Viscous}] - Implicit trapezoidal - Crank Nicholson scheme (second-order method in time).  
@@ -749,7 +762,7 @@ The above schemes result in the following discretized system:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Laplacian}
 
-Laplacian can be rewritten as block matrix:
+As per subsection~\ref{subsec:transient} it is required to discretize implicit viscous term at time $n+1$. In order to obtain the discretized operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
 \begin{equation}
 	\hat L=
 	\begin{bmatrix}
@@ -826,7 +839,7 @@ The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\re
   \caption{$\hat{L}^u_{xx}$ at the left boundary.}\label{fig:luxx-left}
 \end{figure}
 
-\textbf{Top boundary. SYMMETRIC CONDITION!} The boundary layer thickness can be made shorter than the truncated vertical domain length, thus, we can incorporate symmetric boundary condition over the top. This BC leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
+\textbf{Top boundary.} The boundary layer thickness can be made shorter than the truncated vertical domain length, thus, we can incorporate symmetric boundary condition over the top. This BC leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
 
 \begin{figure}[h]
 \centering{
