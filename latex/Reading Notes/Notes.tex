@@ -623,7 +623,7 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \todo{
 \begin{itemize}
-    \item Non-dimensionalization. \textit{Done on paper, need to typeset.}
+    \item \st{Non-dimensionalization.} \textit{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed}
 	\item BC discussion (analytic). \textit{Trying to set up a parser for google scholar. Need to add this BC to the Laplacian Operator.}
 	\item Scaling of G and D operators. \textit{Didn't touch.}
     \item \st{Symmetric BC on top to be included in all operators.}
@@ -635,21 +635,74 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 \subsection{Problem statement}
 Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a unit square domain together with boundary conditions:
 \begin{subequations}
+\label{eqs:NSE-dsm-bl-dimensional}
+\begin{align}
+\label{eqn:momentum-dimensional}
+\text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\frac{1}{\rho}\nabla p + {\frac{\mu}{\rho}} \nabla \cdot \nabla \boldsymbol{v},\\
+\label{eqn:continuity-dsm-bl}
+\text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
+					&0\leq x < \infty, 0\leq y <\infty, t\geq0,\notag\\
+\label{eqn:NSE-dsm-bl-bc-freestream}
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,\infty)=\left(U_0 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+									& \{|A|<U_0,k,\omega, \phi_0\}\subset \mathbb{R},\notag\\
+\label{eqn:NSE-dsm-bl-bc-noslip}
+\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
+%\label{eqn:NSE-dsm-bl-bc-outlet}
+%\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor\left(\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial ^2 u}{\partial y^2}\right), \\ 
+%					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
+%					& (x=\infty),\notag\\
+\text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0).
+\end{align}
+\end{subequations}
+
+The algorithm requires a finite domain, we will perform the domain truncation and normalize all equations by width $L$ and stream velocity $U_0$. It is assumed that the boundary layer thickness $\delta$ is (much?) less than $L$, hence it is sufficient to normalize equations by the truncated domain width. 
+Introducing the following dimensionless variables (marked with ${ }^{\prime}$ ):
+\begin{equation*}
+	x\to Lx^{\prime},  \quad 
+	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
+	\nabla\to \frac{1}{L}\nabla^{\prime}, \quad 
+%	\Delta \to \frac{1}{L^2} \Delta^{\prime},  \quad 
+	p\to p^{\prime} \rho U_0^2, \quad 
+	t\to \frac{L}{U_0}t^{\prime},
+\end{equation*}
+we obtain
+\begin{equation*}
+	\frac{U_0}{\frac{L}{U_0}} \frac{\partial \boldsymbol{v}^{\prime}}{\partial t^{\prime}}+U_0\boldsymbol{v}\cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}=-\frac{1}{\rho}\left(\frac{1}{L} \nabla^{\prime}\right){p^{\prime}\rho U^2_0}+\frac{\mu}{\rho} \left(\frac{1}{L} \nabla^{\prime}\right) \cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}^{\prime}.
+\end{equation*}
+
+Multiplying both sides of the equation for $\frac{L}{U^2}$ and introducing the well-known Reynolds number 
+\begin{equation*}
+\operatorname{Re}=\frac{\rho L U}{\mu},
+\end{equation*}
+we obtain the non-dimensional momentum equation
+\begin{equation}
+	\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \frac{1}{\operatorname{Re}} \nabla \cdot \nabla \boldsymbol{v},
+\end{equation}
+where we dropped prime superscripts. The continuity equation is done in a similar manner:
+\begin{equation}
+	\left(\frac{1}{L} \nabla^{\prime}\right) \cdot U_0\boldsymbol{v}^{\prime}=0\iff\nabla^{\prime}\boldsymbol{v}^{\prime}=0\implies\nabla\boldsymbol{v}=0
+\end{equation}
+where we also drop prime superscripts in the last identity.
+
+\subsection{Artificial boundary conditions}\label{sec:artificial-bc}
+
+\subsection{Problem statement on truncated domain}
+\begin{subequations}
 \label{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
 \text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, \\ 
-					&\nu = \frac{1}{Re},0\leq x \leq L, 0\leq y \leq d, t\geq0,\notag\\
+					&\nu = \frac{1}{Re},0\leq x \leq L, 0\leq y \leq L, t\geq0,\notag\\
 \label{eqn:continuity-dsm-bl}
 \text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
-					&0\leq x \leq L, 0\leq y \leq d, t\geq0, \notag\\
+					&0\leq x \leq L, 0\leq y \leq L, t\geq0, \notag\\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,d)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,L)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
 									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R},\notag\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
-\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor(\nu \frac{\partial ^2 u}{\partial y^2}), \\ 
+\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor(\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial ^2 u}{\partial y^2}), \\ 
 					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
 					& (x=L),\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0).
