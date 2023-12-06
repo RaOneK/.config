@@ -624,8 +624,8 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 \todo{
 \begin{itemize}
     \item \st{Non-dimensionalization.} \textit{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed}
-	\item BC discussion (analytic). \textit{Trying to set up a parser for google scholar. Need to add this BC to the Laplacian Operator.}
-	\item Scaling of G and D operators. \textit{Didn't touch.}
+	\item BC discussion (analytic). \textit{Typeset all articles printed and look for Sani-Gresho extra references at the end.}
+	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
     \item \st{Symmetric BC on top to be included in all operators.}
     \item \st{Indexing change for equations and figures.}
     \item \st{Motivation.} Added some where possible!
@@ -655,8 +655,7 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{align}
 \end{subequations}
 
-The algorithm requires a finite domain, we will perform the domain truncation and normalize all equations by width $L$ and stream velocity $U_0$. It is assumed that the boundary layer thickness $\delta$ is (much?) less than $L$, hence it is sufficient to normalize equations by the truncated domain width. 
-Introducing the following dimensionless variables (marked with ${ }^{\prime}$ ):
+The algorithm requires a finite domain, we will perform the domain truncation and normalize all equations by width $L$ and stream velocity $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
 \begin{equation*}
 	x\to Lx^{\prime},  \quad 
 	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
@@ -669,10 +668,9 @@ we obtain
 \begin{equation*}
 	\frac{U_0}{\frac{L}{U_0}} \frac{\partial \boldsymbol{v}^{\prime}}{\partial t^{\prime}}+U_0\boldsymbol{v}\cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}=-\frac{1}{\rho}\left(\frac{1}{L} \nabla^{\prime}\right){p^{\prime}\rho U^2_0}+\frac{\mu}{\rho} \left(\frac{1}{L} \nabla^{\prime}\right) \cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}^{\prime}.
 \end{equation*}
-
 Multiplying both sides of the equation for $\frac{L}{U^2}$ and introducing the well-known Reynolds number 
 \begin{equation*}
-\operatorname{Re}=\frac{\rho L U}{\mu},
+\operatorname{Re}=\frac{\rho L U_0}{\mu},
 \end{equation*}
 we obtain the non-dimensional momentum equation
 \begin{equation}
@@ -710,7 +708,7 @@ where we also drop prime superscripts in the last identity.
 \end{subequations}
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
-Discretization in Computational Fluid Dynamics is a crucial step that transforms the infinite, continuous solutions of fluid flow equations into a finite, manageable form, enabling computers to simulate and analyze complex fluid behaviors effectively. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
+Discretization in Computational Fluid Dynamics is a crucial step that transforms the infinite, continuous solutions of fluid flow equations into a finite, manageable form, enabling computers to simulate and analyze complex fluid behaviours effectively. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -721,9 +719,9 @@ Discretization in Computational Fluid Dynamics is a crucial step that transforms
 
 In order to eliminate the pressure from our system a staggered grid arrangement is used. Details are discussed in subsections~\ref{subsec:divergence},~\ref{subsec:gradient} and section~\ref{sec:nullspace-method}. The $u$ velocity components are stored at the centres of vertically oriented faces, while the values for $v$ are stored at the centres of horizontal ones. 
 
-The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce an additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
+The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
 
-Grid indexation starts at $x_{\frac{1}{2}}=y_{\frac{1}{2}}=(0,0)$ and ends at $x_{m+\frac{1}{2}},y_{n+\frac{1}{2}}$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. In order to increase the accuracy in certain domain regions we will refine the grid using the standard constant ratio $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$.
+Grid indexation starts at $x_{\frac{1}{2}}=y_{\frac{1}{2}}=(0,0)$ and ends at $x_{m+\frac{1}{2}},y_{n+\frac{1}{2}}$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. In order to increase the accuracy in certain domain regions we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discrete operators}
@@ -757,7 +755,7 @@ Initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discre
                   0
             \end{pmatrix} + \text{bc}_{\boldsymbol{v},p},
         \end{equation}
-where boundary conditions are in terms of pressure and velocity. In the following subsections, each of discrete operators is described individually. 
+where boundary conditions are in terms of pressure and velocity. In the following subsections, each of the discrete operators is described individually. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Transient terms}\label{subsec:transient}
@@ -966,19 +964,31 @@ v
 \right]=\hat{bc}_2
 , \\
 \frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=\hat{bc}_2, \\
-\frac{1}{\Delta x \Delta y}\left[\begin{array}{ll}
+\frac{1}{\Delta _{xy}}\left[\begin{array}{ll}
 D_x & D_y
 \end{array}\right]\left[\begin{array}{l}
 u \Delta y \\
 v \Delta x
-\end{array}\right]=\frac{1}{\Delta x \Delta y} D q=\hat{bc}_2,
+\end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2,
 \end{gathered}
 \end{equation}
-where the vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. The first-order central difference scheme was employed in the construction of $D$. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is expressed as
+where vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. Matrix
+\begin{equation}\label{eqn:delta-xy}
+	\Delta _{xy}=
+	\begin{bmatrix}{}
+		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
+		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
+		0		&0	&\ddots	&0\\
+		0		&0	&0	&\frac{1}{\Delta x_m\Delta y_n}
+	\end{bmatrix}
+\end{equation}
+is $nm\times nm$ diagonal matrix with entries corresponding to the inverse volumes of cells. 
+
+The second-order central difference scheme was employed in the construction of $D$, the order is consistent with the other spatial schemes. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is expressed as
 \begin{equation}
 	\left(\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\right)_{i,j}=0,
 \end{equation}
-which can be discretized using a central difference scheme into
+which can be discretized at cell centre $i,j$ using a central difference scheme into
 
 \begin{equation}
   \frac{u_{i+\frac{1}{2},j} - u_{i-\frac{1}{2},j}}{\Delta x_i}+  \frac{v_{i,j+\frac{1}{2}} - v_{i,j-\frac{1}{2}}}{\Delta y_j}=0.
@@ -1040,17 +1050,9 @@ After applying the boundary conditions (circled on the figure~\ref{fig:D-example
 	-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
 	\end{bmatrix},
 \end{equation}
-which in general case becomes 
-$\frac{1}{\Delta x \Delta y} D q=\hat{bc}_2$.
-
-
- 
-%is $\boldsymbol{v}=[u_{i+1,j}, u_{i,j}, v_{i,j+1}, v_{i,j}]^T$, we can express this equation in matrix form as follows:''''''''''''''
-%\begin{equation}
-%  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
-%\end{equation}
-
-The velocity values known at the boundaries can be shifted to the right-hand side and explicitly treated. The divergence matrix contains $\pm1$, as shown in equation~\eqref{eqn:divergence-matrix}.
+which in general case is written as 
+$\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
+The velocity values known at the boundaries are shifted to the right-hand side and explicitly treated. The divergence matrix $D$ contains $\pm1$, as shown in equation~\eqref{eqn:divergence-matrix}.
 
 %\begin{figure}[hbt] % here, bottom, top
 %  \centering{
@@ -1078,7 +1080,7 @@ on staggered/MAC grids. Moreover, the pressure gradients can be evaluated direct
 \end{figure}
 
 
-As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (unknown square nodes):
+As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on figure~\ref{fig:G-example-2x2}):
 
 \begin{alignat*}{2}
 	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},1} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
@@ -1120,7 +1122,7 @@ The next step is to rewrite the above expressions in matrix form using the press
 which can be rewritten as
 \begin{equation}
 	\nabla p = \hat{bc}_p\iff
-	\Delta_{xy}{G} 
+	\hat{M}^{-1}{G} 
 	\begin{bmatrix}{}
   		p_{1,1} \\
 	  	p_{1,2} \\
@@ -1129,7 +1131,7 @@ which can be rewritten as
 	\end{bmatrix}
 =\hat{bc}_p,
 \end{equation}
-where $\Delta_{xy}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. It can be observed from equations~\eqref{eqn:divergence-matrix}-\eqref{eqn:gradient-matrix} that identity~\eqref{eqn:g-dt} holds and the general case is true by construction.
+where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. It can be observed from equations~\eqref{eqn:divergence-matrix} and \eqref{eqn:gradient-matrix} that identity~\eqref{eqn:g-dt} holds and the general case is true by construction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Advection}
@@ -1392,7 +1394,6 @@ premultiply by $\hat M$ to obtain
 $$\hat MLR^{-1}{q},$$ 
 where $\hat M L R^{-1}$ is symmetric by construction.  
 
-
 Using the above transformation we can modify the initial system of linear equations
 \begin{equation}
 \left[\begin{array}{ccc}
@@ -1441,7 +1442,16 @@ r^n \\
 {b c}_2
 \end{array}\right),
 \end{equation}
-where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric. 
+where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to equation~\eqref{eqn:gradient-matrix} in momentum part. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in momentum part of system~\eqref{eqn:nse-normalized} using  equation~\eqref{eqn:divergence-matrix} and multiplying both sides of continuity equation by $\Delta _{xy}$ matrix~\eqref{eqn:delta-xy}: 
+\begin{equation}
+\begin{align}
+	\hat{D}\boldsymbol{v}^{n+1}&= \hat{bc}_2\notag\\
+	\left(\Delta _{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
+	\left(\Delta _{xy}\right)\frac{1}{\Delta _{xy}}{D}R\boldsymbol{v}^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
+	\left(\Delta _{xy}\right)\frac{1}{\Delta _{xy}}{D}q^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
+	D{q}^{n+1}&=bc_2.
+\end{align}
+\end{equation}
 
 \subsection{Nullspace method and pressure elimination}\label{sec:nullspace-method}
 
