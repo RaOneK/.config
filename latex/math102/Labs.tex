@@ -697,7 +697,7 @@ All entries are satisfied, hence it is a group. Q.E.D.
 
 Consider the plane $W$ in $\mathbb{R}^3$ through the origin $2x+2y-z=0$. Let $P:\mathbb{R}^3\to\mathbb{R}^3$ denote \textbf{orthogonal projection} of $\mathbb{R}^3$ onto $W$ and let $R:\mathbb{R}^3\to\mathbb{R}^3$ denote the \textbf{reflection} of $\mathbb{R}^3$ about $W$. 
 
-Let $\vec{x}\in\mathbb{R}^3$ be some vector, $\vec{e}_i\in \mathbb{R}^3$ eigenvectors, $\lambda_i\in \mathbb{R}$ eigenvalues, then the projection:
+Let $\vec{x}\in\mathbb{R}^3$ be eigenvector, $\lambda_i\in \mathbb{R}$ eigenvalues, then the projection:
 \begin{equation}\label{proj}
 	P\vec{x}=\vec{x}_{\operatorname{proj}},\text{ and }P\vec{x}=\lambda\vec{x}.
 \end{equation}
@@ -712,13 +712,13 @@ Combining equations~\eqref{proj}-\eqref{doubleproj} lead to:
 \end{equation*}
 These are the only possible eigenvalues for the projection operator. 
 
-Next, consider vector $\vec{w}$ belonging to the plane $\vec{x}=\vec{w}\in W\implies$
+Next, consider vector $\vec{w}$ belonging to the plane $\vec{w}\in W\implies$
 \begin{equation*}
-	\exists \{\vec{e}_1,\vec{e}_2\}\subset W \text{ lin.indep.}, \{\alpha,\beta\}\subset \mathbb{R}:\vec{w}=\alpha\vec{e}_1+\beta\vec{e}_2\text{ and }P(\vec{w})=\lambda\vec{w}=\lambda\left(\alpha\vec{e}_1+\beta\vec{e}_2\right)=\alpha\vec{e}_1+\beta\vec{e}_2=\vec{w}\text{, where }\lambda=1.
+	\exists \{\vec{x}_1,\vec{x}_2\}\subset W \text{ lin.indep.}, \{\alpha,\beta\}\subset \mathbb{R}:\vec{w}=\alpha\vec{x}_1+\beta\vec{x}_2\text{ and }P(\vec{w})=\lambda\vec{w}=\lambda\left(\alpha\vec{x}_1+\beta\vec{x}_2\right)=\alpha\vec{x}_1+\beta\vec{x}_2=\vec{w}\text{, where }\lambda=1.
 \end{equation*}
-We may also consider vector $\vec{n}$ in $W^\perp$, which is normal to the plane $W$. $\vec{x}=\vec{n}\in W^\perp\implies$
+We may also consider vector $\vec{n}$ in $W^\perp$, which is normal to the plane $W$, $\vec{n}\in W^\perp\implies$
 \begin{equation*}
-	\exists \vec{e}_3\in W^\perp, \gamma \in \mathbb{R}:\vec{n}=\gamma \vec{e}_3\text{ and }P(\vec{n})=\lambda\vec{n}=\lambda\gamma \vec{e}_3=0\gamma \vec{e}_3=0\text{, where }\lambda=0.	
+	\exists \vec{x}_3\in W^\perp, \gamma \in \mathbb{R}:\vec{n}=\gamma \vec{x}_3\text{ and }P(\vec{n})=\lambda\vec{n}=\lambda\gamma \vec{x}_3=0\gamma \vec{x}_3=0\text{, where }\lambda=0.	
 \end{equation*}
 
 The above procedure can be repeated for the reflection operator $R$, with one exception that few algebraic steps are needed. Subtracting two projections is equivalent to the reflection, which reads as
@@ -741,15 +741,15 @@ therefore
 	\lambda^2{x}=\vec{x}\iff\left(\lambda^2-1\right)\vec{x}=0\iff\lambda=\pm1.\text{ Trivial solution }\vec{x}=\vec{0}.
 \end{equation*}
 
-Now, we represent both $\vec{w},\vec{n}$ the same as in the projection part. If $\vec{w}$ lies on plane $W$, then it can be represented as a linear combination of linearly independent eigenvectors $\vec{e}_1,\vec{e}_2$ which form a basis on plane $W$. Similarly, $\vec{n}$ can be represented as a scaled version of an eigenvector $e_3$, which spans $W^\perp$. Writing down:
+Now, we represent both $\vec{w},\vec{n}$ the same as in the projection part. If $\vec{w}$ lies on plane $W$, then it can be represented as a linear combination of linearly independent eigenvectors $\vec{x}_1,\vec{x}_2$ which form a basis on plane $W$. Similarly, $\vec{n}$ can be represented as a scaled version of an eigenvector $\vec{x}_3$, which spans $W^\perp$. Writing down:
 \begin{align*}
-	\vec{w}&=\alpha\vec{e}_1+\beta\vec{e}_2,\{\alpha,\beta\}\subset \mathbb{R},\\
-	\vec{n}&=\gamma\vec{e}_3,\gamma\in\mathbb{R}.
+	\vec{w}&=\alpha\vec{x}_1+\beta\vec{x}_2,\{\alpha,\beta\}\subset \mathbb{R},\\
+	\vec{n}&=\gamma\vec{x}_3,\gamma\in\mathbb{R}.
 \end{align*}
 Then, after applying reflection to $\vec{w},\vec{n}$ we get:
 \begin{align*}
-	R(\vec{w})&=\lambda\vec{w}=\lambda\left(\alpha\vec{e}_1+\beta\vec{e}_2\right)=\alpha\vec{e}_1+\beta\vec{e}_2=\vec{w},\lambda=1,\\
-	R(\vec{n})&=\lambda\vec{n}=\lambda\gamma\vec{e}_3=-\gamma\vec{e}_3=-\vec{n},\lambda=-1.
+	R(\vec{w})&=\lambda\vec{w}=\lambda\left(\alpha\vec{x}_1+\beta\vec{x}_2\right)=\alpha\vec{x}_1+\beta\vec{x}_2=\vec{w},\lambda=1,\\
+	R(\vec{n})&=\lambda\vec{n}=\lambda\gamma\vec{x}_3=-\gamma\vec{x}_3=-\vec{n},\lambda=-1.
 \end{align*}
 
 
