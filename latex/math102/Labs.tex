@@ -691,7 +691,70 @@ If invertible matrices with real entries form a group, we need to check each of 
 \item[(4)] \textit{Invertibility:} Every element of the set has an inverse by definition.
 \end{itemize}
 
-All entries satisfied, hence it is a group. Q.E.D.
+All entries are satisfied, hence it is a group. Q.E.D.
+
+\section{Eigenvalues and eigenvectors}
+
+Consider the plane $W$ in $\mathbb{R}^3$ through the origin $2x+2y-z=0$. Let $P:\mathbb{R}^3\to\mathbb{R}^3$ denote \textbf{orthogonal projection} of $\mathbb{R}^3$ onto $W$ and let $R:\mathbb{R}^3\to\mathbb{R}^3$ denote the \textbf{reflection} of $\mathbb{R}^3$ about $W$. 
+
+Let $\vec{x}\in\mathbb{R}^3, \vec{e}\in \mathbb{R}^3, \lambda\in \mathbb{R}$, then the projection:
+\begin{equation}\label{proj}
+	P\vec{x}=\vec{x}_{\operatorname{proj}},\text{ and }P\vec{x}=\lambda\vec{x}.
+\end{equation}
+If we apply projection twice, the resulting vector does not change
+\begin{equation}\label{doubleproj}
+	P^2\vec{x}=\vec{x}_{\operatorname{proj}},\text{ and }P^2\vec{x}=\lambda^2\vec{x}	.
+\end{equation}
+
+Combining equations~\eqref{proj}-\eqref{doubleproj} lead to:
+\begin{equation*}
+	\vec{x}_{\operatorname{proj}}=\vec{x}_{\operatorname{proj}}\iff\lambda \vec{x}=\lambda^2\vec{x}\iff \left(\lambda^2-\lambda\right)\vec{x}=0\iff \lambda=0,1. \text{ Trivial solution }\vec{x}=\vec{0}.
+\end{equation*}
+These are the only possible eigenvalues for the projection operator. 
+
+Next, consider vector $\vec{w}$ belonging to the plane $\vec{x}=\vec{w}\in W\implies$
+\begin{equation*}
+	\exists \{\vec{e}_1,\vec{e}_2\}\subset W \text{ lin.indep.}, \{\alpha,\beta\}\subset \mathbb{R}:\vec{w}=\alpha\vec{e}_1+\beta\vec{e}_2\text{ and }P(\vec{w})=\lambda\vec{w}=\vec{w}\text{, where }\lambda=1.
+\end{equation*}
+We may also consider vector $\vec{n}$ in $W^\perp$, which is normal to the plane $W$. $\vec{x}=\vec{n}\in W^\perp\implies$
+\begin{equation*}
+	\exists \vec{e}_3\in W^\perp, \gamma \in \mathbb{R}:\vec{n}=\gamma \vec{e}_3\text{ and }P(\vec{n})=\lambda\vec{n}=0\text{, where }\lambda=0.	
+\end{equation*}
+
+The above procedure can be repeated for the reflection operator $R$, with one exception that few algebraic steps are needed. Subtracting two projections is equivalent to the reflection, which reads as
+\begin{align*}
+	R 	&=I-2P,\\
+	R^2 &=(I-2P)(I-2P)\\
+		&=I^2-I2P-2PI+2P2P\\
+		&=I-2IP-2PI+4P^2\\
+		&=I-2P-2P+4P^2\\
+		&=I-4P+4P^2\\
+		&=I-4P+4P\\
+		&=I,
+\end{align*}
+which is, indeed, true, because reflecting the vector twice maps it to itself. Hence,
+\begin{equation*}
+	R^2\vec{x}=\lambda^2{x},\text{ on the other hand } R^2\vec{x}=I\vec{x}=\vec{x},
+\end{equation*}
+therefore
+\begin{equation*}
+	\lambda^2{x}=\vec{x}\iff\left(\lambda^2-1\right)\vec{x}=0\iff\lambda=\pm1.\text{ Trivial solution }\vec{x}=\vec{0}.
+\end{equation*}
+
+Now, we represent both $\vec{w},\vec{n}$ the same way we did in the projection part. 
+
+If $\vec{w}$ lies on plane $W$, then it can be represented as a linear combination of linearly independent eigenvectors $\vec{e}_1,\vec{e}_2$ which form a basis on plane $W$. Similarly, $\vec{n}$ can be represented as a scaled version of an eigenvector $e_3$, which spans $W^\perp$. Writing down
+\begin{align*}
+	\vec{w}&=\alpha\vec{e}_1+\beta\vec{e}_2,\{\alpha,\beta\}\subset \mathbb{R}.\\
+	\vec{n}&=\gamma\vec{e}_3,\gamma\in\mathbb{R}
+\end{align*}
+Then, after applying reflection to $\vec{w},\vec{n}$ we get
+\begin{align*}
+	R(\vec{w})&=\lambda\vec{w}=\vec{w},\lambda=1.\\
+	R(\vec{n})&=\lambda\vec{n}=-\vec{n},\lambda=-1.
+\end{align*}
+
+
 
 \bibliographystyle{plain}
 \bibliography{Zotero}
