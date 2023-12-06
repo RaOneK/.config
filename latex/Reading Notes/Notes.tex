@@ -976,10 +976,10 @@ where vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ w
 \begin{equation}\label{eqn:delta-xy}
 	\Delta _{xy}=
 	\begin{bmatrix}{}
-		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
-		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
-		0		&0	&\ddots	&0\\
-		0		&0	&0	&\frac{1}{\Delta x_m\Delta y_n}
+		\frac{1}{\Delta x_1\Delta y_1}		&0	&\dots	&0\\
+		0		&\frac{1}{\Delta x_2\Delta y_1}	&\dots	&0\\
+		\vdots		&\vdots	&\ddots	&\vdots\\
+		0		&0	&\dots	&\frac{1}{\Delta x_m\Delta y_n}
 	\end{bmatrix}
 \end{equation}
 is $nm\times nm$ diagonal matrix with entries corresponding to the inverse volumes of cells. 
