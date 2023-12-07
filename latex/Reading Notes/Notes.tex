@@ -684,15 +684,45 @@ where we also drop prime superscripts in the last identity.
 
 \subsection{Artificial boundary conditions}\label{sec:artificial-bc}
 
-Though there are algorithms that may solve problems on unbounded domains, the majority of the algorithms apply to truncated domains only. In the case of a finite domain, the introduction of artificial boundary conditions (ABCs) at the infinite boundary is crucial for achieving accurate numerical solutions. The review papers on artificial boundary conditions by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different options applied to the various flow scenarios. 
+Though there are methods that may solve problems on unbounded domains, the majority of the algorithms can be applied to truncated domains only. In the case of a finite domain, the introduction of artificial boundary conditions (ABCs) at the infinite boundary is crucial for achieving accurate numerical solutions. The review papers on artificial boundary conditions by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different options applied to the various flow scenarios. 
 
-One of the major issues is the reflection of waves at the outlet, which due to the elliptic nature of the incompressible Navier-Stokes affects the solution in the whole computational domain. One of the earliest works (Engquist~\cite{Engquist:1977}) that addressed this issue was applied to the wave and shallow water equations. Paper by Liu~\cite{Liu:1993} introduced the additional buffer domain at the exit, which involved the use of semi-implicit mass conservation and no change in the second derivative of the tangential velocity component. This buffer was not consistent with the physics and required to be as short as possible. 
+A common issue in numerical solutions of fluid flow is the reflection of waves at the outlet. This is due to the elliptic nature of the incompressible Navier-Stokes. One of the earliest and most successful works (Engquist~\cite{Engquist:1977}) that addressed this problem was applied to the wave and shallow water equations. 
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.5\paperwidth]{BC-Buffer}
+  }
+  \caption{Buffer BC by Liu.}\label{fig:BC-buffer}
+\end{figure}
+Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $u=u_0+\tilde{u},v=v_0+\tilde{v}$. Authors introduced the additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit, that involved the use of:
+\begin{enumerate}
+	\item Semi-implicit perturbed mass conservation
+	\begin{equation}
+		\tilde{u}_{m+\frac{1}{2},j}^{n+1}=\tilde{u}_{m-\frac{1}{2},j}^n-\frac{\tilde{v}^n_{m-1,j+\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}}}{\Delta y_{j}}{\Delta x_m}.
+	\end{equation}
+	\item Zero change in acceleration of the tangential perturbed velocity component computed semi-implicitly as
+	\begin{equation}
+		\frac{\partial ^2 \tilde{v}}{\partial x^2}=0\implies \tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}=2\tilde{v}^n_{m,j-\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}},
+	\end{equation}
+	where $\tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}$ is the ghost component outside the domain.
+\end{enumerate}
+This buffer was not consistent with the physics and required to be as short as possible. 
 
-Braza and her collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998}) developed a set of BCs that allowed the eddies to be freely developed downstream as they left the domain.  The condition applied to the two-dimensional shear flow is
-\begin{equation}
+Braza and collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998}) developed a set of BCs that allows the eddies to be freely developed downstream as they leave the domain.  Two types of boundary conditions were applied to two-dimensional shear flow: 
+\begin{equation}\label{eqn:kourta-bc}
+	\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0,
+\end{equation}
+\begin{equation}\label{eqn:jin-bc}
 	\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,
 \end{equation}
-which has a similar derivation to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the corresponding paper~\cite{Jin:1993} also required an artificial boundary condition for pressure at the outlet, which was derived directly from the numerical algorithm.
+where $\nu$ is kinematic viscosity. 
+Results shown in figures~\ref{fig:kourta-results}, \ref{fig:jin-results} correspond to ABCs~\eqref{eqn:kourta-bc} and~\eqref{eqn:jin-bc}.
+The second ABC~\eqref{eqn:jin-bc} had a similar derivation to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the corresponding paper~\cite{Jin:1993} also required an artificial boundary condition for pressure at the outlet. This ABC was derived directly from the numerical algorithm.
+\begin{figure}
+\centering
+  \subfigure[Kourta-Braza results.]{\includegraphics[height=0.255\textwidth]{Braza-Kourta.jpg} \label{fig:kourta-results}} \quad
+  \subfigure[Jin-Braza results.]{\includegraphics[height=0.255\textwidth]{Braza-Jin.jpg} \label{fig:jin-results}}
+\caption{\small Streaklines}
+\end{figure}
 
 \subsection{Problem statement on truncated domain}
 \begin{subequations}
@@ -1459,15 +1489,13 @@ r^n \\
 \end{array}\right),
 \end{equation}
 where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to equation~\eqref{eqn:gradient-matrix} in momentum part. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in momentum part of system~\eqref{eqn:nse-normalized} using  equation~\eqref{eqn:divergence-matrix} and multiplying both sides of continuity equation by $\Delta _{xy}$ matrix~\eqref{eqn:delta-xy}: 
-\begin{equation}
-\begin{align}
+\begin{align*}
 	\hat{D}\boldsymbol{v}^{n+1}&= \hat{bc}_2\notag\\
-	\left(\Delta _{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
-	\left(\Delta _{xy}\right)\frac{1}{\Delta _{xy}}{D}R\boldsymbol{v}^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
-	\left(\Delta _{xy}\right)\frac{1}{\Delta _{xy}}{D}q^{n+1}&=\left ( \Delta _{xy}\right ) \hat{bc}_2\notag\\
+	\left(\Delta_{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
+	\left(\Delta_{xy}\right)\frac{1}{\Delta _{xy}}{D}R\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
+	\left(\Delta_{xy}\right)\frac{1}{\Delta_{xy}}{D}q^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
 	D{q}^{n+1}&=bc_2.
-\end{align}
-\end{equation}
+\end{align*}
 
 \subsection{Nullspace method and pressure elimination}\label{sec:nullspace-method}
 
