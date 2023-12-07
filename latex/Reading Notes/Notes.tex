@@ -624,7 +624,7 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 \todo{
 \begin{itemize}
     \item \st{Non-dimensionalization.} \textit{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed}
-	\item BC discussion (analytic). \textit{Typeset all articles printed and look for Sani-Gresho extra references at the end.}
+	\item BC discussion (analytic). \textit{Typeset all articles printed and look for Sani-Gresho extra references at the end. Derive pressure outlet BC as in Jin-Braza~\cite{Jin1993}}.
 	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
     \item \st{Symmetric BC on top to be included in all operators.}
     \item \st{Indexing change for equations and figures.}
@@ -683,6 +683,16 @@ where we dropped prime superscripts. The continuity equation is done in a simila
 where we also drop prime superscripts in the last identity.
 
 \subsection{Artificial boundary conditions}\label{sec:artificial-bc}
+
+Though there are algorithms that may solve problems on unbounded domains, the majority of the algorithms apply to truncated domains only. In the case of a finite domain, the introduction of artificial boundary conditions (ABCs) at the infinite boundary is crucial for achieving accurate numerical solutions. The review papers on artificial boundary conditions by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different options applied to the various flow scenarios. 
+
+One of the major issues is the reflection of waves at the outlet, which due to the elliptic nature of the incompressible Navier-Stokes affects the solution in the whole computational domain. One of the earliest works (Engquist~\cite{Engquist:1977}) that addressed this issue was applied to the wave and shallow water equations. Paper by Liu~\cite{Liu:1993} introduced the additional buffer domain at the exit, which involved the use of semi-implicit mass conservation and no change in the second derivative of the tangential velocity component. This buffer was not consistent with the physics and required to be as short as possible. 
+
+Braza and her collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998}) developed a set of BCs that allowed the eddies to be freely developed downstream as they left the domain.  The condition applied to the two-dimensional shear flow is
+\begin{equation}
+	\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,
+\end{equation}
+which has a similar derivation to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the corresponding paper~\cite{Jin:1993} also required an artificial boundary condition for pressure at the outlet, which was derived directly from the numerical algorithm.
 
 \subsection{Problem statement on truncated domain}
 \begin{subequations}

@@ -1,3 +1,20 @@
+@misc{Alvarado-Rodriguez2017,
+  title = {Nonreflecting Outlet Boundary Conditions for Incompressible Flows Using {{SPH}}},
+  author = {{Alvarado-Rodr{\'i}guez}, Carlos E. and Klapp, Jaime and Sigalotti, Leonardo Di G. and Dom{\'i}nguez, Jos{\'e} M. and S{\'a}nchez, Eduardo de la Cruz},
+  year = {2017},
+  month = sep,
+  number = {arXiv:1709.09141},
+  eprint = {1709.09141},
+  primaryclass = {physics},
+  publisher = {{arXiv}},
+  doi = {10.48550/arXiv.1709.09141},
+  urldate = {2023-11-06},
+  abstract = {In this paper we implement a simple strategy, based on Jin and Braza's method, to deal with nonreflecting outlet boundary conditions for incompressible Navier-Stokes flows using the method of smoothed particle hydrodynamics (SPH). The outflow boundary conditions are implemented using an outflow zone downstream of the outlet, where particles are moved using an outgoing wave equation for the velocity field so that feedback noise from the outlet boundary is greatly reduced. For unidirectional flow across the outlet, this condition reduces to Orlanski's wave equation. The performance of the method is demonstrated through several two-dimensional test problems, including unsteady, plane Poiseuille flow, flow between two inclined plates, the Kelvin-Helmholtz instability in a channel, and flow in a constricted conduit, and in three-dimensions for turbulent flow in a \$90\^\{{\textbackslash}circ\}\$ section of a curved square pipe. The results show that spurious waves incident from the outlet are effectively absorbed and that steady-state laminar flows can be maintained for much longer times compared to periodic boundary conditions. In addition, time-dependent anisotropies in the flow, like fluid recirculations, are convected across the outlet in a very stable and accurate manner.},
+  archiveprefix = {arxiv},
+  keywords = {Physics - Computational Physics,Physics - Fluid Dynamics},
+  file = {/Users/sarabek/Zotero/storage/7KYUZRYI/Alvarado-Rodríguez et al. - 2017 - Nonreflecting outlet boundary conditions for incom.pdf;/Users/sarabek/Zotero/storage/KKYHT9JD/1709.html}
+}
+
 @book{Biringen:2011,
   title = {An Introduction to Computational Fluid Mechanics by Example},
   author = {Biringen, S. and Chow, C.-Y.},
@@ -24,11 +41,11 @@
   pages = {183--199},
   issn = {0021-9991},
   doi = {10.1006/jcph.2002.7087},
-  abstract = {An exact fractional step or projection method for solving the incompressible Navier\textendash Stokes equations is analyzed. The method is applied to both structured and unstructured staggered mesh schemes. There are no splitting errors associated with the method; it satisfies the incompressibility condition to machine precision and reduces the number of unknowns. The exact projection technique is demonstrated on a two-dimensional cavity flow and a multiply connected moving domain with a free surface. Its performance is compared directly to classic fractional step methods and shown to be roughly twice as efficient. Boundary conditions and the relationship of the method to streamfunction-vorticity methods are discussed.}
+  abstract = {An exact fractional step or projection method for solving the incompressible Navier{\textendash}Stokes equations is analyzed. The method is applied to both structured and unstructured staggered mesh schemes. There are no splitting errors associated with the method; it satisfies the incompressibility condition to machine precision and reduces the number of unknowns. The exact projection technique is demonstrated on a two-dimensional cavity flow and a multiply connected moving domain with a free surface. Its performance is compared directly to classic fractional step methods and shown to be roughly twice as efficient. Boundary conditions and the relationship of the method to streamfunction-vorticity methods are discussed.}
 }
 
 @article{Chorin:1968,
-  title = {Numerical Solution of the {{Navier}}\textendash{{Stokes}} Equations},
+  title = {Numerical Solution of the {{Navier}}{\textendash}{{Stokes}} Equations},
   author = {Chorin, A. J.},
   year = {1968},
   journal = {Mathematics of Computation},
@@ -56,6 +73,22 @@
   pages = {336--347}
 }
 
+@article{Engquist:1977,
+  title = {Absorbing Boundary Conditions for Numerical Simulation of Waves},
+  author = {Engquist, Bj{\"o}rn and Majda, Andrew},
+  year = {1977},
+  month = may,
+  journal = {Proceedings of the National Academy of Sciences},
+  volume = {74},
+  number = {5},
+  pages = {1765--1766},
+  publisher = {{Proceedings of the National Academy of Sciences}},
+  doi = {10.1073/pnas.74.5.1765},
+  urldate = {2023-12-07},
+  abstract = {In practical calculations, it is often essential to introduce artificial boundaries to limit the area of computation. Here we develop a systematic method for obtaining a hierarchy of local boundary conditions at these artifical boundaries. These boundary conditions not only guarantee stable difference approximations, but also minimize the (unphysical) artificial reflections that occur at the boundaries.},
+  file = {/Users/sarabek/Zotero/storage/NFR8HQYI/Engquist and Majda - 1977 - Absorbing boundary conditions for numerical simula.pdf}
+}
+
 @article{Gresho:1987,
   title = {On Pressure Boundary Conditions for the Incompressible {{Navier-Stokes}} Equations},
   author = {Gresho, Philip M. and Sani, Robert L.},
@@ -77,20 +110,12 @@
 }
 
 @article{Hall:1985,
-  title = {Numerical Solution of {{Navier}}\textendash{{Stokes}} Problems by the Dual Variable Method},
+  title = {Numerical Solution of {{Navier}}{\textendash}{{Stokes}} Problems by the Dual Variable Method},
   author = {Hall, Charles A.},
   year = {1985},
   journal = {SIAM Journal on Algebraic Discrete Methods},
   volume = {6},
   pages = {220--236}
-}
-
-@techreport{Hall1980,
-  title = {Numerical Methods for Thermally Expandable Two-Phase Flow-Computational Techniques for Steam Generator Modeling.[{{PWR}}]},
-  author = {Hall, C. A. and Porsching, T. A. and Dougall, R. S.},
-  year = {1980},
-  institution = {{Pittsburgh Univ., PA (USA)}},
-  file = {/Users/user/Zotero/storage/T3KL2JV7/Hall et al. - 1980 - Numerical methods for thermally expandable two-pha.pdf;/Users/user/Zotero/storage/P6ZMI4DR/5194610.html}
 }
 
 @article{Harlow:1965,
@@ -118,6 +143,38 @@
   pages = {66--82}
 }
 
+@article{Jin:1993,
+  title = {A {{Nonreflecting Outlet Boundary Condition}} for {{Incompressible Unsteady Navier-Stokes Calculations}}},
+  author = {Jin, G. and Braza, M.},
+  year = {1993},
+  month = aug,
+  journal = {Journal of Computational Physics},
+  volume = {107},
+  number = {2},
+  pages = {239--253},
+  issn = {0021-9991},
+  doi = {10.1006/jcph.1993.1140},
+  urldate = {2023-12-07},
+  abstract = {The goal of this work is to adapt a nonreflecting outlet boundary condition, derived from a wave equation, to the numerical solution of the full incompressible Navier-Stokes equations, for an elliptic unsteady free shear flow. The numerical results show that a significant improvement is achieved with this nonreflecting boundary condition, in comparison with the results obtained by using free boundary layer type conditions. The physical phenomena studied concern the onset of the Kelvin-Helmholtz instability in the free (non-forced) shear layer and certain 2D characteristics of transition towards turbulence. These phenomena are simulated naturally, without imposing perturbations. The frequency of the organized vortices and the spread of the mixing layer are correctly predicted. The performances of the method are shown through comparison with the physical experiments. Owing to the nonreflecting boundary conditions, the feedback noises are inhibited effectively, so that the computation domain can be reduced and the dynamic characteristics of the flow are maintained up clearly to the outlet boundary.},
+  file = {/Users/sarabek/Zotero/storage/9WMGV2ZF/S002199918371140X.html}
+}
+
+@article{Johansson:1993,
+  title = {Boundary {{Conditions}} for {{Open Boundaries}} for the {{Incompressible Navier-Stokes Equation}}},
+  author = {Johansson, B. Christer V.},
+  year = {1993},
+  month = apr,
+  journal = {Journal of Computational Physics},
+  volume = {105},
+  number = {2},
+  pages = {233--251},
+  issn = {0021-9991},
+  doi = {10.1006/jcph.1993.1071},
+  urldate = {2023-12-07},
+  abstract = {In this paper we investigate new boundary conditions for the incompressible, time-dependent Navier-Stokes equation. Especially inflow and outflow conditions are considered. The equations are linearized around a constant flow, so that we can use Laplace-Fourier technique to investigate the strength of boundary layers at open boundaries. Such layers are unphysical, and new boundary conditions are proposed so that these boundary layers are suppressed. We also show that the boundary conditions we propose do not produce divergence. Furthermore, they give solutions that do not grow in time, as long as the forcing function in the system does not. We also discuss the numerical treatment of boundaries when fourth-order accurate finite difference operators are used to approximate spatial derivatives. Using higher order methods introduces eigensolutions with boundary layer thickness of the same order of magnitude as the grid size. These eigensolutions have to be suppressed in order to not destroy the fourth-order accuracy of the method. Numerical results for the non-linear Navier-Stokes equation, together with the new boundary conditions, are presented. These calculations confirm that the results for the linearized problem hold for the non-linear problem as well.},
+  file = {/Users/sarabek/Zotero/storage/SRQFX72F/S0021999183710715.html}
+}
+
 @article{Kim:1985,
   title = {Application of a Fractional-Step Method to Incompressible {{Navier-Stokes}} Equations},
   author = {Kim, J. and Moin, P.},
@@ -125,6 +182,38 @@
   journal = {Journal of Computational Physics},
   volume = {59},
   pages = {308--323}
+}
+
+@article{Kourta:1987,
+  title = {Numerical Analysis of a Natural and Excited Two-Dimensional Mixing Layer},
+  author = {Kourta, A. and Braza, M. and Chassaing, P. and Haminh, H.},
+  year = {1987},
+  month = feb,
+  journal = {AIAA Journal},
+  volume = {25},
+  number = {2},
+  pages = {279--286},
+  publisher = {{American Institute of Aeronautics and Astronautics}},
+  issn = {0001-1452},
+  doi = {10.2514/3.9619},
+  urldate = {2023-12-07},
+  keywords = {Adverse Pressure Gradient,Incompressible Viscous Flow,Laminar to Turbulent Transition,Navier Stokes Equations,Numerical Analysis,Poisson's Equation,Reynolds Numbers,Streakline Patterns,Velocity Profiles,Vortex Structure}
+}
+
+@article{Liu:1993,
+  title = {High {{Order Finite Difference}} and {{Multigrid Methods}} for {{Spatially Evolving Instability}} in a {{Planar Channel}}},
+  author = {Liu, C. and Liu, Z.},
+  year = {1993},
+  month = may,
+  journal = {Journal of Computational Physics},
+  volume = {106},
+  number = {1},
+  pages = {92--100},
+  issn = {0021-9991},
+  doi = {10.1006/jcph.1993.1093},
+  urldate = {2023-12-07},
+  abstract = {A computational study of the spatial instability of planar Poiseuille flow is presented. A fourth-order finite difference with a fully implicit time-marching scheme is developed on a staggered grid. A semi-coarsening multigrid method is applied to accelerate convergence for the implicit scheme at each time step and a line distributive relaxation is developed as a fast solver, which is very robust and efficient for anisotropic grids. A new treatment for outflow boundary conditions makes the buffer area as short as one wavelength. The computational results demonstrate high accuracy in terms of agreement with linear theory and excellent efficiency in the sense that cost is comparable to (and usually less than) explicit schemes.},
+  file = {/Users/sarabek/Zotero/storage/XQ9VZGV3/S0021999183710934.html}
 }
 
 @article{Patankar:1972,
@@ -152,6 +241,23 @@
   pages = {249}
 }
 
+@article{Persillon:1998,
+  title = {Physical Analysis of the Transition to Turbulence in the Wake of a Circular Cylinder by Three-Dimensional {{Navier}}{\textendash}{{Stokes}} Simulation},
+  author = {Persillon, H{\'e}l{\`e}ne and Braza, Marianna},
+  year = {1998},
+  month = jun,
+  journal = {Journal of Fluid Mechanics},
+  volume = {365},
+  pages = {23--88},
+  publisher = {{Cambridge University Press}},
+  issn = {1469-7645, 0022-1120},
+  doi = {10.1017/S0022112098001116},
+  urldate = {2023-12-07},
+  abstract = {The transition to turbulence of the flow around a circular cylinder  is studied by a  three-dimensional numerical simulation of the Navier{\textendash}Stokes equations  system in the  Reynolds number range 100{\textendash}300. The numerical method is second-order  accurate in  space and time and Neumann boundary conditions are used at the two boundaries   in the spanwise direction; non-reflecting boundary conditions are specified  for the  outlet downstream boundary. This study predicts the frequency modulation  and the  formation of a discontinuity region delimited by two frequency steps within  the  present Reynolds number range. These features are related to the birth  of streamwise  vorticity and to the kinetic energy distribution in the near wake. The  development of  the mean dynamic quantities, the Reynolds stress correlations and the variation  of  their maximum values are provided in this region, where the similarity  laws do not  hold. The spatial evolution of the von K{\'a}rm{\'a}n mode and of  its spectral amplitude  are quantified and the variation laws of the maximum spectral amplitude  and of its  location as a function of Reynolds number are established. The critical  Reynolds  number for the appearance of the first discontinuity in the present flow  system is  evaluated by the fully nonlinear approach.},
+  langid = {english},
+  file = {/Users/sarabek/Zotero/storage/JIVKA72M/Persillon and Braza - 1998 - Physical analysis of the transition to turbulence .pdf}
+}
+
 @article{Rhie:1983,
   title = {Numerical Study of the Turbulent Flow Past an Airfoil with Trailing Edge Separation},
   author = {Rhie, C. M. and Chow, W. L.},
@@ -164,9 +270,43 @@
   doi = {10.2514/3.8284}
 }
 
+@article{Sahin:2004,
+  title = {A Numerical Investigation of Wall Effects up to High Blockage Ratios on Two-Dimensional Flow Past a Confined Circular Cylinder},
+  author = {Sahin, Mehmet and Owens, Robert G.},
+  year = {2004},
+  month = apr,
+  journal = {Physics of Fluids},
+  volume = {16},
+  number = {5},
+  pages = {1305--1320},
+  issn = {1070-6631},
+  doi = {10.1063/1.1668285},
+  urldate = {2023-12-07},
+  abstract = {A finite volume method based on a velocity-only formulation is used to solve the flow field around a confined circular cylinder in a channel in order to investigate lateral wall proximity effects on stability, Strouhal number, hydrodynamic forces and wake structure behind the cylinder for a wide range of blockage ratios (0.1\&lt;{$\beta\leqslant$}0.9) and Reynolds numbers (0\&lt;Re{$\leqslant$}280). For blockage ratios less than approximately 0.85 a first critical Reynolds number is identified at which a supercritical Hopf bifurcation of the symmetric solution occurs. For blockage ratios greater than about 0.687 and at Reynolds numbers exceeding the first critical Reynolds number a second curve of neutral stability is seen, representing a pitchfork bifurcation of the steady symmetric solution to one of two possible steady asymmetric solutions. Either side of the neutral stability curve for the pitchfork bifurcation our linear stability analysis and direct numerical simulations demonstrate that although the flow is linearly stable it is unstable to finite two-dimensional perturbations. At blockage ratios larger than about 0.82 the steady asymmetric solutions also become unstable through a Hopf bifurcation. In contrast with the first Hopf bifurcation of the symmetric solution at lower Reynolds numbers numerical calculations of the lift coefficient reveal that the oscillations are no longer symmetric in the rising and falling parts of each cycle. Very strong vortices shed from the cylinder and the wall cause drastic increases in the amplitudes of the lift and drag coefficients. A co-dimension 2 point where pitchfork and Hopf bifurcations occur simultaneously has been located in parameter space. Altogether, four distinct regions in the parameter space ({$\beta$},Re){$\in$}(0,0.9]{\texttimes}(0,280] have been identified, each corresponding to a different class of flow: (i) Steady symmetric flow, (ii) symmetric vortex shedding, (iii) steady asymmetric flow, and (iv) asymmetric vortex shedding, where a periodic-in-time flow is classed as symmetric or asymmetric depending on whether the time-average over one cycle of the lift coefficient is zero or not. Numerical solutions are computed on meshes having up to 1.8 million degrees of freedom. Extensive comparisons are made with the results available in the literature.},
+  file = {/Users/sarabek/Zotero/storage/ZVKKVU9Y/Sahin and Owens - 2004 - A numerical investigation of wall effects up to hi.pdf;/Users/sarabek/Zotero/storage/3NA47ZL3/A-numerical-investigation-of-wall-effects-up-to.html}
+}
+
+@article{Sani:1994,
+  title = {R{\'e}sum{\'e} and Remarks on the Open Boundary Condition Minisymposium},
+  author = {Sani, R. L. and Gresho, P. M.},
+  year = {1994},
+  journal = {International Journal for Numerical Methods in Fluids},
+  volume = {18},
+  number = {10},
+  pages = {983--1008},
+  issn = {1097-0363},
+  doi = {10.1002/fld.1650181006},
+  urldate = {2023-12-07},
+  abstract = {The incompressible Navier-Stokes equations{\textemdash}and their thermal convection and stratified flow analogue, the Boussinesq equations{\textemdash}possess solutions in bounded domains only when appropriate/legitimate boundary conditions (BCs) are appended at all points on the domain boundary. When the boundary{\textemdash}or, more commonly, a portion of it{\textemdash}is not endowed with a Dirichlet BC, we are faced with selecting what are called open boundary conditions (OBCs), because the fluid may presumably enter or leave the domain through such boundaries. The two minisymposia on OBCs that are summarized in this paper had the objective of finding the best OBCs for a small subset of two-dimensional test problems. This objective, which of course is not really well-defined, was not met (we believe), but the contributions obtained probably raised many more questions/issues than were resolved{\textemdash}notable among them being the advent of a new class of OBCs that we call FBCs (fuzzy boundary conditions).},
+  copyright = {Copyright {\textcopyright} 1994 John Wiley \& Sons, Ltd},
+  langid = {english},
+  keywords = {Boundary condition,Boussinesq,Navier-Stokes,Open,Outflow},
+  file = {/Users/sarabek/Zotero/storage/3R4ISSDJ/fld.html}
+}
+
 @article{Temam:1969a,
-  title = {Sur l'approximation de La Solution Des \'Equations de {{Navier-Stokes}} Par La M\'ethode Des Pas Fractionnaires ({{I}})},
-  author = {{R.T\'emam}},
+  title = {Sur l'approximation de La Solution Des {\'E}quations de {{Navier-Stokes}} Par La M{\'e}thode Des Pas Fractionnaires ({{I}})},
+  author = {{R.T{\'e}mam}},
   year = {1969},
   journal = {Archive for Rational Mechanics and Analysis},
   volume = {32},
@@ -174,12 +314,30 @@
 }
 
 @article{Temam:1969b,
-  title = {Sur l'approximation de La Solution Des \'Equations de {{Navier-Stokes}} Par La M\'ethode Des Pas Fractionnaires ({{II}})},
-  author = {{R.T\'emam}},
+  title = {Sur l'approximation de La Solution Des {\'E}quations de {{Navier-Stokes}} Par La M{\'e}thode Des Pas Fractionnaires ({{II}})},
+  author = {{R.T{\'e}mam}},
   year = {1969},
   journal = {Archive for Rational Mechanics and Analysis},
   volume = {33},
   pages = {377--385}
+}
+
+@article{Tsynkov:1998,
+  title = {Numerical Solution of Problems on Unbounded Domains. {{A}} Review},
+  author = {Tsynkov, Semyon V.},
+  year = {1998},
+  month = aug,
+  journal = {Applied Numerical Mathematics},
+  series = {Special {{Issue}} on {{Absorbing Boundary Conditions}}},
+  volume = {27},
+  number = {4},
+  pages = {465--532},
+  issn = {0168-9274},
+  doi = {10.1016/S0168-9274(98)00025-7},
+  urldate = {2023-12-07},
+  abstract = {While numerically solving a problem initially formulated on an unbounded domain, one typically truncates this domain, which necessitates setting the artificial boundary conditions (ABCs) at the newly formed external boundary. The issue of setting the ABCs appears most significant in many areas of scientific computing, for example, in problems originating from acoustics, electrodynamics, solid mechanics, and fluid dynamics. In particular, in computational fluid dynamics (where external problems represent a wide class of important formulations) the proper treatment of external boundaries may have a profound impact on the overall quality and performance of numerical algorithms and interpretation of the results. Most of the currently used techniques for setting the ABCs can basically be classified into two groups. The methods from the first group (global ABCs) usually provide high accuracy and robustness of the numerical procedure but often appear to be fairly cumbersome and (computationally) expensive. The methods from the second group (local ABCs) are, as a rule, algorithmically simple, numerically cheap, and geometrically universal; however, they usually lack accuracy of computations. In this paper we first present an extensive survey and provide a comparative assessment of different existing methods for constructing the ABCs. Then, we describe a new ABCs technique proposed in our recent work and review the corresponding results. This new technique enables one to construct the ABCs that largely combine the advantages relevant to the two aforementioned classes of existing methods. Our approach is based on application of the difference potentials method by Ryaben'kii. This approach allows one to obtain highly accurate ABCs in the form of certain (nonlocal) boundary operator equations. The operators involved are analogous to the pseudodifferential boundary projections first introduced by Calderon and then also studied by Seeley. In spite of the nonlocality, the new boundary conditions are geometrically universal, numerically inexpensive, and easy to implement along with the existing solvers.},
+  keywords = {Artificial boundary conditions,Auxiliary problem,Boundary equations with projections,Difference potentials method,Infinite-domain problems,Pseudodifferential equations},
+  file = {/Users/sarabek/Zotero/storage/2FPTXMXC/S0168927498000257.html}
 }
 
 @book{Yanenko:1971,
