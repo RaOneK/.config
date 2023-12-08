@@ -632,8 +632,8 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
   \end{itemize}
 }
 
-\subsection{Problem statement}
-Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a unit square domain together with boundary conditions:
+\subsection{Problem statement}\label{subsec:problem-statement-dimentional}
+Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a semi-infinite domain together with boundary conditions:
 \begin{subequations}
 \label{eqs:NSE-dsm-bl-dimensional}
 \begin{align}
@@ -655,7 +655,8 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{align}
 \end{subequations}
 
-The algorithm requires a finite domain, we will perform the domain truncation and normalize all equations by width $L$ and stream velocity $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
+\subsection{Nondimensionalization}\label{subsec:Nondimensionalization}
+In numerical computations, it is advantageous to maintain variables of comparable magnitude. This ensures that operations such as the multiplication of a large dimensional pressure variable with a small velocity are not performed. We will truncate the domain and normalize all equations by width $L$ and stream velocity $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
 \begin{equation*}
 	x\to Lx^{\prime},  \quad 
 	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
@@ -683,17 +684,16 @@ where we dropped prime superscripts. The continuity equation is done in a simila
 where we also drop prime superscripts in the last identity.
 
 \subsection{Artificial boundary conditions}\label{sec:artificial-bc}
+Though there are methods that may solve problems on unbounded domains, the majority of the algorithms can only be applied to truncated domains. In the case of a finite domain, the introduction of appropriate artificial boundary conditions (ABCs) is crucial for achieving numerical solutions. The review papers on such BCs by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different ABCs applied to the various flow scenarios. Below we will discuss the options which are most applicable to our problem statement~\eqref{eqs:NSE-dsm-bl-dimensional}. 
 
-Though there are methods that may solve problems on unbounded domains, the majority of the algorithms can be applied to truncated domains only. In the case of a finite domain, the introduction of artificial boundary conditions (ABCs) at the infinite boundary is crucial for achieving accurate numerical solutions. The review papers on artificial boundary conditions by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different options applied to the various flow scenarios. 
-
-A common issue in numerical solutions of fluid flow is the reflection of waves at the outlet. This is due to the elliptic nature of the incompressible Navier-Stokes. One of the earliest and most successful works (Engquist~\cite{Engquist:1977}) that addressed this problem was applied to the wave and shallow water equations. 
+In solutions of fluid flow is the reflection of waves at the outlet is common. Such behaviour is due to the elliptic nature of the incompressible Navier-Stokes. One of the earliest and most successful works (Engquist~\cite{Engquist:1977}) that addressed this problem was applied to the wave and shallow water equations. Although the method is not fully applicable to our equations, the authors systematically addressed and resolved the reflective behaviour of the outlet.
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.5\paperwidth]{BC-Buffer}
   }
   \caption{Buffer BC by Liu.}\label{fig:BC-buffer}
 \end{figure}
-Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $u=u_0+\tilde{u},v=v_0+\tilde{v}$. Authors introduced the additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit, that involved the use of:
+Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit that involves the use of:
 \begin{enumerate}
 	\item Semi-implicit perturbed mass conservation
 	\begin{equation}
@@ -716,7 +716,7 @@ Braza and collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998
 \end{equation}
 where $\nu$ is kinematic viscosity. 
 Results shown in figures~\ref{fig:kourta-results}, \ref{fig:jin-results} correspond to ABCs~\eqref{eqn:kourta-bc} and~\eqref{eqn:jin-bc}.
-The second ABC~\eqref{eqn:jin-bc} had a similar derivation to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the corresponding paper~\cite{Jin:1993} also required an artificial boundary condition for pressure at the outlet. This ABC was derived directly from the numerical algorithm.
+The second ABC~\eqref{eqn:jin-bc} has a similar derivation to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the numerical algorithm used in corresponding paper~\cite{Jin:1993} also required an artificial boundary condition for pressure at the outlet. This ABC was derived directly from the numerical algorithm.
 \begin{figure}
 \centering
   \subfigure[Kourta-Braza results.]{\includegraphics[height=0.265\textwidth]{Braza-Kourta.jpg} \label{fig:kourta-results}} \quad
@@ -748,7 +748,7 @@ The second ABC~\eqref{eqn:jin-bc} had a similar derivation to Engquist~\cite{Eng
 \end{subequations}
 
 \subsection{Domain discretization}\label{subsec:dsm-domain}
-Discretization in Computational Fluid Dynamics is a crucial step that transforms the infinite, continuous solutions of fluid flow equations into a finite, manageable form, enabling computers to simulate and analyze complex fluid behaviours effectively. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
+Following the successful nondimensionalization of the governing equations, we now turn our attention to the process of domain discretization. This crucial step involves dividing the computational domain into discrete elements, allowing us to compute variables and their derivatives on a finite set of points. Consider discretizing the area into $m$ intervals horizontally and $n$ intervals vertically, forming a grid of rectangular cells. To enhance memory access, it is recommended to organize the data using arrays instead of matrices. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow~\cite{Harlow:1965}) to represent coordinates on the grid.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
