@@ -38,6 +38,7 @@
 \usepackage{mathtools}
 \usepackage{eqparbox}
 \usepackage{float} % \figure{}[H] IN PLACE VIEW
+\usepackage[capitalize]{cleveref} % smart references in one bracket
 
 \graphicspath{{figures/}}
 
@@ -628,7 +629,8 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
     \item \st{Symmetric BC on top to be included in all operators.}
     \item \st{Indexing change for equations and figures.}
-    \item \st{Motivation.} Added some where possible!
+    \item \st{Motivation.} Added some, where possible!
+    \item Substitute all refs/citations/eqrefs with smart \textbackslash cref.
   \end{itemize}
 }
 
@@ -639,14 +641,15 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \begin{align}
 \label{eqn:momentum-dimensional}
 \text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\frac{1}{\rho}\nabla p + {\frac{\mu}{\rho}} \nabla \cdot \nabla \boldsymbol{v},\\
+&\rho\text{ - density}, \mu\text{ - dynamic viscosity.}\notag\\
 \label{eqn:continuity-dsm-bl}
 \text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
-					&0\leq x < \infty, 0\leq y <\infty, t\geq0,\notag\\
+					&0\leq x < \infty, 0\leq y <\infty, t\geq0.\notag\\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,\infty)=\left(U_0 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
-									& \{|A|<U_0,k,\omega, \phi_0\}\subset \mathbb{R},\notag\\
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,\infty)=\frac{1}{2}\left(U_0 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+									& \{|A|<U_0,k,\omega, \phi_0\}\subset \mathbb{R}.\notag\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
-\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
+\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
 %\label{eqn:NSE-dsm-bl-bc-outlet}
 %\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor\left(\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial ^2 u}{\partial y^2}\right), \\ 
 %					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
@@ -677,7 +680,7 @@ we obtain the non-dimensional momentum equation
 \begin{equation}
 	\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \frac{1}{\operatorname{Re}} \nabla \cdot \nabla \boldsymbol{v},
 \end{equation}
-where we dropped prime superscripts. The continuity equation is done in a similar manner:
+where prime superscript $\prime$ is suppressed for the dimensionless variables. The continuity equation is done in a similar manner:
 \begin{equation}
 	\left(\frac{1}{L} \nabla^{\prime}\right) \cdot U_0\boldsymbol{v}^{\prime}=0\iff\nabla^{\prime}\boldsymbol{v}^{\prime}=0\implies\nabla\boldsymbol{v}=0
 \end{equation}
@@ -693,7 +696,7 @@ In solutions of fluid flow is the reflection of waves at the outlet is common. S
   }
   \caption{Buffer BC by Liu.}\label{fig:BC-buffer}
 \end{figure}
-Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit that involves the use of:
+Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of an additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit that involves the use of:
 \begin{enumerate}
 	\item Semi-implicit perturbed mass conservation
 	\begin{equation}
@@ -707,7 +710,7 @@ Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. T
 \end{enumerate}
 This buffer was not consistent with the physics and required to be as short as possible. 
 
-Braza and collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998}) developed a set of BCs that allows the eddies to be freely developed downstream as they leave the domain.  Two types of boundary conditions were applied to two-dimensional shear flow: 
+Braza and collaborators~(\cite{Jin:1993,Kourta:1987,Persillon:1998}) developed a set of BCs that allows the eddies to be freely developed downstream as they leave the domain. Two-dimensional shear flow was solved using two types  of boundary conditions: 
 \begin{equation}\label{eqn:kourta-bc}
 	\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0,
 \end{equation}
@@ -715,8 +718,8 @@ Braza and collaborators~(\cite{Jin:1993},\cite{Kourta:1987},\cite{Persillon:1998
 	\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,
 \end{equation}
 where $\nu$ is kinematic viscosity. 
-Results shown in figures~\ref{fig:kourta-results}, \ref{fig:jin-results} correspond to ABCs~\eqref{eqn:kourta-bc} and~\eqref{eqn:jin-bc}.
-Second artificial BC~\eqref{eqn:jin-bc} was derived similarly to Engquist~\cite{Engquist:1977} and hence is said to be non-reflective. Nevertheless, the numerical algorithm used in corresponding paper~\cite{Jin:1993} required an artificial boundary condition for pressure at the outlet. This ABC was derived from the numerical algorithm by taking into account condition~\eqref{eqn:jin-bc}.
+Results shown in \cref{fig:kourta-results,fig:jin-results} correspond to ABCs~\cref{eqn:kourta-bc,eqn:jin-bc}.
+The first condition~\eqref{eqn:kourta-bc} made vortices hit against a "wall", while they went out of the domain. However, the second artificial BC~\eqref{eqn:jin-bc} was derived similarly to Engquist~\cite{Engquist:1977} from wave equation and displayed non-reflective behaviour. Nevertheless, the numerical algorithm used in the corresponding paper~\cite{Jin:1993} required auxiliary potential function ABC at the outlet. The boundary condition for $\phi$ was derived from the numerical algorithm by taking into account condition~\eqref{eqn:jin-bc}. (It might be possible to obtain an ABC for pressure depending on the algorithm used.)
 \begin{figure}
 \centering
   \subfigure[Kourta-Braza results.]{\includegraphics[height=0.265\textwidth]{Braza-Kourta.jpg} \label{fig:kourta-results}} \quad
@@ -724,25 +727,63 @@ Second artificial BC~\eqref{eqn:jin-bc} was derived similarly to Engquist~\cite{
 \caption{\small Resultant streaklines of Braza and collaborators.}
 \end{figure}
 
+\subsubsection{Non-reflecting BC from wave equation}\label{subsubsec:non-reflecting-abc}
+Velocity vector $\boldsymbol{v}$ is considered as the transported wave quantity incident on the boundary. Due to the elliptic nature of the flow, the boundary is said to satisfy the anisotropic wave equation
+\begin{equation}\label{eqn:wave-eqn-at-bdry}
+	\frac{\partial ^2 \boldsymbol{v}}{\partial t^2}-c_x^2\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}-c_y^2\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0,
+\end{equation}
+where $c_x,c_y$ are the characteristic velocities of $x,y$ wave propagation. Equation~\eqref{eqn:wave-eqn-at-bdry} can be rewritten in terms of pseudo-differential operators
+\begin{equation}
+	L\boldsymbol{v}\equiv -D_t^2\boldsymbol{v}+c_x^2D_x^2\boldsymbol{v}+c_y^2D_y^2\boldsymbol{v=0},
+\end{equation}
+where $D^2_x,D^2_y$ and $D^2_t$ are second derivatives w.r.t. $x,y$ and $t$ variables respectively. Operator $L$ can be factored into
+\begin{equation}
+	L\boldsymbol{v}=L^+L^-\boldsymbol{v}=0,
+\end{equation}
+where
+\begin{align}
+	L^+&\equiv c_x D_x + D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
+	L^-&\equiv c_x D_x - D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
+\end{align}
+correspond to waves travelling inside and outside the domain in directions parallel to the $x$ axis. To nullify the reflected waves, a total absorption~\cite{Engquist:1977} at the boundary
+\begin{equation}\label{eqn:absorb-incoming}
+	L^+\boldsymbol{v}=0
+\end{equation}
+is considered. It is possible to use the Taylor series to approximate the square root term, however, the results were found to be strongly ill posed, whereas, Pade second approximation
+\begin{equation}
+	\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\approx1-\frac{1}{2}\left( \frac{c_y D_y}{D_t}\right)^2
+\end{equation}
+was found to be well posed~\cite{Engquist:1977, Kreiss:1970}. Condition~\eqref{eqn:absorb-incoming} in terms of the above Pade approximation is rewritten as
+\begin{equation}
+	\left( c_xD_x + D_t - \frac{c^2_y}{2D_t}D_y^2 \right)\boldsymbol{v}=0,
+\end{equation}
+which then is matched to the momentum Navier-Stokes equation as
+\begin{equation}\label{eqn:absorbing-bc-dimensional}
+	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\frac{1}{\operatorname{Re}}\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
+\end{equation}
+
+
+
+
 \subsection{Problem statement on truncated domain}
 \begin{subequations}
 \label{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
 \text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, \\ 
-					&\nu = \frac{1}{Re},0\leq x \leq L, 0\leq y \leq L, t\geq0,\notag\\
+					&\nu = \frac{1}{\operatorname{Re}},0\leq x \leq L, 0\leq y \leq L, t\geq0.\notag\\
 \label{eqn:continuity-dsm-bl}
 \text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
-					&0\leq x \leq L, 0\leq y \leq L, t\geq0, \notag\\
+					&0\leq x \leq L, 0\leq y \leq L, t\geq0. \notag\\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,L)=\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
-									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R},\notag\\
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,L)=\frac{1}{2}\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R}.\notag\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
-\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0), \\
+\text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
-\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor(\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial ^2 u}{\partial y^2}), \\ 
-					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
-					& (x=L),\notag\\
+\text{Outlet BC: } 	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}, \\ 
+%					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
+					& (x=L).\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0).
 \end{align}
 \end{subequations}
