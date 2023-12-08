@@ -39,6 +39,9 @@
 \usepackage{eqparbox}
 \usepackage{float} % \figure{}[H] IN PLACE VIEW
 \usepackage[capitalize]{cleveref} % smart references in one bracket
+%\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
+\usepackage[nocompress]{cite}
+%\bibliographystyle{ieeetr} % trash style mess up the order in bib
 
 \graphicspath{{figures/}}
 
@@ -624,13 +627,13 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \todo{
 \begin{itemize}
-    \item \st{Non-dimensionalization.} \textit{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed}
-	\item BC discussion (analytic). \textit{Typeset all articles printed and look for Sani-Gresho extra references at the end. Derive pressure outlet BC as in Jin-Braza~\cite{Jin1993}}.
+    \item \st{Non-dimensionalization.} \st{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed.} Normalized to max value of 1.
+	\item BC discussion (analytic). \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}. Finished \cite{Engquist:1977, Kourta:1987, Liu:1993, Persillon:1998}.
 	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
     \item \st{Symmetric BC on top to be included in all operators.}
     \item \st{Indexing change for equations and figures.}
     \item \st{Motivation.} Added some, where possible!
-    \item Substitute all refs/citations/eqrefs with smart \textbackslash cref.
+    \item Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.
   \end{itemize}
 }
 
