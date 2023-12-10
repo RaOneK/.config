@@ -739,32 +739,38 @@ where $c_x,c_y$ are the characteristic velocities of $x,y$ wave propagation. Equ
 \begin{equation}
 	L\boldsymbol{v}\equiv -D_t^2\boldsymbol{v}+c_x^2D_x^2\boldsymbol{v}+c_y^2D_y^2\boldsymbol{v=0},
 \end{equation}
-where $D^2_x,D^2_y$ and $D^2_t$ are second derivatives w.r.t. $x,y$ and $t$ variables respectively. Operator $L$ can be factored into
+with $D^2_x,D^2_y$ and $D^2_t$ being the second derivatives w.r.t. $x,y$ and $t$ variables respectively. Operator $L$ can be factored into
 \begin{equation}
 	L\boldsymbol{v}=L^+L^-\boldsymbol{v}=0,
 \end{equation}
 where
 \begin{align}
 	L^+&\equiv c_x D_x + D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
-	L^-&\equiv c_x D_x - D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
+	L^-&\equiv c_x D_x - D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\\
 \end{align}
 correspond to waves travelling inside and outside the domain in directions parallel to the $x$ axis. To nullify the reflected waves, a total absorption~\cite{Engquist:1977} at the boundary
 \begin{equation}\label{eqn:absorb-incoming}
 	L^+\boldsymbol{v}=0
 \end{equation}
 is considered. It is possible to use the Taylor series to approximate the square root term, however, the results were found to be strongly ill posed, whereas, Pade second approximation
-\begin{equation}
+\begin{equation}\label{eqn:pade-sqrt}
 	\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\approx1-\frac{1}{2}\left( \frac{c_y D_y}{D_t}\right)^2
 \end{equation}
-was found to be well posed~\cite{Engquist:1977, Kreiss:1970}. Condition~\eqref{eqn:absorb-incoming} in terms of the above Pade approximation is rewritten as
+was shown to be well posed~\cite{Engquist:1977, Kreiss:1970}. Therefore, Pade approximation \eqref{eqn:pade-sqrt}  with condition~\eqref{eqn:absorb-incoming} become
 \begin{equation}
 	\left( c_xD_x + D_t - \frac{c^2_y}{2D_t}D_y^2 \right)\boldsymbol{v}=0,
 \end{equation}
-which then is matched to the momentum Navier-Stokes equation as
+which was then matched to the momentum Navier-Stokes equation as
 \begin{equation}\label{eqn:absorbing-bc-dimensional}
 	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\frac{1}{\operatorname{Re}}\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
 \end{equation}
-
+Implicit second-order discretization in time of \cref{eqn:absorbing-bc-dimensional} between time steps $n+1$ and $n$ was also provided by paper \cite{Jin:1993}:
+\begin{equation}
+\begin{gathered}
+\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\frac{u^n}{2}\left[\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n+1}+\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^n\right] \\
+=\nu\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^n+O\left(\Delta t^2\right).
+\end{gathered}
+\end{equation}
 
 
 
