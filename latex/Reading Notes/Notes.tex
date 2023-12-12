@@ -39,6 +39,13 @@
 \usepackage{eqparbox}
 \usepackage{float} % \figure{}[H] IN PLACE VIEW
 \usepackage[capitalize]{cleveref} % smart references in one bracket
+
+\crefformat{equation}{#2Eq. (#1)#3}
+\crefrangeformat{equation}{#3Eqs. (#1)#4 to #5(#2)#6}
+\crefmultiformat{equation}{#2Eqs. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{equation}{#3Eqs. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+\crefformat{pluralequation}{#2Eqs.~(#1)#3}
+
 %\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
 \usepackage[nocompress]{cite}
 %\bibliographystyle{ieeetr} % trash style mess up the order in bib
@@ -628,19 +635,21 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 \todo{
 \begin{itemize}
     \item \st{Non-dimensionalization.} \st{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed.} Normalized to max value of 1.
-	\item BC discussion (analytic). \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}. Finished \cite{Engquist:1977, Kourta:1987, Liu:1993, Persillon:1998}.
 	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
     \item \st{Symmetric BC on top to be included in all operators.}
     \item \st{Indexing change for equations and figures.}
     \item \st{Motivation.} Added some, where possible!
+    \item BC discussion (analytic). \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}. Finished \cite{Engquist:1977, Kourta:1987, Liu:1993, Persillon:1998}.
+    \item Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon. 
     \item Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.
+    \item Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript. Is it OK?
   \end{itemize}
 }
 
 \subsection{Problem statement}\label{subsec:problem-statement-dimentional}
-Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to the system~\eqref{eqs:NSE} on a semi-infinite domain together with boundary conditions:
+Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to ~\cref{eqs:NSE} on a semi-infinite domain together with boundary conditions:
 \begin{subequations}
-\label{eqs:NSE-dsm-bl-dimensional}
+\label[pluralequation]{eqs:NSE-dsm-bl-dimensional}
 \begin{align}
 \label{eqn:momentum-dimensional}
 \text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\frac{1}{\rho}\nabla p + {\frac{\mu}{\rho}} \nabla \cdot \nabla \boldsymbol{v},\\
@@ -661,6 +670,100 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{align}
 \end{subequations}
 
+\subsection{Artificial boundary conditions}\label{sec:artificial-bc}
+Though there are methods that may solve problems on unbounded domains, the majority of the algorithms can only be applied to finite ones. 
+%In case of a truncated domain, the introduction of appropriate artificial boundary conditions (ABCs) is crucial for achieving numerical solutions. 
+The review papers on such BCs by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different ABCs applied to the various flow scenarios. Below we will discuss the options which are most applicable to \cref{eqs:NSE-dsm-bl-dimensional}. 
+
+In solutions of fluid flow, the reflection of waves at the outlet is common. Such behaviour is due to the elliptic nature of the incompressible Navier-Stokes. One of the earliest and most successful works (Engquist~\cite{Engquist:1977}) that addressed this problem was applied to the wave and shallow water equations. Although the method is not fully applicable to our equations, the authors systematically addressed and resolved the reflective behaviour of the outlet.
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.5\paperwidth]{BC-Buffer}
+  }
+  \caption{Buffer BC by Liu.}\label{fig:BC-buffer}
+\end{figure}
+Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of an additional buffer domain (\cref{fig:BC-buffer}) at the exit that involves the use of:
+\begin{enumerate}
+	\item Semi-implicit perturbed mass conservation
+	\begin{equation*}
+		\tilde{u}_{m+\frac{1}{2},j}^{n+1}=\tilde{u}_{m-\frac{1}{2},j}^n-\frac{\tilde{v}^n_{m-1,j+\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}}}{\Delta y_{j}}{\Delta x_m}.
+	\end{equation*}
+	\item Zero change in acceleration of the tangential perturbed velocity component computed semi-implicitly as
+	\begin{equation*}
+		\frac{\partial ^2 \tilde{v}}{\partial x^2}=0\implies \tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}=2\tilde{v}^n_{m,j-\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}},
+	\end{equation*}
+	where $\tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}$ is the ghost component outside the domain.
+\end{enumerate}
+This buffer was not consistent with the physics and required to be as short as possible. 
+
+Braza and collaborators~\cite{Jin:1993,Kourta:1987,Persillon:1998} considered the shear flow (mixing layer) problem. They developed a set of BCs that allows the eddies to be freely developed downstream as they leave the domain. The most appropriate boundary conditions at top and bottom were those derived by considering boundaries as streamlines with:
+\begin{equation}\label{eqn:symmetric-bc}
+	v=0, \frac{\partial u}{\partial y}=0
+\end{equation}
+while the outlet had two types  of boundary conditions: 
+\begin{subequations}
+\label[pluralequation]{eqs:braza}
+\begin{align}
+\label{eqn:kourta-bc}
+	&\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0,\\
+\label{eqn:jin-bc}
+	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,
+\end{align}
+\end{subequations}
+where $\nu$ is kinematic viscosity. 
+Results shown in \cref{fig:kourta-results,fig:jin-results} correspond to results obtained through \cref{eqn:kourta-bc,eqn:jin-bc}.
+	The first \cref{eqn:kourta-bc} made vortices hit against a "wall", while they went out of the domain. 
+	However, the second \cref{eqn:jin-bc} was derived similarly to Engquist~\cite{Engquist:1977} from wave equation and displayed non-reflective behaviour. 
+	In addition, the numerical algorithm used in the corresponding paper~\cite{Jin:1993} required boundary conditions for auxiliary potential function $\phi$ at the outlet. 
+	The corresponding ABC for $\phi$ was derived from the numerical algorithm by taking into account \cref{eqn:jin-bc}. 
+	(It might be possible to obtain an ABC for pressure depending on the algorithm used.)
+\begin{figure}
+\centering
+  \subfigure[Kourta-Braza results.]{\includegraphics[height=0.265\textwidth]{Braza-Kourta.jpg} \label{fig:kourta-results}} \quad
+  \subfigure[Jin-Braza results.]{\includegraphics[height=0.245\textwidth]{Braza-Jin.jpg} \label{fig:jin-results}}
+\caption{\small Resultant streaklines of Braza and collaborators.}
+\end{figure}
+
+\subsubsection{Non-reflecting outlet BC}\label{subsubsec:non-reflecting-abc}
+Velocity vector $\boldsymbol{v}$ is considered as the transported wave quantity incident on the boundary. 
+Due to the elliptic nature of the flow, the boundary is said to satisfy the anisotropic wave equation
+\begin{equation}\label{eqn:wave-eqn-at-bdry}
+	\frac{\partial ^2 \boldsymbol{v}}{\partial t^2}-c_x^2\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}-c_y^2\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0,
+\end{equation}
+where $c_x,c_y$ are the characteristic velocities of $x,y$ wave propagation. We can rewrite \cref{eqn:wave-eqn-at-bdry} in terms of pseudo-differential operators
+\begin{equation*}
+	L\boldsymbol{v}\equiv -D_t^2\boldsymbol{v}+c_x^2D_x^2\boldsymbol{v}+c_y^2D_y^2\boldsymbol{v=0},
+\end{equation*}
+where $D^2_x,D^2_y$ and $D^2_t$ are second derivatives w.r.t. $x,y$ and $t$ variables respectively. Operator $L$ can be factored into
+\begin{equation*}
+	L\boldsymbol{v}=L^+L^-\boldsymbol{v}=0,
+\end{equation*}
+where
+\begin{align*}
+	L^+&\equiv c_x D_x + D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
+	L^-&\equiv c_x D_x - D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
+\end{align*}
+correspond to waves travelling inside and outside the domain in directions parallel to the $x$ axis. To nullify the reflected waves, a total absorption~\cite{Engquist:1977} at the boundary
+\begin{equation}\label{eqn:absorb-incoming}
+	L^+\boldsymbol{v}=0
+\end{equation}
+is considered. It is possible to use the Taylor series to approximate the square root term, however, the results were found to be strongly ill posed, whereas, Pade second approximation
+\begin{equation}\label{eqn:pade-second}
+	\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\approx1-\frac{1}{2}\left( \frac{c_y D_y}{D_t}\right)^2
+\end{equation}
+was found to be well posed~\cite{Engquist:1977,Kreiss:1970}. It is possible to rewrite \cref{eqn:absorb-incoming} in terms of \cref{eqn:pade-second} as
+\begin{equation*}
+	\left( c_xD_x + D_t - \frac{c^2_y}{2D_t}D_y^2 \right)\boldsymbol{v}=0,
+\end{equation*}
+which then is matched to the momentum Navier-Stokes equation as
+\begin{equation}\label{eqn:absorbing-bc-dimensional}
+	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\frac{1}{\operatorname{Re}}\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
+\end{equation}
+
+Taking into account successful results obtained in \cite{Kourta:1987, Jin:1993, Persillon:1998} and similarities between the boundary layer and mixing layer flows we will use \cref{eqn:jin-bc,eqn:symmetric-bc} as boundary conditions for top and right boundaries and also truncate the domain to width and height $L$.
+
+%\subsubsection{Top BC}\label{subsubsec:top-bc}
+
 \subsection{Nondimensionalization}\label{subsec:Nondimensionalization}
 In numerical computations, it is advantageous to maintain variables of comparable magnitude. This ensures that operations such as the multiplication of a large dimensional pressure variable with a small velocity are not performed. We will truncate the domain and normalize all equations by width $L$ and stream velocity $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
 \begin{equation*}
@@ -675,124 +778,40 @@ we obtain
 \begin{equation*}
 	\frac{U_0}{\frac{L}{U_0}} \frac{\partial \boldsymbol{v}^{\prime}}{\partial t^{\prime}}+U_0\boldsymbol{v}\cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}=-\frac{1}{\rho}\left(\frac{1}{L} \nabla^{\prime}\right){p^{\prime}\rho U^2_0}+\frac{\mu}{\rho} \left(\frac{1}{L} \nabla^{\prime}\right) \cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}^{\prime}.
 \end{equation*}
-Multiplying both sides of the equation for $\frac{L}{U^2}$ and introducing the well-known Reynolds number 
+Multiplying both sides of the equation by $\frac{L}{U_0^2}$ and introducing well-known Reynolds number 
 \begin{equation*}
 \operatorname{Re}=\frac{\rho L U_0}{\mu},
 \end{equation*}
 we obtain the non-dimensional momentum equation
-\begin{equation}
+\begin{equation*}
 	\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \frac{1}{\operatorname{Re}} \nabla \cdot \nabla \boldsymbol{v},
-\end{equation}
-where prime superscript $\prime$ is suppressed for the dimensionless variables. The continuity equation is done in a similar manner:
-\begin{equation}
+\end{equation*}
+where prime superscript $\prime$ is suppressed for the dimensionless variables. The continuity equation is nondimensionalized in a similar manner:
+\begin{equation*}
 	\left(\frac{1}{L} \nabla^{\prime}\right) \cdot U_0\boldsymbol{v}^{\prime}=0\iff\nabla^{\prime}\boldsymbol{v}^{\prime}=0\implies\nabla\boldsymbol{v}=0
-\end{equation}
-where we also drop prime superscripts in the last identity.
-
-\subsection{Artificial boundary conditions}\label{sec:artificial-bc}
-Though there are methods that may solve problems on unbounded domains, the majority of the algorithms can only be applied to truncated domains. In the case of a finite domain, the introduction of appropriate artificial boundary conditions (ABCs) is crucial for achieving numerical solutions. The review papers on such BCs by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different ABCs applied to the various flow scenarios. Below we will discuss the options which are most applicable to our problem statement~\eqref{eqs:NSE-dsm-bl-dimensional}. 
-
-In solutions of fluid flow is the reflection of waves at the outlet is common. Such behaviour is due to the elliptic nature of the incompressible Navier-Stokes. One of the earliest and most successful works (Engquist~\cite{Engquist:1977}) that addressed this problem was applied to the wave and shallow water equations. Although the method is not fully applicable to our equations, the authors systematically addressed and resolved the reflective behaviour of the outlet.
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.5\paperwidth]{BC-Buffer}
-  }
-  \caption{Buffer BC by Liu.}\label{fig:BC-buffer}
-\end{figure}
-Liu~\cite{Liu:1993} studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of an additional buffer domain (figure~\ref{fig:BC-buffer}) at the exit that involves the use of:
-\begin{enumerate}
-	\item Semi-implicit perturbed mass conservation
-	\begin{equation}
-		\tilde{u}_{m+\frac{1}{2},j}^{n+1}=\tilde{u}_{m-\frac{1}{2},j}^n-\frac{\tilde{v}^n_{m-1,j+\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}}}{\Delta y_{j}}{\Delta x_m}.
-	\end{equation}
-	\item Zero change in acceleration of the tangential perturbed velocity component computed semi-implicitly as
-	\begin{equation}
-		\frac{\partial ^2 \tilde{v}}{\partial x^2}=0\implies \tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}=2\tilde{v}^n_{m,j-\frac{1}{2}}-\tilde{v}^n_{m-1,j-\frac{1}{2}},
-	\end{equation}
-	where $\tilde{v}^{n+1}_{m+1,j-\frac{1}{2}}$ is the ghost component outside the domain.
-\end{enumerate}
-This buffer was not consistent with the physics and required to be as short as possible. 
-
-Braza and collaborators~(\cite{Jin:1993,Kourta:1987,Persillon:1998}) developed a set of BCs that allows the eddies to be freely developed downstream as they leave the domain. Two-dimensional shear flow was solved using two types  of boundary conditions: 
-\begin{equation}\label{eqn:kourta-bc}
-	\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0,
-\end{equation}
-\begin{equation}\label{eqn:jin-bc}
-	\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,
-\end{equation}
-where $\nu$ is kinematic viscosity. 
-Results shown in \cref{fig:kourta-results,fig:jin-results} correspond to ABCs~\cref{eqn:kourta-bc,eqn:jin-bc}.
-The first condition~\eqref{eqn:kourta-bc} made vortices hit against a "wall", while they went out of the domain. However, the second artificial BC~\eqref{eqn:jin-bc} was derived similarly to Engquist~\cite{Engquist:1977} from wave equation and displayed non-reflective behaviour. Nevertheless, the numerical algorithm used in the corresponding paper~\cite{Jin:1993} required auxiliary potential function ABC at the outlet. The boundary condition for $\phi$ was derived from the numerical algorithm by taking into account condition~\eqref{eqn:jin-bc}. (It might be possible to obtain an ABC for pressure depending on the algorithm used.)
-\begin{figure}
-\centering
-  \subfigure[Kourta-Braza results.]{\includegraphics[height=0.265\textwidth]{Braza-Kourta.jpg} \label{fig:kourta-results}} \quad
-  \subfigure[Jin-Braza results.]{\includegraphics[height=0.245\textwidth]{Braza-Jin.jpg} \label{fig:jin-results}}
-\caption{\small Resultant streaklines of Braza and collaborators.}
-\end{figure}
-
-\subsubsection{Non-reflecting BC from wave equation}\label{subsubsec:non-reflecting-abc}
-Velocity vector $\boldsymbol{v}$ is considered as the transported wave quantity incident on the boundary. Due to the elliptic nature of the flow, the boundary is said to satisfy the anisotropic wave equation
-\begin{equation}\label{eqn:wave-eqn-at-bdry}
-	\frac{\partial ^2 \boldsymbol{v}}{\partial t^2}-c_x^2\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}-c_y^2\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0,
-\end{equation}
-where $c_x,c_y$ are the characteristic velocities of $x,y$ wave propagation. Equation~\eqref{eqn:wave-eqn-at-bdry} can be rewritten in terms of pseudo-differential operators
-\begin{equation}
-	L\boldsymbol{v}\equiv -D_t^2\boldsymbol{v}+c_x^2D_x^2\boldsymbol{v}+c_y^2D_y^2\boldsymbol{v=0},
-\end{equation}
-with $D^2_x,D^2_y$ and $D^2_t$ being the second derivatives w.r.t. $x,y$ and $t$ variables respectively. Operator $L$ can be factored into
-\begin{equation}
-	L\boldsymbol{v}=L^+L^-\boldsymbol{v}=0,
-\end{equation}
-where
-\begin{align}
-	L^+&\equiv c_x D_x + D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2},\\
-	L^-&\equiv c_x D_x - D_t\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\\
-\end{align}
-correspond to waves travelling inside and outside the domain in directions parallel to the $x$ axis. To nullify the reflected waves, a total absorption~\cite{Engquist:1977} at the boundary
-\begin{equation}\label{eqn:absorb-incoming}
-	L^+\boldsymbol{v}=0
-\end{equation}
-is considered. It is possible to use the Taylor series to approximate the square root term, however, the results were found to be strongly ill posed, whereas, Pade second approximation
-\begin{equation}\label{eqn:pade-sqrt}
-	\sqrt{1-\left( \frac{c_y D_y}{D_t}\right)^2}\approx1-\frac{1}{2}\left( \frac{c_y D_y}{D_t}\right)^2
-\end{equation}
-was shown to be well posed~\cite{Engquist:1977, Kreiss:1970}. Therefore, Pade approximation \eqref{eqn:pade-sqrt}  with condition~\eqref{eqn:absorb-incoming} become
-\begin{equation}
-	\left( c_xD_x + D_t - \frac{c^2_y}{2D_t}D_y^2 \right)\boldsymbol{v}=0,
-\end{equation}
-which was then matched to the momentum Navier-Stokes equation as
-\begin{equation}\label{eqn:absorbing-bc-dimensional}
-	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\frac{1}{\operatorname{Re}}\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
-\end{equation}
-Implicit second-order discretization in time of \cref{eqn:absorbing-bc-dimensional} between time steps $n+1$ and $n$ was also provided by paper \cite{Jin:1993}:
-\begin{equation}
-\begin{gathered}
-\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\frac{u^n}{2}\left[\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n+1}+\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^n\right] \\
-=\nu\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^n+O\left(\Delta t^2\right).
-\end{gathered}
-\end{equation}
-
+\end{equation*}
+where we drop prime superscripts in the last identity as well.
 
 
 \subsection{Problem statement on truncated domain}
 \begin{subequations}
-\label{eqs:NSE-dsm-bl}
+\label[pluralequation]{eqs:NSE-dsm-bl}
 \begin{align}
 \label{eqn:momentum}
 \text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \nu \nabla \cdot \nabla \boldsymbol{v}, \\ 
-					&\nu = \frac{1}{\operatorname{Re}},0\leq x \leq L, 0\leq y \leq L, t\geq0.\notag\\
+					&\nu = \frac{1}{\operatorname{Re}},0\leq x \leq 1, 0\leq y \leq 1, t\geq0.\notag\\
 \label{eqn:continuity-dsm-bl}
 \text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
-					&0\leq x \leq L, 0\leq y \leq L, t\geq0. \notag\\
+					&0\leq x \leq 1, 0\leq y \leq 1, t\geq0. \notag\\
 \label{eqn:NSE-dsm-bl-bc-freestream}
-\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,L)=\frac{1}{2}\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
+\text{Inlet and Freestream BC: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\frac{1}{2}\left(1 + A\cos\left( kx -\omega t + \phi_0 \right),0\right),\\
 									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R}.\notag\\
 \label{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
 \label{eqn:NSE-dsm-bl-bc-outlet}
 \text{Outlet BC: } 	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}, \\ 
 %					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
-					& (x=L).\notag\\
+					& (x=1).\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0).
 \end{align}
 \end{subequations}
@@ -807,18 +826,18 @@ Following the successful nondimensionalization of the governing equations, we no
   \caption{Domain discretization}\label{bl-domain-discretization}
 \end{figure}
 
-In order to eliminate the pressure from our system a staggered grid arrangement is used. Details are discussed in subsections~\ref{subsec:divergence},~\ref{subsec:gradient} and section~\ref{sec:nullspace-method}. The $u$ velocity components are stored at the centres of vertically oriented faces, while the values for $v$ are stored at the centres of horizontal ones. 
+In order to eliminate the pressure from our system a staggered grid arrangement is used. Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
 
-The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In given problem statement \eqref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
+The number of unknown components inside the domain (excluding boundaries) is $m(n-1)$ for $v$ and $(m-1)n$ for $u$. In \cref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we introduce additional $n$ unknowns to the $u$ array making the size of it $(m-1)n+n=mn$. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $mn+(n-1)m$.
 
-Grid indexation starts at $x_{\frac{1}{2}}=y_{\frac{1}{2}}=(0,0)$ and ends at $x_{m+\frac{1}{2}},y_{n+\frac{1}{2}}$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. In order to increase the accuracy in certain domain regions we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$.
+Grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{m+\frac{1}{2}},y_{n+\frac{1}{2}})=(1,1)$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. To increase the accuracy in certain domain parts we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discrete operators}
 
-This subsection focuses on the specific operators used in the discretization of system~\eqref{eqs:NSE-dsm-bl}, providing the mathematical tools necessary to transform these continuous equations into a form that can be solved numerically.
+This subsection focuses on the specific operators used in the discretization of \cref{eqs:NSE-dsm-bl}, providing the mathematical tools necessary to transform these continuous equations into a form that can be solved numerically.
 
-Initial system of equations~\eqref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
+Initial system of \cref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
 
 \begin{equation}\label{eqn:nse-matrix}
             \begin{bmatrix}
@@ -849,7 +868,7 @@ where boundary conditions are in terms of pressure and velocity. In the followin
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Transient terms}\label{subsec:transient}
-Attack system~\eqref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008}:
+Attack \cref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Colonius:2008} (superscript denotes the time step):
 \begin{enumerate}
 	\item[\textbf{Viscous}] - Implicit trapezoidal - Crank Nicholson scheme (second-order method in time).  
 %	\begin{equation}\label{eqn:crank-nicholson}
@@ -903,7 +922,7 @@ The above schemes result in the following discretized system:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Laplacian}
 
-As per subsection~\ref{subsec:transient} it is required to discretize implicit viscous term at time $n+1$. In order to obtain the discretized operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
+As per \cref{subsec:transient} it is required to discretize implicit viscous term at time $n+1$. In order to obtain the discretized operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
 \begin{equation}
 	\hat L=
 	\begin{bmatrix}
@@ -923,9 +942,9 @@ The uniform grid refinement $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Del
 	u_{i-\frac{1}{2}-1,j}=u_{i-\frac{1}{2},j}+\left.\frac{\partial u}{\partial x}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}-1}-x_{i-\frac{1}{2}}\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}-1}-x_{i-\frac{1}{2}}\right)^2+O\left(\Delta x^3\right).
 \end{equation}
 
-We can combine \eqref{eqn:Taylor left} and \eqref{eqn:Taylor right} by cancelling the first derivative, which will result in
+We can combine \cref{eqn:Taylor left,eqn:Taylor right} by cancelling the first derivative, which will result in
 \begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
-\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j} & \approx \frac{u_{i-\frac{1}{2}+1,j}\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)-u_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}\right)+u_{i-\frac{1}{2}-1,j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}{\left(\frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}\right)\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}+O(\Delta x)\\
+\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j} & \approx \frac{u_{i-\frac{1}{2}+1,j}\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)-u_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}\right)+u_{i-\frac{1}{2}-1,j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}{\left(\frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}\right)\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}+O(\Delta x)\notag\\
 & \approx \frac{1}{h_c h_e}u_{i-\frac{1}{2}+1,j} + \frac{2}{h_w h_e}u_{i-\frac{1}{2}} + \frac{1}{h_c h_w}u_{i-\frac{1}{2}-1} + O(\Delta x).
 \end{align}
 where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}, h_e = x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}$ as in figure~\ref{fig:luxx-inner}. The coefficients in front of the velocity components are then placed into the $\hat{L}^u_{xx}$ matrix. The order of this approximation becomes $2^{\text {nd }}$ for uniform grids. 
@@ -972,7 +991,7 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 
 
 \textbf{Left boundary.} 
-The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on figure~\ref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of equation~\eqref{eqn:NSE-dsm-bl-system-schemes}.
+The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-schemes}.
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.55\paperwidth]{Luxx-left}
@@ -995,7 +1014,7 @@ Consider the neighbouring cells near the wall as in figure~\ref{fig:luxx-top}. R
 \end{equation}
 where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
-It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},n-1}$ are set to be equidistant from $u_{i-\frac{1}{2},n}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of $u_{f} = \frac{u_g+u_{i-\frac{1}{2},n}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},n}$, which we can plug into equation~\eqref{eqn:laplacian-discretization-non-uniform-dy} above
+It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},n-1}$ are set to be equidistant from $u_{i-\frac{1}{2},n}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of $u_{f} = \frac{u_g+u_{i-\frac{1}{2},n}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},n}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} above
 
 \begin{equation}
 \begin{aligned}
@@ -1005,10 +1024,10 @@ It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary
 \end{aligned}
 \end{equation}
 
-The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in equations~\eqref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix.
+The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in \cref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix.
 
 \textbf{Bottom boundary.}
-We use equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in figure~\ref{fig:luxx-bottom}, which lead to
+We use \cref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in \cref{fig:luxx-bottom}, which lead to
 \begin{equation}
 \begin{aligned}
 &\left.\frac{\partial^ 2 u}{\partial y^2}\right|_{i-\frac{1}{2},1}=u_{i-\frac{1}{2},2}\left(\frac{1}{h_n h_c}\right)+u_{i-\frac{1}{2},1}\left(\frac{-2}{h_n h_s}\right)+u_g\left(\frac{1}{h_s h_c}\right).\\
@@ -1037,10 +1056,10 @@ The coefficients are distributed into the $\hat{L}^u_{yy}$ matrix similarly to l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Divergence}\label{subsec:divergence}
 
-One of the advantages of the staggered grid is that the discrete divergence $D$ and gradient $G$ operators are equal to the negative transpose of each other. Our goal is to eliminate the pressure from the system, section~\ref{sec:nullspace-method} will explain the use of this property in details. 
+One of the advantages of the staggered grid is that the discrete divergence $D$ and gradient $G$ operators are equal to the negative transpose of each other. Our goal is to eliminate the pressure from the system, \cref{sec:nullspace-method} will explain the use of this property in detail. 
 
-The second line of system~\eqref{eqn:nse-matrix} reads
-\begin{equation}
+The second line of \cref{eqn:nse-matrix} reads
+\begin{equation*}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=\hat{bc}_2,\\
 \left[ 
@@ -1061,7 +1080,7 @@ u \Delta y \\
 v \Delta x
 \end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2,
 \end{gathered}
-\end{equation}
+\end{equation*}
 where vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. Matrix
 \begin{equation}\label{eqn:delta-xy}
 	\Delta _{xy}=
@@ -1075,15 +1094,13 @@ where vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ w
 is $nm\times nm$ diagonal matrix with entries corresponding to the inverse volumes of cells. 
 
 The second-order central difference scheme was employed in the construction of $D$, the order is consistent with the other spatial schemes. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is expressed as
-\begin{equation}
+\begin{equation*}
 	\left(\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\right)_{i,j}=0,
-\end{equation}
+\end{equation*}
 which can be discretized at cell centre $i,j$ using a central difference scheme into
-
-\begin{equation}
+\begin{equation*}
   \frac{u_{i+\frac{1}{2},j} - u_{i-\frac{1}{2},j}}{\Delta x_i}+  \frac{v_{i,j+\frac{1}{2}} - v_{i,j-\frac{1}{2}}}{\Delta y_j}=0.
-\end{equation}
-
+\end{equation*}
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -1092,7 +1109,7 @@ which can be discretized at cell centre $i,j$ using a central difference scheme 
   \caption{$2\times 2$ grid example for divergence operator.}\label{fig:D-example-2x2}
 \end{figure}
 
-In order to provide a good visual example, consider $2 \times 2$ grid as in figure~\ref{fig:D-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. The partial derivatives evaluated at cell centres are then: 
+To provide a good visual example, consider $2 \times 2$ grid as in \cref{fig:D-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. The partial derivatives evaluated at cell centres are then: 
 %\begin{equation}
 %  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
 %\end{equation}
@@ -1110,7 +1127,7 @@ In order to provide a good visual example, consider $2 \times 2$ grid as in figu
 %	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
 %\end{enumerate}
 
-After applying the boundary conditions (circled on the figure~\ref{fig:D-example-2x2}) to the above equations, we obtain the system%%%%%%%%%% WRONGGGGGGGG
+After applying the boundary conditions (circled on the \cref{fig:D-example-2x2}) to the above equations, we obtain the system%%%%%%%%%% WRONGGGGGGGG
 \begin{equation}\label{eqn:divergence-matrix}
 	\begin{bmatrix}{}
 		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
@@ -1142,7 +1159,7 @@ After applying the boundary conditions (circled on the figure~\ref{fig:D-example
 \end{equation}
 which in general case is written as 
 $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
-The velocity values known at the boundaries are shifted to the right-hand side and explicitly treated. The divergence matrix $D$ contains $\pm1$, as shown in equation~\eqref{eqn:divergence-matrix}.
+The velocity values known at the boundaries are shifted to the right-hand side and explicitly treated. The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}.
 
 %\begin{figure}[hbt] % here, bottom, top
 %  \centering{
@@ -1156,7 +1173,7 @@ The velocity values known at the boundaries are shifted to the right-hand side a
 %% MIGHT ALSO NEED TO CHECK WITH THE PREMULTIPLICATION OF DELTA X
 \subsubsection{Gradient}\label{subsec:gradient} 
 
-The pressure gradients are computed at the same coordinates as the unknown velocities according to system of linear equations~\eqref{eqn:nse-matrix}. Below we will show that the discrete gradient and divergence operators satisfy
+The pressure gradients are computed at the same coordinates as the unknown velocities according to \cref{eqn:nse-matrix}. Below we will show that the discrete gradient and divergence operators satisfy
 \begin{equation}\label{eqn:g-dt}
   {G}=-{D^T}
 \end{equation}
@@ -1170,7 +1187,7 @@ on staggered/MAC grids. Moreover, the pressure gradients can be evaluated direct
 \end{figure}
 
 
-As an illustrative example, we may consider a $2\times 2$ grid as in figure~\ref{fig:G-example-2x2} with the same boundary conditions as in equations~\eqref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on figure~\ref{fig:G-example-2x2}):
+As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on \cref{fig:G-example-2x2}):
 
 \begin{alignat*}{2}
 	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},1} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
@@ -1227,7 +1244,7 @@ which can be rewritten as
 	\end{bmatrix}
 =\hat{bc}_p,
 \end{equation}
-where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. It can be observed from equations~\eqref{eqn:divergence-matrix} and \eqref{eqn:gradient-matrix} that identity~\eqref{eqn:g-dt} holds and the general case is true by construction.
+where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{mn}]^T$ is the vector of pressure values at the cell centres. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Advection}
@@ -1245,15 +1262,15 @@ Let us rewrite advective derivatives in conservative form.
 	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(u\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
 	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
 \end{align}
-Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for equation~\eqref{eqn:advection-conservative}. 
+Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for \cref{eqn:advection-conservative}. 
 
 \textbf{Inner part.} 
-Advective component from $x$-momentum was expressed in conservative form by equation~\eqref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008}:
+Advective component from $x$-momentum was expressed in conservative form by \cref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008}:
 \begin{align*}
 	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
 	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
 \end{align*}
-which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in figure~\ref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in figure~\ref{fig:ADV}. Linear interpolation~\cite{Colonius:2008} of these values is
+which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Linear interpolation~\cite{Colonius:2008} of these values is
 \begin{align*}
   (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
   (uv)_{i-\frac{1}{2},j-\frac{1}{2}}&=\left(u_{i-\frac{1}{2},j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i-\frac{1}{2},j}-u_{i-\frac{1}{2},j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j-\frac{1}{2}} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j-\frac{1}{2}}-v_{i-1,j-\frac{1}{2}}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
@@ -1300,7 +1317,7 @@ requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use
   }
   \caption{Left boundary advection.}\label{fig:ADV-left}
 \end{figure}
-The exact value of the $uu_g$ element located outside the boundary (figure \ref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
+The exact value of the $uu_g$ element located outside the boundary (\cref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
 
 \textbf{Top boundary (symmetric).}
 \begin{figure}[H] % here, bottom, top
@@ -1323,12 +1340,12 @@ Since the exact value of the velocity $u_{BC}$ and $v_{BC}=0$ in a freestream ar
   }
   \caption{Bottom boundary advection}\label{fig:ADV-bottom}
 \end{figure}
-Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ on the boundary, due to the $u_{bc}=0$ condition on the plate (purple on figure~\ref{fig:ADV-bottom}).
+Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ on the boundary, due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
 
-The advective terms in the $y$-momentum equation are computed in a similar manner. After the derivative values are evaluated, they are moved to the right-hand side as in equation~\eqref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
+The advective terms in the $y$-momentum equation are computed similarly. After the derivative values are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
 
 \subsubsection{Resulting system}\label{subsubsec:resulting-algorithm}
-After applying the above discrete operators, we can combine the summands into $\hat{A}$, $\hat{r}^n$; we then rewrite system~\eqref{eqn:NSE-dsm-bl-system-schemes}  as
+After applying the above discrete operators, we can combine the summands into $\hat{A}$, $\hat{r}^n$; we then rewrite \cref{eqn:NSE-dsm-bl-system-schemes}  as
 \begin{equation}
 	\begin{bmatrix}
 		\hat{A} & \hat{G} \\
