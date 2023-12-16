@@ -45,6 +45,7 @@
 \crefmultiformat{equation}{#2Eqs. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
 \crefrangemultiformat{equation}{#3Eqs. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
 \crefformat{pluralequation}{#2Eqs.~(#1)#3}
+\crefformat{system}{#2Sys.~(#1)#3}
 
 %\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
 \usepackage[nocompress]{cite}
@@ -641,9 +642,12 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
     \item \st{Motivation.} Added some, where possible!
     \item BC discussion (analytic). \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}. Finished \cite{Engquist:1977, Kourta:1987, Liu:1993, Persillon:1998}.
     \item Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon. 
-    \item Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.
+    \item \st{Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.} 
+    \item Is it ok to use "Sys. (43)" for SLAE?
     \item Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript. Is it OK?
-    \item Workaround for the outlet (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. 
+    \item Outlet workaround 1. (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. Will use three-point scheme into the domain, but then matrix L becomes asymmetric. 
+	\item Outlet workaround 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
+    \item Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.
   \end{itemize}
 }
 
@@ -840,7 +844,7 @@ This subsection focuses on the specific operators used in the discretization of 
 
 Initial system of \cref{eqs:NSE-dsm-bl} can be rewritten using discrete spatial operators as
 
-\begin{equation}\label{eqn:nse-matrix}
+\begin{equation}\label[system]{eqn:nse-matrix}
             \begin{bmatrix}
                   \mathbf{I} && 0 \\ 
                   0 && 0
@@ -897,7 +901,7 @@ Attack \cref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Col
 \end{enumerate}
 
 The above schemes result in the following discretized system:
-\begin{equation}\label{eqn:NSE-dsm-bl-system-schemes}
+\begin{equation}\label[pluralequation]{eqn:NSE-dsm-bl-system-schemes}
 	\begin{bmatrix}
 		\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
 		\hat{D} & 0
@@ -924,13 +928,13 @@ The above schemes result in the following discretized system:
 \subsubsection{Laplacian}
 
 As per \cref{subsec:transient} it is required to discretize implicit viscous term at time $n+1$. In order to obtain the discretized operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
-\begin{equation}
+\begin{equation*}
 	\hat L=
 	\begin{bmatrix}
   \hat{L}^u_{xx}+\hat{L}^u_{yy} & 0 \\
   0 & \hat{L}^v_{xx}+\hat{L}^v_{yy}
 \end{bmatrix}.
-\end{equation}
+\end{equation*}
 
 Each pair of the matrices $\hat{L}^u_{xx},\hat{L}^v_{xx}$ and $\hat{L}^u_{yy},\hat{L}^v_{yy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed in a similar way. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
 
@@ -1009,13 +1013,13 @@ The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:
   \caption{$\hat{L}^u_{yy}$ at top boundary.}\label{fig:luxx-top}
 \end{figure}
 
-Consider the neighbouring cells near the wall as in figure~\ref{fig:luxx-top}. Resultant equation~\eqref{eqn:laplacian-discretization-non-uniform-dx}  can be written as
+Consider the neighbouring cells near the wall as in \cref{fig:luxx-top}. Resultant \cref{eqn:laplacian-discretization-non-uniform-dx}  can be written as
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},n}=\frac{u_g\left(h_s\right)+u_{i-\frac{1}{2},n}\left(-2 h_c\right)+u_{i-\frac{1}{2},n-1}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
 where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
-It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per equation~\eqref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},n-1}$ are set to be equidistant from $u_{i-\frac{1}{2},n}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of $u_{f} = \frac{u_g+u_{i-\frac{1}{2},n}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},n}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} above
+It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per \cref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},n-1}$ are set to be equidistant from $u_{i-\frac{1}{2},n}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of $u_{f} = \frac{u_g+u_{i-\frac{1}{2},n}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},n}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} above
 
 \begin{equation}
 \begin{aligned}
@@ -1129,7 +1133,7 @@ To provide a good visual example, consider $2 \times 2$ grid as in \cref{fig:D-e
 %\end{enumerate}
 
 After applying the boundary conditions (circled on the \cref{fig:D-example-2x2}) to the above equations, we obtain the system%%%%%%%%%% WRONGGGGGGGG
-\begin{equation}\label{eqn:divergence-matrix}
+\begin{equation}\label[pluralequation]{eqn:divergence-matrix}
 	\begin{bmatrix}{}
 		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
 		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
@@ -1200,7 +1204,7 @@ As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G
 \end{alignat*}
 
 The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
-\begin{equation}\label{eqn:gradient-matrix}
+\begin{equation}\label[pluralequation]{eqn:gradient-matrix}
 	\begin{bmatrix}{}
 		\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	&0	&0	\\
 		0	&\frac{1}{\Delta x_2}	&0	&0	&0	&0	\\
@@ -1466,7 +1470,7 @@ R &\equiv\left[\begin{array}{cc}
 \end{align*}
 Using the $R$ matrix we can express $q^{n+1}=R\boldsymbol{v}^{n+1}\implies \boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$. % and $\hat{D}R^{-1}=-(\hat{M}\hat{G})^T$. I THINK THIS WRONG BUT WRITTEN IN TAIRA DISSERTATION ON PAGE 101.
 
-The only matrix which is asymmetric in~\eqref{eqn:NSE-dsm-bl-system-schemes} is a Laplacian on the non-uniform grid. In order to get a symmetric diffusion matrix we need to move to the new variables. As discussed in \ref{subsec:dsm-domain} the domain has $m$ intervals in $x$ direction and $n$ intervals in $y$ direction. The number of unknown velocities is $N_u=(m-1)n+n=mn$ and $N_v=m(n-1)$. The number of unknowns is equal to the number of face velocities in the interior of the domain plus the outlet boundary (extra $n$ in $N_u$). We can rewrite $\boldsymbol{v}$ as a vector of unknowns
+The only matrix which is asymmetric in~\cref{eqn:NSE-dsm-bl-system-schemes} is a Laplacian on the non-uniform grid. In order to get a symmetric diffusion matrix we need to move to the new variables. As discussed in \cref{subsec:dsm-domain} the domain has $m$ intervals in $x$ direction and $n$ intervals in $y$ direction. The number of unknown velocities is $N_u=(m-1)n+n=mn$ and $N_v=m(n-1)$. The number of unknowns is equal to the number of face velocities in the interior of the domain plus the outlet boundary (extra $n$ in $N_u$). We can rewrite $\boldsymbol{v}$ as a vector of unknowns
 
 $$\boldsymbol{v} = [\underbrace{u_1;u_2;\dotsc;u_{m};u_1;u_2;\dotsc;u_{m};\dotsc;u_1;u_2;\dotsc;u_{m}}_{n\text{ blocks of }1,...,m}, \underbrace{v_1;v_2;\dotsc;v_{m};v_1;v_2;\dotsc;v_{m};\dotsc;v_1;v_2;\dotsc;v_{m}}_{n-1 \text{ of each }1,\dotsc,m\text{ block}}].$$
 
@@ -1509,7 +1513,7 @@ $$\hat MLR^{-1}{q},$$
 where $\hat M L R^{-1}$ is symmetric by construction.  
 
 Using the above transformation we can modify the initial system of linear equations
-\begin{equation}
+\begin{equation*}
 \left[\begin{array}{ccc}
 \hat{A} & \hat{G} \\
 \hat{D} & 0 
@@ -1523,9 +1527,9 @@ p
 \widehat{bc}_1 \\
 \widehat{bc}_2 
 \end{array}\right)
-\end{equation}
+\end{equation*}
 into 
-\begin{equation}
+\begin{equation*}
 \left[\begin{array}{cc}
 \hat{M}\hat{A}R^{-1} & \hat{M}\hat{G} \\
 \hat{D}R^{-1} & 0
@@ -1539,9 +1543,9 @@ p
 \hat{M}\widehat{b c}_1 \\
 \widehat{b c}_2
 \end{array}\right),
-\end{equation}
+\end{equation*}
 which can be rewritten as 
-\begin{equation}\label{eqn:nse-normalized}
+\begin{equation}\label[pluralequation]{eqn:nse-normalized}
 \left[\begin{array}{cc}
 A & G \\
 D & 0
@@ -1556,7 +1560,7 @@ r^n \\
 {b c}_2
 \end{array}\right),
 \end{equation}
-where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to equation~\eqref{eqn:gradient-matrix} in momentum part. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in momentum part of system~\eqref{eqn:nse-normalized} using  equation~\eqref{eqn:divergence-matrix} and multiplying both sides of continuity equation by $\Delta _{xy}$ matrix~\eqref{eqn:delta-xy}: 
+where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to \cref{eqn:gradient-matrix} in momentum part. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in momentum part of \cref{eqn:nse-normalized} using  \cref{eqn:divergence-matrix} and multiplying both sides of continuity equation by $\Delta _{xy}$ matrix from \cref{eqn:delta-xy}: 
 \begin{align*}
 	\hat{D}\boldsymbol{v}^{n+1}&= \hat{bc}_2\notag\\
 	\left(\Delta_{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
@@ -1567,7 +1571,7 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 
 \subsection{Nullspace method and pressure elimination}\label{sec:nullspace-method}
 
-The goal of this subsection is to show how unknown pressure variables can be eliminated from sytem~\eqref{eqn:nse-normalized}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in system~\eqref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
+The goal of this subsection is to show how unknown pressure variables can be eliminated from \cref{eqn:nse-normalized}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in \cref{eqn:nse-normalized} matrix $D$ is wider than tall, hence it defines a nullspace. The nullspace is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
 
 The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
 
@@ -1575,8 +1579,8 @@ In the two-dimensional case, the matrix $C$ has two non-zero elements in each ro
 
 %A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
 
-A more intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain and along the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration, see figure~\ref{fig:C-example-2x2}. If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity. After applying the above procedure we obtain
-\begin{equation}
+A more intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain and along the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration as in \cref{fig:C-example-2x2}. If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity. After applying the above procedure we obtain
+\begin{equation*}
   C = 
   \begin{bmatrix*}[r]
   1		&	0\\
@@ -1586,7 +1590,7 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
   -1	&	0\\
   1		&	-1\\
 \end{bmatrix*}.
-\end{equation}
+\end{equation*}
 
 \begin{figure}[h] % here, bottom, top
   \centering{
@@ -1598,9 +1602,9 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
 
 The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
 
-The desired product becomes $DC=0$. $D=-G^T$ (subsections ~\ref{subsec:divergence} and \ref{subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in~\eqref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which eliminates the pressure from our system.
+The desired product becomes $DC=0$. $D=-G^T$ (\cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which eliminates the pressure from our system.
 
-In order to make use of efficient solvers, the system $C^TA$ has to become symmetric, thus, we need to multiply it by $C$ from the right. Hence, the final chord of this method is the introduction of another new variable called streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the problem~\eqref{eqn:nse-normalized} from subsection~\ref{subsec:symmetrization} and is discussed in the following subsection~\ref{sec:algorithm}.
+In order to make use of efficient solvers, the system $C^TA$ has to become symmetric, thus, we need to multiply it by $C$ from the right. Hence, the final chord of this method is the introduction of another new variable called streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} from \cref{subsec:symmetrization} and is discussed in the following \cref{sec:algorithm}.
 
 \begin{figure}
 \begin{center}
@@ -1613,10 +1617,10 @@ In order to make use of efficient solvers, the system $C^TA$ has to become symme
 
 \subsection{Resulting algorithm}\label{sec:algorithm}
 
-Let us consider the solution to discretized system \eqref{eqn:nse-normalized}
-\begin{equation}
+Let us consider the solution to discretized \cref{eqn:nse-normalized}
+\begin{equation*}
 	q^{n+1}=q^{n+1}_p+q^{n+1}_h,
-\end{equation}
+\end{equation*}
 where $q^{n+1}_h$ is a solution to homogeneous continuity equation 
 \begin{equation}\label{eqn:discrete-homogeneous-continuity}
 	Dq^{n+1}_h=0,
@@ -1630,11 +1634,11 @@ and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equatio
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
 
-The algorithm to solve the discrete Navier-Stokes system of equations~\eqref{eqn:nse-normalized} can be described as follows:
+The algorithm to solve the discrete Navier-Stokes system of \cref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
 	\item Construct matrix $C$, such that $DC=0$ and $q_h=C\psi$.
 	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
-	\item Find $q^{n+1}_p$ from the non-homogeneous continuity equation using the methods described in the next subsection~\ref{sec:continuity-particular-solution}.
+	\item Find $q^{n+1}_p$ from the non-homogeneous continuity equation using the methods described in the next \cref{sec:continuity-particular-solution}.
 	\item Split the solution $q^{n+1}$ into homogeneous and particular, then eliminate the pressure terms in the momentum equation.
 		\begin{align*}
 			Aq^{n+1}&=-Gp^{n+1}+S_1+bc_1,&\text{ where $S_1$ is momentum source term,}\\
@@ -1652,7 +1656,7 @@ The algorithm to solve the discrete Navier-Stokes system of equations~\eqref{eqn
 
 \subsection{A particular solution to the discrete continuity equation}\label{sec:continuity-particular-solution}
 \subsubsection{Particular solution using Lagrange multipliers}
-It is possible to find one particular solution to the discrete non-homogeneous continuity equation~\eqref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
+It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
 \begin{equation}\label{eqn:lagrange-multipliers}
 	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
 \|q_p\|^2+\lambda^T(bc_2-D q_p).
@@ -1664,21 +1668,21 @@ Differentiating w.r.t $q_p$ and finding the minimum (derivative equal to zero) y
 \end{equation}
 
 We may premultiply by $D$ to obtain
-\begin{equation}
+\begin{equation*}
 2 D q_p-D D^T \lambda=0,
-\end{equation}
+\end{equation*}
 the substitution of $bc_2=D q_p$ will lead to
 
-\begin{equation}
+\begin{equation*}
 \begin{aligned}
 2 bc_2&=D D^T \lambda,\\
 \lambda &=2\left(D D^T\right)^{-1} bc_2,
 \end{aligned}
-\end{equation}
-plugging the above into~\eqref{eqn:flux-minimum} results in
-\begin{equation}
+\end{equation*}
+plugging the above into~\cref{eqn:flux-minimum} results in
+\begin{equation*}
 q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
-\end{equation}
+\end{equation*}
 where $D^\dagger=D^T\left(D D^T\right)$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
  
 %%%% REMOVE?$ %%%%%
