@@ -1,12 +1,12 @@
 This is BibTeX, Version 0.99d (TeX Live 2023)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
-The top-level auxiliary file: /Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux
-I found no \citation commands---while reading file /Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux
-I found no \bibdata command---while reading file /Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux
-I found no \bibstyle command---while reading file /Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux
+The top-level auxiliary file: /Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux
+I found no \citation commands---while reading file /Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux
+I found no \bibdata command---while reading file /Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux
+I found no \bibstyle command---while reading file /Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux
 You've used 0 entries,
             0 wiz_defined-function locations,
-            83 strings with 592 characters,
+            83 strings with 586 characters,
 and the built_in function-call counts, 0 in all, are:
 = -- 0
 > -- 0

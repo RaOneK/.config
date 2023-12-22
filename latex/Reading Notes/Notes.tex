@@ -653,15 +653,16 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 %    \item \st{Symmetric BC on top to be included in all operators.}
 %    \item \st{Indexing change for equations and figures.}
     \item \st{Motivation.} Added some, where possible!
-    \item BC discussion (analytic). \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}. Finished \cite{Engquist:1977, Kourta:1987, Liu:1993, Persillon:1998}.
-    \item Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon. 
+    \item \st{BC discussion (analytic).} \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}.
+    \item \st{Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon.} Waiting for the response form UofA library since 11th Dec. 
 %    \item \st{Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.} 
-    \item Is it ok to use "Sys. (43)" for SLAE?
-    \item Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript. Is it OK?
-    \item Outlet idea 1. (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. Will use three-point scheme into the domain, but then matrix L becomes asymmetric. 
-	\item Outlet idea 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
-    \item Outlet idea 3. Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.
-    \item Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall~\cite{Hall:1980}. 
+%    \item Is it ok to use "Sys. (43)" for SLAE?
+%    \item \st{Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript.} Changed dimensions to $M\times N$
+%    \item Outlet idea 1. (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. Will use three-point scheme into the domain, but then matrix L becomes asymmetric. 
+%	\item Outlet idea 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
+    \item  \st{Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.} Wrote an email to author, waiting for the response. 
+    \item \st{Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall}\cite{Hall:1980}. Changed unknowns to inner part only. Values at the boundary are determined using BC. 
+    \item Check algebra of diffusion and advection for $v$ component.
   \end{itemize}
 }
 
@@ -742,9 +743,10 @@ Results shown in \cref{fig:kourta-results,fig:jin-results} correspond to results
   \subfigure[Jin-Braza results.]{\includegraphics[height=0.245\textwidth]{Braza-Jin.jpg} \label{fig:jin-results}}
 \caption{\small Resultant streaklines of Braza and collaborators.}
 \end{figure}
+
 Taking into account successful results obtained in \cite{Kourta:1987, Jin:1993, Persillon:1998} and similarities between the boundary layer and mixing layer flows we will use\footnote{G. Fournier and F. Golanski (2008) claim that Prandtl BL solution for advective BCs s.a. $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ results in wrong solution for pressure gradient, while their condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ matches Prandtl BL.} \cref{eqn:jin-bc,eqn:symmetric-bc} as boundary conditions for top and right boundaries respectively and also truncate the domain to width and height $L$.
 
-\subsubsection{Derivation of Type II ABC}\label{subsubsec:non-reflecting-abc}
+\subsubsection{Derivation of Type II ABC (as in paper)}\label{subsubsec:non-reflecting-abc}
 Velocity vector $\boldsymbol{v}$ is considered as the transported wave quantity incident on the boundary. 
 Due to the elliptic nature of the flow, the boundary is said to satisfy the anisotropic wave equation
 \begin{equation}\label{eqn:wave-eqn-at-bdry}
@@ -946,10 +948,25 @@ The above schemes result in the following time-discretized system:
 	\begin{pmatrix}
 		\hat{bc}_1\\
 		\hat{bc}_2
-	\end{pmatrix}.
+	\end{pmatrix}
 \end{equation}
+and \cref{eqn:jin-bc} 
+\begin{equation}\label[bc]{eqn:jin-bc-transient-consistent}
+\begin{gathered}
+\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\left[\frac{3}{2}{u^n}\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n}-\frac{1}{2}{u^{n-1}}\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n-1}\right] \\
+=\nu\left[\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^{n+1}+\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^{n}\right],
+\end{gathered}
+\end{equation}
+however, the results produced with such schemes are yet to be known and should be compared with \cref{eqn:jin-bc-transient} from the corresponding paper \cite{Jin:1993}, which was said to be 
+\begin{equation}\label[bc]{eqn:jin-bc-transient}
+\begin{gathered}
+\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\frac{u^n}{2}\left[\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n+1}+\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^n\right] \\
+=\nu\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^n.
+\end{gathered}
+\end{equation}
+We will first use discretized \cref{eqn:jin-bc-transient} from \cite{Jin:1993} as it was shown to be stable and produced solid results. Then we proceed with discretized \cref{eqn:jin-bc-transient-consistent} after developing the necessary techniques.
 
-After applying the discrete operators listed in the next subsections, we rewrite \cref{eqn:NSE-dsm-bl-system-schemes}  as
+After applying the discrete operators listed in the following subsections, we rewrite \cref{eqn:NSE-dsm-bl-system-schemes}  as
 \begin{equation}\label[system]{eqn:NSE-dsm-bl-system-nonint}
 	\begin{bmatrix}
 		\hat{A} & \hat{G} \\
@@ -968,8 +985,9 @@ After applying the discrete operators listed in the next subsections, we rewrite
 	\begin{pmatrix}
 		\hat{bc}_1\\
 		\hat{bc}_2
-	\end{pmatrix}.
+	\end{pmatrix}. 
 \end{equation}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Laplacian}
@@ -997,7 +1015,7 @@ The uniform grid refinement $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Del
 We can combine \cref{eqn:Taylor left,eqn:Taylor right} by cancelling the first derivative, which will result in
 \begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
 \left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j} & \approx \frac{u_{i-\frac{1}{2}+1,j}\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)-u_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}\right)+u_{i-\frac{1}{2}-1,j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}{\left(\frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}\right)\left(x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1}\right)\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)}+O(\Delta x)\notag\\
-& \approx \frac{1}{h_c h_e}u_{i-\frac{1}{2}+1,j} + \frac{2}{h_w h_e}u_{i-\frac{1}{2}} + \frac{1}{h_c h_w}u_{i-\frac{1}{2}-1} + O(\Delta x).
+& \approx \frac{1}{h_c h_e}u_{i-\frac{1}{2}+1} - \frac{2}{h_w h_e}u_{i-\frac{1}{2}} + \frac{1}{h_c h_w}u_{i-\frac{1}{2}-1} + O(\Delta x).
 \end{align}
 where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}-1}}{2}, h_e = x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}$ as in \cref{fig:luxx-inner}. The coefficients in front of the velocity components are then placed into the $\hat{L}^u_{xx}$ matrix. The order of this approximation becomes $2^{\text {nd }}$ for uniform grids. 
 
@@ -1039,8 +1057,64 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 %& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
 %\end{aligned}
 %\end{equation}
-\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
+%\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.55\paperwidth]{ADV-right}
+  }
+  \caption{$\hat{L}^u_{xx}$ at the right boundary.}\label{fig:luxx-right}
+\end{figure}
+The last unknown element of \cref{eqn:NSE-dsm-bl-system-schemes} in $x$ direction is $u^{n+1}_{M-\frac{1}{2},j}$ on \cref{fig:luxx-right}. To apply \cref{eqn:laplacian-discretization-non-uniform-dx} we need to express $u^{n+1}_{M+\frac{1}{2},j}$ using \cref{eqn:jin-bc-transient}.
+\begin{equation*}
+\begin{gathered}
+\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\frac{u^n_{M+\frac{1}{2},j}}{2}
+\left[
+\left(
+	\frac{u^{n+1}_{M+\frac{1}{2},j}-u^{n+1}_{M-\frac{1}{2},j}}{\Delta x_M}
+\right)
++\left(
+	\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
+\right)
+\right] \\
+=\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right)
+\end{gathered}
+\end{equation*}
+leads to %%%%%%%%%%%%%%%%%
+\begin{equation}\label[bc]{eqn:bc-right-long}
+\begin{gathered}
+{{u}^{n+1}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+=
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\\
+-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
++\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right),
+\end{gathered}
+\end{equation}
+Note that $\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)$ is never zero regardless of the flow direction, hence dividing by it is allowed. The second line of fully discretized \cref{eqn:bc-right-long} is treated explicitly since we posses the flow data at time steps $n$ and below. Denote explicit terms as
+\begin{equation*}
+	bc_e^n=-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
++\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right),
+\end{equation*}
+which simplifies \cref{eqn:bc-right-long} to 
+\begin{equation}\label[bc]{eqn:bc-right}
+\begin{gathered}
+{{u}^{n+1}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+=
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^n.
+\end{gathered}
+\end{equation}
 
+Next, we plug \cref{eqn:bc-right} into \cref{eqn:laplacian-discretization-non-uniform-dx}, which finally leads us to
+\begin{equation}
+\begin{aligned}
+	\left.\frac{\partial ^2 u}{\partial x^2}\right|_{M-\frac{1}{2},j}^{n+1}
+	&=\frac{1}{h_c h_e}u^{n+1}_{M+\frac{1}{2},j} - \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}\\
+	&=\frac{1}{h_c h_e}\left(u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2h_e}+bc^n_e\right)- \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}\\
+	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc^n_e}{h_c h_e}.
+\end{aligned}
+\end{equation}
 
 \textbf{Left boundary.} 
 The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-schemes}.
@@ -1308,10 +1382,10 @@ Our goal is to compute advection components at the unknown velocity coordinates.
 
 \textbf{Inner part.} 
 Advective component from $x$-momentum was expressed in conservative form by \cref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008}:
-\begin{align*}
+\begin{align}\label{eqn:adv-inner}
 	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
 	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
-\end{align*}
+\end{align}
 which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Linear interpolation~\cite{Colonius:2008} of these values is
 \begin{align*}
   (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
@@ -1334,6 +1408,16 @@ which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in \cref{
   }
   \caption{Right boundary advection.}\label{fig:ADV-right}
 \end{figure}
+\cref{eqn:bc-right} rewritten for the time step $n$ is
+\begin{equation}
+\begin{gathered}
+{{u}^{n}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+=
+u^{n}_{M-\frac{1}{2},j}\frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^{n-1}.
+\end{gathered}
+\end{equation}
+This can be used to obtain the value $u^{n}_{M+\frac{1}{2},j}$ at the right boundary. Then we use the \cref{eqn:adv-inner} for inner part as now all of the necessary values are known.  
+
 %One of the advantages of advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ (or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial^2 u}{\partial y^2}$) is that it can be used to express $\frac{\partial uu}{\partial x}$ in terms of transient term as 
 %\begin{equation}
 %	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}\right)_{m+\frac{1}{2},j},
@@ -1595,12 +1679,12 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
 \begin{equation*}
   C = 
   \begin{bmatrix*}[r]
-  1		&	0\\
-  0		&	1\\
-  -1	&	0\\
-  0		&	-1\\
-  -1	&	0\\
-  1		&	-1\\
+  1		\\
+  0		\\
+  -1	\\
+  0		\\
+  -1	\\
+  1		\\
 \end{bmatrix*}.
 \end{equation*}
 

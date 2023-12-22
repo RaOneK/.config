@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.9.6)  8 DEC 2023 15:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.9.5)  22 DEC 2023 13:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -637,8 +637,12 @@ LaTeX Info: Redefining \labelcref on input line 2370.
 LaTeX Info: Redefining \labelcpageref on input line 2370.
 Package cleveref Info: always capitalise cross-reference names on input line 7830.
 Package cleveref Info: always capitalise cross-reference names on input line 7852.
-) (/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:18: Undefined control sequence.
+) (/usr/local/texlive/2023/texmf-dist/tex/latex/cite/cite.sty
+LaTeX Info: Redefining \cite on input line 302.
+LaTeX Info: Redefining \nocite on input line 332.
+Package: cite 2015/02/27  v 5.5
+) (/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:18: Undefined control sequence.
 l.18 \abx@aux@refcontext
                         {nty/global//global/global}
 The control sequence at the end of the top line
@@ -648,7 +652,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:18: LaTeX Error: Missing \begin{document}.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:18: LaTeX Error: Missing \begin{document}.
 
 See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
@@ -659,7 +663,7 @@ l.18 \abx@aux@refcontext{n
 You're in trouble here.  Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:20: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:20: Undefined control sequence.
 l.20 \abx@aux@cite
                   {0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -668,7 +672,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:21: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:21: Undefined control sequence.
 l.21 \abx@aux@segm
                   {0}{0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -677,7 +681,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:22: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:22: Undefined control sequence.
 l.22 \abx@aux@cite
                   {0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -686,7 +690,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:23: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:23: Undefined control sequence.
 l.23 \abx@aux@segm
                   {0}{0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -695,7 +699,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:33: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:33: Undefined control sequence.
 l.33 \abx@aux@cite
                   {0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -704,7 +708,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:34: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:34: Undefined control sequence.
 l.34 \abx@aux@segm
                   {0}{0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -713,7 +717,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:42: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:42: Undefined control sequence.
 l.42 \abx@aux@cite
                   {0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -722,7 +726,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:43: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:43: Undefined control sequence.
 l.43 \abx@aux@segm
                   {0}{0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -731,7 +735,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:44: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:44: Undefined control sequence.
 l.44 \abx@aux@cite
                   {0}{Rhie:1983}
 The control sequence at the end of the top line
@@ -740,7 +744,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:45: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:45: Undefined control sequence.
 l.45 \abx@aux@segm
                   {0}{0}{Rhie:1983}
 The control sequence at the end of the top line
@@ -749,7 +753,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:46: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:46: Undefined control sequence.
 l.46 \abx@aux@cite
                   {0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -758,7 +762,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:47: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:47: Undefined control sequence.
 l.47 \abx@aux@segm
                   {0}{0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -767,7 +771,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:81: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:81: Undefined control sequence.
 l.81 \abx@aux@cite
                   {0}{Gresho:1987}
 The control sequence at the end of the top line
@@ -776,7 +780,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:82: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:82: Undefined control sequence.
 l.82 \abx@aux@segm
                   {0}{0}{Gresho:1987}
 The control sequence at the end of the top line
@@ -785,7 +789,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:83: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:83: Undefined control sequence.
 l.83 \abx@aux@cite
                   {0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -794,7 +798,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:84: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:84: Undefined control sequence.
 l.84 \abx@aux@segm
                   {0}{0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -803,7 +807,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:85: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:85: Undefined control sequence.
 l.85 \abx@aux@cite
                   {0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -812,7 +816,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:86: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:86: Undefined control sequence.
 l.86 \abx@aux@segm
                   {0}{0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -821,7 +825,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:87: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:87: Undefined control sequence.
 l.87 \abx@aux@cite
                   {0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -830,7 +834,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:88: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:88: Undefined control sequence.
 l.88 \abx@aux@segm
                   {0}{0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -839,7 +843,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:99: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:99: Undefined control sequence.
 l.99 \abx@aux@cite
                   {0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -848,7 +852,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:100: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:100: Undefined control sequence.
 l.100 \abx@aux@segm
                    {0}{0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -857,7 +861,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:101: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:101: Undefined control sequence.
 l.101 \abx@aux@cite
                    {0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -866,7 +870,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:102: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:102: Undefined control sequence.
 l.102 \abx@aux@segm
                    {0}{0}{Harlow:1965}
 The control sequence at the end of the top line
@@ -875,7 +879,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:103: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:103: Undefined control sequence.
 l.103 \abx@aux@cite
                    {0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -884,7 +888,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:104: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:104: Undefined control sequence.
 l.104 \abx@aux@segm
                    {0}{0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -893,7 +897,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:105: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:105: Undefined control sequence.
 l.105 \abx@aux@cite
                    {0}{Temam:1969a}
 The control sequence at the end of the top line
@@ -902,7 +906,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:106: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:106: Undefined control sequence.
 l.106 \abx@aux@segm
                    {0}{0}{Temam:1969a}
 The control sequence at the end of the top line
@@ -911,7 +915,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:107: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:107: Undefined control sequence.
 l.107 \abx@aux@cite
                    {0}{Temam:1969b}
 The control sequence at the end of the top line
@@ -920,7 +924,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:108: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:108: Undefined control sequence.
 l.108 \abx@aux@segm
                    {0}{0}{Temam:1969b}
 The control sequence at the end of the top line
@@ -929,7 +933,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:128: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:128: Undefined control sequence.
 l.128 \abx@aux@cite
                    {0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -938,7 +942,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:129: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:129: Undefined control sequence.
 l.129 \abx@aux@segm
                    {0}{0}{Chorin:1968}
 The control sequence at the end of the top line
@@ -947,7 +951,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:130: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:130: Undefined control sequence.
 l.130 \abx@aux@cite
                    {0}{Yanenko:1971}
 The control sequence at the end of the top line
@@ -956,7 +960,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:131: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:131: Undefined control sequence.
 l.131 \abx@aux@segm
                    {0}{0}{Yanenko:1971}
 The control sequence at the end of the top line
@@ -965,7 +969,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:132: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:132: Undefined control sequence.
 l.132 \abx@aux@cite
                    {0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -974,7 +978,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:133: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:133: Undefined control sequence.
 l.133 \abx@aux@segm
                    {0}{0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -983,7 +987,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:134: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:134: Undefined control sequence.
 l.134 \abx@aux@cite
                    {0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -992,7 +996,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:135: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:135: Undefined control sequence.
 l.135 \abx@aux@segm
                    {0}{0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -1001,7 +1005,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:136: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:136: Undefined control sequence.
 l.136 \abx@aux@cite
                    {0}{Kim:1985}
 The control sequence at the end of the top line
@@ -1010,7 +1014,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:137: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:137: Undefined control sequence.
 l.137 \abx@aux@segm
                    {0}{0}{Kim:1985}
 The control sequence at the end of the top line
@@ -1019,7 +1023,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:138: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:138: Undefined control sequence.
 l.138 \abx@aux@cite
                    {0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1028,7 +1032,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:139: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:139: Undefined control sequence.
 l.139 \abx@aux@segm
                    {0}{0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1037,7 +1041,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:140: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:140: Undefined control sequence.
 l.140 \abx@aux@cite
                    {0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1046,7 +1050,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:141: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:141: Undefined control sequence.
 l.141 \abx@aux@segm
                    {0}{0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1055,7 +1059,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:142: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:142: Undefined control sequence.
 l.142 \abx@aux@cite
                    {0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1064,7 +1068,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:143: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:143: Undefined control sequence.
 l.143 \abx@aux@segm
                    {0}{0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1073,7 +1077,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:144: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:144: Undefined control sequence.
 l.144 \abx@aux@cite
                    {0}{Patankar:1972}
 The control sequence at the end of the top line
@@ -1082,7 +1086,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:145: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:145: Undefined control sequence.
 l.145 \abx@aux@segm
                    {0}{0}{Patankar:1972}
 The control sequence at the end of the top line
@@ -1091,7 +1095,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:146: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:146: Undefined control sequence.
 l.146 \abx@aux@cite
                    {0}{Patankar:1980}
 The control sequence at the end of the top line
@@ -1100,7 +1104,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:147: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:147: Undefined control sequence.
 l.147 \abx@aux@segm
                    {0}{0}{Patankar:1980}
 The control sequence at the end of the top line
@@ -1109,7 +1113,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:148: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:148: Undefined control sequence.
 l.148 \abx@aux@cite
                    {0}{Issa:1985}
 The control sequence at the end of the top line
@@ -1118,7 +1122,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:149: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:149: Undefined control sequence.
 l.149 \abx@aux@segm
                    {0}{0}{Issa:1985}
 The control sequence at the end of the top line
@@ -1127,7 +1131,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:150: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:150: Undefined control sequence.
 l.150 \abx@aux@cite
                    {0}{Issa:1986}
 The control sequence at the end of the top line
@@ -1136,7 +1140,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:151: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:151: Undefined control sequence.
 l.151 \abx@aux@segm
                    {0}{0}{Issa:1986}
 The control sequence at the end of the top line
@@ -1145,7 +1149,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:152: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:152: Undefined control sequence.
 l.152 \abx@aux@cite
                    {0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -1154,7 +1158,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:153: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:153: Undefined control sequence.
 l.153 \abx@aux@segm
                    {0}{0}{Zikanov:2010}
 The control sequence at the end of the top line
@@ -1163,7 +1167,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:154: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:154: Undefined control sequence.
 l.154 \abx@aux@cite
                    {0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -1172,7 +1176,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:155: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:155: Undefined control sequence.
 l.155 \abx@aux@segm
                    {0}{0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -1181,7 +1185,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:156: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:156: Undefined control sequence.
 l.156 \abx@aux@cite
                    {0}{Kim:1985}
 The control sequence at the end of the top line
@@ -1190,7 +1194,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:157: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:157: Undefined control sequence.
 l.157 \abx@aux@segm
                    {0}{0}{Kim:1985}
 The control sequence at the end of the top line
@@ -1199,7 +1203,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:158: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:158: Undefined control sequence.
 l.158 \abx@aux@cite
                    {0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -1208,7 +1212,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:159: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:159: Undefined control sequence.
 l.159 \abx@aux@segm
                    {0}{0}{Dukowicz:1992}
 The control sequence at the end of the top line
@@ -1217,7 +1221,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:160: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:160: Undefined control sequence.
 l.160 \abx@aux@cite
                    {0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1226,7 +1230,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:161: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:161: Undefined control sequence.
 l.161 \abx@aux@segm
                    {0}{0}{Perot:1993}
 The control sequence at the end of the top line
@@ -1235,7 +1239,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:162: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:162: Undefined control sequence.
 l.162 \abx@aux@cite
                    {0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1244,7 +1248,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:163: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:163: Undefined control sequence.
 l.163 \abx@aux@segm
                    {0}{0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1253,7 +1257,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:173: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:173: Undefined control sequence.
 l.173 \abx@aux@cite
                    {0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -1262,7 +1266,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:174: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:174: Undefined control sequence.
 l.174 \abx@aux@segm
                    {0}{0}{Biringen:2011}
 The control sequence at the end of the top line
@@ -1271,7 +1275,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:175: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:175: Undefined control sequence.
 l.175 \abx@aux@cite
                    {0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1280,7 +1284,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:176: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:176: Undefined control sequence.
 l.176 \abx@aux@segm
                    {0}{0}{Brown:2001}
 The control sequence at the end of the top line
@@ -1289,7 +1293,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:177: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:177: Undefined control sequence.
 l.177 \abx@aux@cite
                    {0}{Patankar:1972}
 The control sequence at the end of the top line
@@ -1298,7 +1302,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:178: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:178: Undefined control sequence.
 l.178 \abx@aux@segm
                    {0}{0}{Patankar:1972}
 The control sequence at the end of the top line
@@ -1307,7 +1311,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:184: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:184: Undefined control sequence.
 l.184 \abx@aux@cite
                    {0}{Issa:1985}
 The control sequence at the end of the top line
@@ -1316,7 +1320,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:185: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:185: Undefined control sequence.
 l.185 \abx@aux@segm
                    {0}{0}{Issa:1985}
 The control sequence at the end of the top line
@@ -1325,7 +1329,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:186: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:186: Undefined control sequence.
 l.186 \abx@aux@cite
                    {0}{Issa:1986}
 The control sequence at the end of the top line
@@ -1334,7 +1338,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:187: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:187: Undefined control sequence.
 l.187 \abx@aux@segm
                    {0}{0}{Issa:1986}
 The control sequence at the end of the top line
@@ -1343,7 +1347,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:214: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:214: Undefined control sequence.
 l.214 \abx@aux@cite
                    {0}{Engquist:1977}
 The control sequence at the end of the top line
@@ -1352,7 +1356,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:215: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:215: Undefined control sequence.
 l.215 \abx@aux@segm
                    {0}{0}{Engquist:1977}
 The control sequence at the end of the top line
@@ -1361,7 +1365,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:216: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:216: Undefined control sequence.
 l.216 \abx@aux@cite
                    {0}{Kourta:1987}
 The control sequence at the end of the top line
@@ -1370,7 +1374,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:217: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:217: Undefined control sequence.
 l.217 \abx@aux@segm
                    {0}{0}{Kourta:1987}
 The control sequence at the end of the top line
@@ -1379,7 +1383,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:218: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:218: Undefined control sequence.
 l.218 \abx@aux@cite
                    {0}{Liu:1993}
 The control sequence at the end of the top line
@@ -1388,7 +1392,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:219: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:219: Undefined control sequence.
 l.219 \abx@aux@segm
                    {0}{0}{Liu:1993}
 The control sequence at the end of the top line
@@ -1397,7 +1401,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:220: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:220: Undefined control sequence.
 l.220 \abx@aux@cite
                    {0}{Sani:1994}
 The control sequence at the end of the top line
@@ -1406,7 +1410,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:221: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:221: Undefined control sequence.
 l.221 \abx@aux@segm
                    {0}{0}{Sani:1994}
 The control sequence at the end of the top line
@@ -1415,7 +1419,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:222: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:222: Undefined control sequence.
 l.222 \abx@aux@cite
                    {0}{Persillon:1998}
 The control sequence at the end of the top line
@@ -1424,7 +1428,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:223: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:223: Undefined control sequence.
 l.223 \abx@aux@segm
                    {0}{0}{Persillon:1998}
 The control sequence at the end of the top line
@@ -1433,7 +1437,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:224: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:224: Undefined control sequence.
 l.224 \abx@aux@cite
                    {0}{Tsynkov:1998}
 The control sequence at the end of the top line
@@ -1442,7 +1446,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:225: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:225: Undefined control sequence.
 l.225 \abx@aux@segm
                    {0}{0}{Tsynkov:1998}
 The control sequence at the end of the top line
@@ -1451,7 +1455,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:226: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:226: Undefined control sequence.
 l.226 \abx@aux@cite
                    {0}{Engquist:1977}
 The control sequence at the end of the top line
@@ -1460,7 +1464,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:227: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:227: Undefined control sequence.
 l.227 \abx@aux@segm
                    {0}{0}{Engquist:1977}
 The control sequence at the end of the top line
@@ -1469,7 +1473,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:228: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:228: Undefined control sequence.
 l.228 \abx@aux@cite
                    {0}{Kourta:1987}
 The control sequence at the end of the top line
@@ -1478,7 +1482,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:229: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:229: Undefined control sequence.
 l.229 \abx@aux@segm
                    {0}{0}{Kourta:1987}
 The control sequence at the end of the top line
@@ -1487,7 +1491,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:230: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:230: Undefined control sequence.
 l.230 \abx@aux@cite
                    {0}{Liu:1993}
 The control sequence at the end of the top line
@@ -1496,7 +1500,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:231: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:231: Undefined control sequence.
 l.231 \abx@aux@segm
                    {0}{0}{Liu:1993}
 The control sequence at the end of the top line
@@ -1505,7 +1509,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:232: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:232: Undefined control sequence.
 l.232 \abx@aux@cite
                    {0}{Persillon:1998}
 The control sequence at the end of the top line
@@ -1514,7 +1518,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:233: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:233: Undefined control sequence.
 l.233 \abx@aux@segm
                    {0}{0}{Persillon:1998}
 The control sequence at the end of the top line
@@ -1523,7 +1527,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:258: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:258: Undefined control sequence.
 l.258 \abx@aux@cite
                    {0}{Sani:1994}
 The control sequence at the end of the top line
@@ -1532,7 +1536,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:259: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:259: Undefined control sequence.
 l.259 \abx@aux@segm
                    {0}{0}{Sani:1994}
 The control sequence at the end of the top line
@@ -1541,17 +1545,17 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:260: Undefined control sequence.
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:260: Undefined control sequence.
 l.260 \abx@aux@cite
                    {0}{Tsynkov:1998}
 (That makes 100 errors; please try again.) 
 Here is how much of TeX's memory you used:
- 25388 strings out of 476025
- 487366 string characters out of 5790018
+ 25545 strings out of 476025
+ 490395 string characters out of 5790018
  1851388 words of memory out of 5000000
- 45448 multiletter control sequences out of 15000+600000
+ 45602 multiletter control sequences out of 15000+600000
  512899 words of font info for 34 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,0n,104p,427b,245s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 102i,0n,104p,427b,247s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-/Users/sarabek/.config/latex/Reading Notes/.texpadtmp/Notes.aux:260:  ==> Fatal error occurred, no output PDF file produced!
+/Users/user/.config/latex/Reading Notes/.texpadtmp/Notes.aux:260:  ==> Fatal error occurred, no output PDF file produced!
