@@ -1021,7 +1021,7 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.55\paperwidth]{Luxx}
+  \includegraphics[width=0.45\paperwidth]{Luxx}
   }
   \caption{$\hat{L}^u_{xx}$ inner part.}\label{fig:luxx-inner}
 \end{figure}
@@ -1060,7 +1060,7 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 %\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.55\paperwidth]{ADV-right}
+  \includegraphics[width=0.45\paperwidth]{ADV-right}
   }
   \caption{$\hat{L}^u_{xx}$ at the right boundary.}\label{fig:luxx-right}
 \end{figure}
@@ -1115,6 +1115,24 @@ Next, we plug \cref{eqn:bc-right} into \cref{eqn:laplacian-discretization-non-un
 	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc^n_e}{h_c h_e}.
 \end{aligned}
 \end{equation}
+
+Let us now try to apply \cref{eqn:jin-bc-transient-consistent} which is consistent with schemes for the inner part to the boundary values at the outlet
+
+\begin{equation*}
+\begin{gathered}
+\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{\partial {u}}{\partial x}\right)^{n}_{M+\frac{1}{2},j}-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{\partial {u}}{\partial x}\right)^{n-1}_{M+\frac{1}{2},j}\right]\\
+=\nu\left[\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n+1}_{M+\frac{1}{2},j}+\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n}_{M+\frac{1}{2},j}\right],
+\end{gathered}
+\end{equation*}
+which when spatially discretized is written as
+\begin{equation}\label[bc]{eqn:jin-bc-full-consistent}
+\begin{gathered}
+\frac{\nu}{h_c h_n}u^{n+1}_{M+\frac{1}{2},j+1} - \left(\frac{2\nu}{h_s h_n}-\frac{1}{\Delta t}\right)u^{n+1}_{M+\frac{1}{2},j} + \frac{\nu}{h_c h_s}u^{n+1}_{M+\frac{1}{2},j-1}\\
+=-\frac{{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{u_{M+\frac{1}{2},j}^n-u_{M-\frac{1}{2},j}^n}{\Delta x_M}\right)-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{u_{M+\frac{1}{2},j}^{n-1}-u_{M-\frac{1}{2},j}^{n-1}}{\Delta x_M}\right)\right]\\
+-\left[\frac{\nu}{h_c h_n}u^{n}_{M+\frac{1}{2},j+1}-\frac{2\nu}{h_s h_n}u^{n}_{M+\frac{1}{2},j} + \frac{\nu}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1}\right].
+\end{gathered}
+\end{equation}
+The above fully discretized \cref{eqn:jin-bc-full-consistent} is a system of linear equations at time step $n+1$ and only has to be solved for the outlet boundary values of $u$. We know both topmost velocity $u_{\text{top}}=u_{\text{freestream}}$ and bottommost $u_{\text{bot}}=u_{\text{wall}}$ which play roles of boundary values for this system of linear equations. However, there is an issue that no velocity values at time step $n+1$ are passed from the inner part of the domain, the whole equation is self-sufficient and takes only the inner data from previous time steps $n$ and $n-1$.
 
 \textbf{Left boundary.} 
 The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-schemes}.
