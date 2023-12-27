@@ -825,6 +825,7 @@ where we drop prime superscripts in the last identity as well.
 
 
 \subsection{Problem statement on truncated domain}
+The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{subsec:problem-statement-dimentional} on semi-infinite domain now becomes system of partial differential equations on a unit square domain 
 \begin{subequations}
 \label[pluralequation]{eqs:NSE-dsm-bl}
 \begin{align}
@@ -852,13 +853,13 @@ Following the successful nondimensionalization of the governing equations, we no
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.5\paperwidth]{grid-bl}
+  \includegraphics[width=0.45\paperwidth]{grid-bl}
   }
   \caption{Domain discretization}\label{bl-domain-discretization}
 \end{figure}
 
 To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. 
-Moreover, the pressure gradients can be evaluated directly using central differences. 
+Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
 This calculation does not require any interpolation on such grids, furthermore, it is computationally cheaper and simple. 
 Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
 The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
@@ -986,8 +987,9 @@ After applying the discrete operators listed in the following \cref{subsec:advec
 	\begin{pmatrix}
 		\hat{bc}_1\\
 		\hat{bc}_2
-	\end{pmatrix}. 
+	\end{pmatrix},
 \end{equation}
+where $\hat{r}^n$ includes viscous and non-linear terms from time steps $n,n-1$ and $\hat{bc}_i$ are explicit boundary values in terms of velocity and pressure.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1077,48 +1079,102 @@ The last unknown element of \cref{eqn:NSE-dsm-bl-system-schemes} in $x$ directio
 +\left(
 	\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
 \right)
-\right] \\
+\right] =\\
 =\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right)
 \end{gathered}
 \end{equation*}
 leads to %%%%%%%%%%%%%%%%%
-\begin{equation}\label[bc]{eqn:bc-right-long}
+\begin{equation}\label[bc]{eqn:bc-u-right-long}
 \begin{gathered}
-{{u}^{n+1}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
 =
-u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\\
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}-\\
 -\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
 +\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
 +\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right).
 \end{gathered}
 \end{equation}
-Note that $\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)$ is never zero regardless of the flow direction, hence dividing by it is allowed. The second line of fully discretized \cref{eqn:bc-right-long} is treated explicitly since we posses the flow data at time steps $n$ and below. Denote explicit terms as
+Note that $\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)$ is never zero regardless of the flow direction, hence dividing by it is allowed. The second line of fully discretized \cref{eqn:bc-u-right-long} is treated explicitly since we posses the flow data at time steps $n$ and earlier. Denote explicit terms as
 \begin{equation*}
-	bc_e^n=-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
+	bc_{ue}^n=-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
 +\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
 +\nu\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right),
 \end{equation*}
-which simplifies \cref{eqn:bc-right-long} to 
-\begin{equation}\label[bc]{eqn:bc-right}
+which simplifies \cref{eqn:bc-u-right-long} to 
+\begin{equation}\label[bc]{eqn:bc-u-right}
 \begin{gathered}
-{{u}^{n+1}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
 =
-u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^n.
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_{ue}^n.
 \end{gathered}
 \end{equation}
 
-Next, we plug \cref{eqn:bc-right} into \cref{eqn:laplacian-discretization-non-uniform-dx}, which finally leads us to
-\begin{equation}
+Next, we plug \cref{eqn:bc-u-right} into \cref{eqn:laplacian-discretization-non-uniform-dx}, which finally leads us to
+\begin{equation}\label{eqn:luxx-right}
 \begin{aligned}
 	\left.\frac{\partial ^2 u}{\partial x^2}\right|_{M-\frac{1}{2},j}^{n+1}
 	&=\frac{1}{h_c h_e}u^{n+1}_{M+\frac{1}{2},j} - \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}\\
-	&=\frac{1}{h_c h_e}\left(u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2h_e}+bc^n_e\right)- \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}\\
-	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc^n_e}{h_c h_e}.
+	&=\frac{1}{h_c h_e}\frac{\left.u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2h_e}+bc_{ue}^n\right.}{\left.\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right.}- \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}\\
+	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e\left[\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right]} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc_{ue}^n}{h_c h_e\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)}.
+\end{aligned}
+\end{equation}
+
+Condition for $v$ component is not as trivial as for $u$ since there is no $v$ directly at the boundary due to the staggered grid arrangement. We need to express $v_g=v_{M+1,j-\frac{1}{2}}$ in terms of the right-most unknown $v_{M,j-\frac{1}{2}}$ component for the diffusion operator. It is possible to use more than one value of $v$ from inner part of the domain to express the ghost velocity outside. However, this will lead to change of non-diagonal elements in diffusion operator, which will cause Laplacian matrix to be asymmetric. Therefore, we are restricted to use the elements of the main diagonal to express the ghost velocities outside the computational domain. Hence, interpolation leads to
+\begin{equation*}
+	v_{\text{BC}}=v_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}+v_{M,j-\frac{1}{2}}}{2},
+\end{equation*}
+where $v_{M+1,j-\frac{1}{2}}$ is ghost component outside the domain. It is also possible to apply central difference to the advection terms at the boundary $\left( \frac{\partial v}{\partial x}\right)_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}-v_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}$, then \cref{eqn:jin-bc-transient} can be rewritten for $v$ component at the boundary as
+\begin{equation}\label[bc]{eqn:}
+\begin{gathered}
+\frac{{\left( \frac{v^{n+1}_{M+1,j-\frac{1}{2}}+v^{n+1}_{M,j-\frac{1}{2}}}{2}\right)}-\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2} \right) }{\Delta t}+\\
++\frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}
+\left[
+\left(
+	\frac{v^{n+1}_{M+1,j-\frac{1}{2}}-v^{n+1}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
+\right) \right.
++\left.\left(
+	\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
+\right)
+\right]= \\
+=\nu\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right],
+\end{gathered}
+\end{equation}
+which is used to express ghost velocity 
+\begin{equation}\label[bc]{eqn:bc-v-right-long}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+\\
++\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
++ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
++\nu\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
+\end{gathered}
+\end{equation}
+Let us denote explicit terms from last two rows as
+\begin{equation*}
+\begin{gathered}
+	bc_{ve}^n=\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
++ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
++\nu\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
+\end{gathered}
+\end{equation*}
+Then \cref{eqn:bc-v-right-long} simplifies to
+\begin{equation}\label[bc]{eqn:bc-v-right}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{ve}^n.
+\end{gathered}
+\end{equation}
+The ultimate step is to plug \cref{eqn:bc-v-right} into \cref{eqn:laplacian-discretization-non-uniform-dx} which results in diffusion approximation of $v$ in $x$ direction of the right-most unknown component
+\begin{equation}\label{{eqn:lvxx-right}}
+\begin{aligned}
+	\left.\frac{\partial ^2 v}{\partial x^2}\right|_{M,j-\frac{1}{2}}^{n+1}
+	&=\frac{1}{h_c h_e}v^{n+1}_{M+1,j-\frac{1}{2}} - \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}\\
+	&=\frac{1}{h_c h_e}\left[\frac{\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{ve}^n}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.}\right]- \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}\\
+	&=\left[ \frac{1}{h_c h_e}\left(\frac{\left. -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right.}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.} \right) -\frac{2}{h_w h_e}\right]v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}} + \frac{bc_{ve}^n}{h_c h_e\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right)}.
 \end{aligned}
 \end{equation}
 
 Let us now try to apply \cref{eqn:jin-bc-transient-consistent} which is consistent with schemes for the inner part to the boundary values at the outlet
-
 \begin{equation*}
 \begin{gathered}
 \frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{\partial {u}}{\partial x}\right)^{n}_{M+\frac{1}{2},j}-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{\partial {u}}{\partial x}\right)^{n-1}_{M+\frac{1}{2},j}\right]\\
@@ -1427,15 +1483,23 @@ which is evaluated at the same point as $u_{i-\frac{1}{2},j}$ (squares in \cref{
   }
   \caption{Right boundary advection.}\label{fig:ADV-right}
 \end{figure}
-\cref{eqn:bc-right} rewritten for the time step $n$ is
-\begin{equation}
+\cref{eqn:bc-u-right} rewritten for the time step $n$ is
+\begin{equation*}
 \begin{gathered}
 {{u}^{n}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
 =
 u^{n}_{M-\frac{1}{2},j}\frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^{n-1}.
 \end{gathered}
-\end{equation}
-This can be used to obtain the value $u^{n}_{M+\frac{1}{2},j}$ at the right boundary. Then we use the \cref{eqn:adv-inner} for inner part as now all of the necessary values are known.  
+\end{equation*}
+This can be used to obtain the value $u^{n}_{M+\frac{1}{2},j}$ at the right boundary. Then we use the \cref{eqn:adv-inner} for inner part as now all the necessary values are known. Similarly, we use \cref{eqn:bc-v-right} at time step $n$ 
+\begin{equation*}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n}_{M,j-\frac{1}{2}}+bc_{ve}^{n-1}
+\end{gathered}
+\end{equation*}
+to express ghost velocity $v^{n}_{M+1,j-\frac{1}{2}}$ which we use to compute \cref{eqn:adv-inner} for inner part.
+
 
 %One of the advantages of advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ (or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\nu \frac{\partial^2 u}{\partial y^2}$) is that it can be used to express $\frac{\partial uu}{\partial x}$ in terms of transient term as 
 %\begin{equation}
