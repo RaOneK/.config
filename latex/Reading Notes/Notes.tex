@@ -662,7 +662,7 @@ Issa \cite{Issa:1985,Issa:1986} proposed an additional correction step to the SI
 %	\item Outlet idea 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
     \item  \st{Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\nu \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.} Wrote an email to author, waiting for the response. 
     \item \st{Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall}\cite{Hall:1980}. Changed unknowns to inner part only. Values at the boundary are determined using BC. 
-    \item Check algebra of diffusion and advection for $v$ component.
+    \item \st{Check algebra of diffusion and advection for $v$ component.} 
     \item It feels like BC scheme which is consistent with inner discretization won't work, we will use Jin-Braza scheme. 
   \end{itemize}
 }
