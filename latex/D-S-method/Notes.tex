@@ -156,6 +156,7 @@ If, however, one ends up solving the Poisson equation for pressure, an interesti
     \item It feels like BC scheme which is consistent with inner discretization won't work, we will use Jin-Braza-Braza scheme. 
     \item Outlet BC stated early in non-dim truncated part, but discussion is much later.
     \item Continuous analogue of $C^T$ to be determined. Figured out that $C^TC=L$ and $C^TLC=L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
+    \item Repeating \cref{fig:luxx-right-first} from first try of Laplacian and \cref{fig:luxx-right} after Artificial BC discussion.
   \end{itemize}
 }
 
@@ -496,7 +497,13 @@ The position of $u_g$ is not fixed, we can make the order of the scheme $O(\Delt
 The coefficients from \cref{eqn:luxx-bot} are distributed into the $\hat{L}^u_{yy}$ matrix similarly to previous boundary cases.
 
 \subsubsection{Right boundary.}\label{subsubsec:laplacian-right}
-In order to express the rightmost unknown velocity components inside the domain it is required to use the boundary values for $u$ and ghost elements for $v$. The best case scenario would be to have Dirichlet velocity values $\boldsymbol{v}(t,1,y)\subset \mathbb{R}$ or Neumann boundary condition $\frac{\partial u}{\partial x}=0$ as in Colonius-Taira~\cite{Colonius:2008} at the outlet. However, since the behaviour of  solution at the right side of the domain is not known it is not possible to impose such boundary conditions. We will address the spatial discretization at the right boundary in \cref{subsec:laplacian-ABC}.
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.45\paperwidth]{ADV-right}
+  }
+  \caption{$\hat{L}^u_{xx},\hat{L}^v_{xx}$ at the right boundary ($m=M$).}\label{fig:luxx-right-first}
+\end{figure}
+In order to express the rightmost unknown velocity component $u_{M-\frac{1}{2},j}$ inside the domain it is required to use the boundary values of $u_{M+\frac{1}{2},j}$ and ghost elements for $v_g$ as in \cref{fig:luxx-right-first}. The best case scenario would be to have Dirichlet velocity values $\boldsymbol{v}(t,1,y)\subset \mathbb{R}$ or Neumann boundary condition $\left.\frac{\partial u}{\partial x}\right|_{M+\frac{1}{2},j}=0$ as in Colonius-Taira~\cite{Colonius:2008} at the outlet. However, since the solution of \cref{eqs:NSE-dsm-bl} at the right boundary of the domain might not have the same behaviour, it is not possible to impose such boundary conditions for our problem statement. We will address the spatial discretization of Laplacian at the right boundary in \cref{subsec:laplacian-ABC}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Advection}\label{subsec:advection}
@@ -592,8 +599,7 @@ The advective terms in the $y$-momentum equation are computed similarly. After t
 
 \subsubsection{Right boundary}\label{subsubsec:advection-right}
 
-Similarly to Laplacian for the rightmost velocity components in \cref{subsubsec:laplacian-right} we need explicit values of $u$ and  $v$. The velocity values at time steps $n,n-1$ are to be determined in \cref{subsec:advection-ABC}.
-
+Similarly to Laplacian for the right side in \cref{subsubsec:laplacian-right} we need explicit values of $u$ and  $v$ at and beyond the boundary. These values are yet to be known, hence, it is not possible to utilize the inner part advection formulas from \cref{subsubsec:advection-inner} to rightmost unknown velocities at time steps $n,n-1$ directly. These values are to be determined using artificial boundary conditions in \cref{subsec:advection-ABC}. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Divergence}\label{subsec:divergence}
 
