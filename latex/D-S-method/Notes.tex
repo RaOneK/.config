@@ -39,6 +39,8 @@
 \usepackage{eqparbox}
 \usepackage{float} % \figure{}[H] IN PLACE VIEW
 \usepackage[capitalize]{cleveref} % smart references in one bracket
+\usepackage{hyperref}
+
 %
 % CREF rules
 % Equation(s)
@@ -58,6 +60,12 @@
 \crefrangeformat{bc}{#3BCs (#1)#4 to #5(#2)#6}
 \crefmultiformat{bc}{#2BCs (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
 \crefrangemultiformat{bc}{#3BCs ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Steps
+\crefformat{step}{#2Step (#1)#3}
+\crefrangeformat{step}{#3Steps (#1)#4 to #5(#2)#6}
+\crefmultiformat{step}{#2Steps (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{step}{#3Steps ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+
 
 
 %\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
@@ -74,14 +82,14 @@
 
 
 
-\title{Finite-difference and -volume methods \\ for the incompressible Navier-Stokes equations}
+\title{Discrete stream function method \\ for the incompressible Navier-Stokes equations with travelling wave boundary conditions past a flat plate}
 \author{Rauan}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The goal of these notes is to present the detailed overview of discrete stream function method for solving incompressible Navier-Stokes equations. We will discuss in detail the scheme formulation, transient and spatial discretizations. Special attention will be paid to the boundary conditions and their implementation. After studying these notes one must get a coherent picture of the application of discrete stream function method to incompressible flows and be able to implement the scheme in code.
+The goal of these notes is to present the detailed overview of discrete stream function method for solving incompressible Navier-Stokes equations with travelling wave boundary conditions past a flat plate. We will discuss in detail the scheme formulation, transient and spatial discretizations. Special attention will be paid to the boundary conditions and their implementation. After studying these notes one must get a coherent picture of the application of discrete stream function method to incompressible flows and be able to implement the scheme in code.
 \end{abstract}
 
 \tableofcontents
@@ -90,9 +98,9 @@ The goal of these notes is to present the detailed overview of discrete stream f
 
 In these notes we will be concerned with the discretization of the Navier-Stokes equations describing the flow of an incompressible fluid:
 \begin{subequations}
-\label{eqs:NSE}
+\label[pluralequation]{eqs:NSE}
 \begin{align}
-\label{eqn:momentum}
+\label{eqn:momentum-intro}
 \frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} &= -\nabla p + \epsilon \nabla \cdot \nabla \boldsymbol{v} \\
 \label{eqn:continuity}
 \nabla \cdot \boldsymbol{v} &= 0,
@@ -111,11 +119,11 @@ has the name of a \textit{collocated} or \textit{regular} grid. Albeit simple an
 The staggered arrangement increases complexity of a scheme. Programming becomes more difficult, since it requires accounting for three (or four in the three-dimensional case) indexing systems. Interpolations must be used to compute nonlinear terms of momentum equations. Further complications arise when the grid is nonuniform. All these difficulties, however, can be relatively easily handled in computations with structured grids such as those shown in figure~\ref{fig:grid-staggered}. For this reason and because of the benefit of removing the splitting problem, the staggered arrangement was by far the most popular choice during early years of CFD. The difficulties of handling a staggered arrangement increase significantly when unstructured grids are used. When such grids started to
 be broadly applied in general-purpose codes in recent years, collocated arrangements returned to favor. This area of CFD is still evolving. We only mention that methods have been developed to cure the splitting problem leading to pressure oscillations, but the cure is not ideal and leads to extra complexities at the implementation level.
 
-In numerical terms, the problem \eqref{eqs:NSE} can be formulated as follows: given the solution $p^{n}$, $\boldsymbol{v}^{n}$ at the previous time layer $t^{n}$, find the next time-layer pressure $p^{n+1}$ and velocity $\boldsymbol{v}^{n+1}$ such that they together satisfy the momentum equation, and the velocity is divergence-free $\nabla \cdot \boldsymbol{v}^{n+1} = 0$ and satisfies the boundary conditions.
+In numerical terms, the problem \cref{eqs:NSE} can be formulated as follows: given the solution $p^{n}$, $\boldsymbol{v}^{n}$ at the previous time layer $t^{n}$, find the next time-layer pressure $p^{n+1}$ and velocity $\boldsymbol{v}^{n+1}$ such that they together satisfy the momentum equation, and the velocity is divergence-free $\nabla \cdot \boldsymbol{v}^{n+1} = 0$ and satisfies the boundary conditions.
 
-A conspicuous feature of \eqref{eqs:NSE} is that pressure $p$ is not determined by a time-evolution equation, but rather is implicitly defined by the incompressibility condition \eqref{eqn:continuity}, which plays the role of a constraint that the velocity field $\boldsymbol{v}$ must satisfy. The pressure instantaneously adapts to the evolving velocity field in such a way as to satisfy that constraint. This is reflected in the fact that $p$ satisfies a Poisson equation, which can be derived by taking the divergence of \eqref{eqn:momentum} and combining the result with \eqref{eqn:continuity}. From the mathematical viewpoint, this means that the incompressible flow equations have some features of an elliptic system. We can say that the equations are of the mixed hyperbolic (convective terms), parabolic (viscous terms), and elliptic (pressure and incompressibility) type. The elliptic nature of the pressure solution has a physical meaning. It shows that, in an incompressible flow, the pressure field in the entire flow domain adjusts instantaneously to any, however localized, perturbation. This is in perfect agreement with the fact that weak perturbations, for example sound waves, propagate at infinite speed in incompressible fluids.
+A conspicuous feature of \cref{eqs:NSE} is that pressure $p$ is not determined by a time-evolution equation, but rather is implicitly defined by the incompressibility \cref{eqn:continuity}, which plays the role of a constraint that the velocity field $\boldsymbol{v}$ must satisfy. The pressure instantaneously adapts to the evolving velocity field in such a way as to satisfy that constraint. This is reflected in the fact that $p$ satisfies a Poisson equation, which can be derived by taking the divergence of \cref{eqn:momentum-intro} and combining the result with \cref{eqn:continuity}. From the mathematical viewpoint, this means that the incompressible flow equations have some features of an elliptic system. We can say that the equations are of the mixed hyperbolic (convective terms), parabolic (viscous terms), and elliptic (pressure and incompressibility) type. The elliptic nature of the pressure solution has a physical meaning. It shows that, in an incompressible flow, the pressure field in the entire flow domain adjusts instantaneously to any, however localized, perturbation. This is in perfect agreement with the fact that weak perturbations, for example sound waves, propagate at infinite speed in incompressible fluids.
 
-Given the Poisson equation for $p$, it may replace the continuity equation \eqref{eqn:continuity} and its solution can in principle be substituted back into equation~\eqref{eqn:momentum} to obtain an evolution equation for the velocity field alone. Alternatively, the pressure can be immediately eliminated by taking the $\mathrm{curl}$ of momentum equation~\eqref{eqn:momentum}, which leads to the vorticity-stream function formulation of incompressible flow. Formal manipulations of this type are useful for various theoretical purposes, but experience has shown that they are rarely advantageous for computational purposes. In most situations, it is preferable to simply approximate and solve the system~\eqref{eqs:NSE} directly for the so-called \textit{primitive} variables $\boldsymbol{v}$ and $p$.
+Given the Poisson equation for $p$, it may replace the continuity \cref{eqn:continuity} and its solution can in principle be substituted back into \cref{eqn:momentum-intro} to obtain an evolution equation for the velocity field alone. Alternatively, the pressure can be immediately eliminated by taking the $\mathrm{curl}$ of momentum \cref{eqn:momentum-intro}, which leads to the vorticity-stream function formulation of incompressible flow. Formal manipulations of this type are useful for various theoretical purposes, but experience has shown that they are rarely advantageous for computational purposes. In most situations, it is preferable to simply approximate and solve \cref{eqs:NSE} directly for the so-called \textit{primitive} variables $\boldsymbol{v}$ and $p$.
 
 If, however, one ends up solving the Poisson equation for pressure, an interesting and important question arises as to what boundary conditions should be used for the pressure field. Such conditions are required at every point of the boundary for the Poisson problem to be well-posed. The conditions, however, do not naturally follow from the flow physics for the boundaries between fluid and solid walls, unless, of course, a full fluid-structure interaction problem is solved. Since the latter option is, in most cases, an unnecessary complication, we have to find a way to derive the pressure boundary conditions from the equations themselves.
 
@@ -146,6 +154,8 @@ If, however, one ends up solving the Poisson equation for pressure, an interesti
     \item \st{Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall}\cite{Hall:1980}. Changed unknowns to inner part only. Values at the boundary are determined using BC. 
     \item \st{Check algebra of diffusion and advection for $v$ component.} 
     \item It feels like BC scheme which is consistent with inner discretization won't work, we will use Jin-Braza-Braza scheme. 
+    \item Outlet BC stated early in non-dim truncated part, but discussion is much later.
+    \item Continuous analogue of $C^T$ to be determined. Figured out that $C^TC=L$ and $C^TLC=L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
   \end{itemize}
 }
 
@@ -169,7 +179,7 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 %\text{Outlet BC: } 	& \frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0\lor\left(\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\epsilon \frac{\partial ^2 u}{\partial y^2}\right), \\ 
 %					& v=\boldsymbol{h}(t,y)-\text{linear extrapolation},\notag\\
 %					& (x=\infty),\notag\\
-\text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0). \text{ (or Blasius profile.)}
+\text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0) \text{ or Blasius profile.}
 \end{align}
 \end{subequations}
 
@@ -225,8 +235,8 @@ The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-d
 \label[bc]{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
 \label[bc]{eqn:NSE-dsm-bl-bc-outlet}
-%\text{Outlet BC: } 	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\epsilon \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,\text{ discussed in \cref{sec:artificial-bc}}, \\ 
-%					& (x=1).\notag\\
+\text{Outlet BC: } 	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\epsilon \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,\text{ discussed in \cref{sec:artificial-bc}}, \\ 
+					& (x=1).\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0)\text{ or Blasius profile}.
 \end{align}
 \end{subequations}
@@ -395,7 +405,7 @@ As per \cref{eqn:NSE-dsm-bl-system-schemes} it is required to approximate implic
 
 Each pair of the matrices $\hat{L}^u_{xx},\hat{L}^v_{xx}$ and $\hat{L}^u_{yy},\hat{L}^v_{yy}$ will be equal on a uniform, but different on non-uniform grids. These matrices are computed similarly. Below we will discuss how the Laplacian matrix is constructed at different parts of the grid.
 
-\textbf{Inner part.}
+\subsubsection{Inner part}\label{subsubsec:laplacian-inner}
 The uniform grid refinement $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ makes the order of the scheme consistent throughout the whole domain. Without loss of generality, let us show how to compute $\hat{L}^u_{xx}$. The other three matrices can be constructed in a similar manner. The power series of of $u_{i-\frac{1}{2}\pm 1,j}$ at nodes $x_{i - \frac{1}{2}\pm 1}$ with respect to $u_{i - \frac{1}{2},j}$ at node $x_{i-\frac{1}{2}}$ are
 \begin{equation}\label{eqn:Taylor right} 
 	u_{i-\frac{1}{2}+1,j}=u_{i-\frac{1}{2},j}+\left.\frac{\partial u}{\partial x}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i-\frac{1}{2},j}\left(x_{i-\frac{1}{2}+1}-x_{i-\frac{1}{2}}\right)^2+O\left(\Delta x^3\right),
@@ -422,169 +432,9 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 %\end{equation}
 
 
-\textbf{Right boundary.} 
-%The aim is to make a second order scheme for the first derivative to keep consistency with the discretization of the inner part. Take the right most nodes, the aim is to eliminate the second derivative in equations below, cross multiply by coefficients to make up a common factor at second derivative, then subtract the equations. 
-%	\begin{equation}
-%	\begin{aligned}
-%	& u_m=u_{m+1}+\left.\left(x_m-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_m-x_{m+1}\right)^2}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/\frac{\left(x_{m-1}-x_{m+1}\right)^2}{2}. \\
-%	& u_{m-1}=u_{m+1}+\left.\left(x_{m-1}-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_{m-1}-x_{m+1}\right.}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/ \frac{\left(x_m-x_{m+1}\right)^2}{2}.
-%	\end{aligned}
-%	\end{equation}
-%
-%After subtracting and simplifying the expression for the first partial derivative reduces to
-%\begin{equation}
-%\frac{\partial u}{\partial x}\bigg|_{m+1}=\frac{-u_{m-1}{\left(x_m-x_{m+1}\right)^2}+u_m{\left(x_{m-1}-x_{m+1}\right)^2}-u_{m+1}{\left(x_{m-1}-x_m\right)\left(\left[x_{m-1}-x_{m+1}\right]+\left[x_m-x_{m+1}\right]\right)}}{{\left(x_m-x_{m+1}\right)\left(x_{m-1}-x_{m+1}\right)\left(x_{m-1}-x_m\right)}}.
-%\end{equation}
-%
-%By applying simple Neumann boundary condition $\frac{\partial u}{\partial x}\big|_{m+1}=0$ we can express the right most value of the velocity with respect to the other two as
-%\begin{equation}
-%u_{m+1}=\frac{-u_{m-1}\left(x_m-x_{m+1}\right)^2+u_m\left(x_{m-1}-x_{m+1}\right)^2}{\left(x_{m-1}-x_m\right)\left(x_{m-1}-x_{m+1}+x_m-x_{m+1}\right)},
-%\end{equation}
-%which can be plugged into the boundary value in laplacian discretization \eqref{eqn:laplacian-discretization-non-uniform-dx} to obtain
-%
-%\begin{equation}
-%\begin{aligned}
-%\left.\frac{\partial^2 u}{\partial x^2}\right|_m & =\frac{\left[u_{m-1} \frac{-h_e^2}{h_w\left(2 h_e+h_w\right)}+u_m \frac{\left(h_e+h_w\right)^2}{h_w\left(2 h_e+h_w\right)}\right] h_w-u_m ( 2 h_c)+u_{m-1} (h_e)}{h_e h_w h_c}, \\
-%& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
-%\end{aligned}
-%\end{equation}
-%\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.45\paperwidth]{ADV-right}
-  }
-  \caption{$\hat{L}^u_{xx},\hat{L}^v_{xx}$ at the right boundary ($m=M$).}\label{fig:luxx-right}
-\end{figure}
-The last unknown element of \cref{eqn:NSE-dsm-bl-system-schemes} in $x$ direction is $u^{n+1}_{M-\frac{1}{2},j}$ on \cref{fig:luxx-right}. Denote the vertical distances between three neighbouring $u$ components as $h_n$ and $h_s$, which stand for distances to the north $u^n_{M+\frac{1}{2},j+1}$ and south $u^{n}_{M+\frac{1}{2},j-1}$ neighbours from the $u^{n}_{M+\frac{1}{2},j}$ between them, while central $h_c$ is the average of $h_s$ and $h_n$.  To apply \cref{eqn:laplacian-discretization-non-uniform-dx} we need to express $u^{n+1}_{M+\frac{1}{2},j}$ using \cref{eqn:Jin-Braza-bc-transient}.
-\begin{equation*}
-\begin{gathered}
-\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}^n_{M+\frac{1}{2},j}}{\Delta t}
-+\frac{u^n_{M+\frac{1}{2},j}}{2}
-\left[
-\left(
-	\frac{u^{n+1}_{M+\frac{1}{2},j}-u^{n+1}_{M-\frac{1}{2},j}}{\Delta x_M}
-\right)
-+\left(
-	\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
-\right)
-\right] =\\
-=\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right)
-\end{gathered}
-\end{equation*}
-leads to %%%%%%%%%%%%%%%%%
-\begin{equation}\label[bc]{eqn:bc-u-right-long}
-\begin{gathered}
-\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
-=
-u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}-\\
--\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
-+\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
-+\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right).
-\end{gathered}
-\end{equation}
-Note that $\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)$ can be made to never be zero regardless of the flow direction, hence dividing by it is allowed. The second line of fully discretized \cref{eqn:bc-u-right-long} is treated explicitly since we posses the flow data at time steps $n$ and earlier. Denote explicit terms as
-\begin{equation*}
-	bc_{u-\text{explicit}}^n=-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
-+\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
-+\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right),
-\end{equation*}
-which simplifies \cref{eqn:bc-u-right-long} to 
-\begin{equation}\label[bc]{eqn:bc-u-right}
-\begin{gathered}
-\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
-=
-u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_{u-\text{explicit}}^n.
-\end{gathered}
-\end{equation}
 
-Next, we plug \cref{eqn:bc-u-right} into \cref{eqn:laplacian-discretization-non-uniform-dx}, which finally leads us to
-\begin{equation}\label{eqn:luxx-right}
-\begin{aligned}
-	\left.\frac{\partial ^2 u}{\partial x^2}\right|_{M-\frac{1}{2},j}^{n+1}
-	&=\frac{1}{h_c h_e}u^{n+1}_{M+\frac{1}{2},j} - \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}+h.o.t.\\
-	&=\frac{1}{h_c h_e}\frac{\left.u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2h_e}+bc_{u-\text{explicit}}^n\right.}{\left.\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right.}- \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}+h.o.t.\\
-	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e\left[\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right]} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc_{u-\text{explicit}}^n}{h_c h_e\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)}+h.o.t..
-\end{aligned}
-\end{equation}
 
-Condition for $v$ component is not as trivial as for $u$ since there is no $v$ directly at the boundary due to the staggered grid arrangement. We need to express $v_g=v_{M+1,j-\frac{1}{2}}$ in terms of the right-most unknown $v_{M,j-\frac{1}{2}}$ component for the diffusion operator. 
-We can use more than one value of $v$ from inner part of the domain to express the ghost velocity outside. However, this will lead to change of non-diagonal elements in diffusion operator, which will cause Laplacian matrix to be asymmetric. Therefore, we are restricted to use the elements of the main diagonal to express the ghost velocities outside the computational domain. Hence, interpolation leads to
-\begin{equation*}
-	v_{\text{BC}}=v_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}+v_{M,j-\frac{1}{2}}}{2},
-\end{equation*}
-where $v_{M+1,j-\frac{1}{2}}$ is ghost component outside the domain. It is also possible to apply central difference to the advection terms at the boundary $\left( \frac{\partial v}{\partial x}\right)_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}-v_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}$.
-
-\cref{eqn:Jin-Braza-bc-transient} using the approximations from above can be rewritten for $v_{M+\frac{1}{2},j-\frac{1}{2}}$ component at the boundary as
-\begin{equation*}
-\begin{gathered}
-\frac{{\left( \frac{v^{n+1}_{M+1,j-\frac{1}{2}}+v^{n+1}_{M,j-\frac{1}{2}}}{2}\right)}-\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2} \right) }{\Delta t}+\\
-+\frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}
-\left[
-\left(
-	\frac{v^{n+1}_{M+1,j-\frac{1}{2}}-v^{n+1}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
-\right) \right.
-+\left.\left(
-	\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
-\right)
-\right]= \\
-=\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right],
-\end{gathered}
-\end{equation*}
-which is used to express ghost velocity $v^{n+1}_{M+1,j-\frac{1}{2}}$ after rearranging
-\begin{equation}\label[bc]{eqn:bc-v-right-long}
-\begin{gathered}
-\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
-=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+\\
-+\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
-+ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
-+\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
-\end{gathered}
-\end{equation}
-Let us denote explicit terms from last two rows as
-\begin{equation*}
-\begin{gathered}
-	bc_{v-\text{explicit}}^n=\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
-+ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
-+\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
-\end{gathered}
-\end{equation*}
-Then \cref{eqn:bc-v-right-long} simplifies to
-\begin{equation}\label[bc]{eqn:bc-v-right}
-\begin{gathered}
-\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
-=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{v-\text{explicit}}^n.
-\end{gathered}
-\end{equation}
-
-The ultimate step is to plug \cref{eqn:bc-v-right} into \cref{eqn:laplacian-discretization-non-uniform-dx} which will result in diffusion approximation of $v$ in $x$ direction of the right-most unknown component
-\begin{equation}\label{{eqn:lvxx-right}}
-\begin{aligned}
-	\left.\frac{\partial ^2 v}{\partial x^2}\right|_{M,j-\frac{1}{2}}^{n+1}
-	&=\frac{1}{h_c h_e}v^{n+1}_{M+1,j-\frac{1}{2}} - \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}+h.o.t.\\
-	&=\frac{1}{h_c h_e}\left[\frac{\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{v-\text{explicit}}^n}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.}\right]- \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}+h.o.t.\\
-	&=\left[ \frac{1}{h_c h_e}\left(\frac{\left. -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right.}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.} \right) -\frac{2}{h_w h_e}\right]v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}} + \frac{bc_{v-\text{explicit}}^n}{h_c h_e\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right)}+h.o.t..
-\end{aligned}
-\end{equation}
-
-Let us now try to apply \cref{eqn:Jin-Braza-bc-transient-consistent} which is consistent with schemes for the inner part to the boundary values at the outlet
-\begin{equation*}
-\begin{gathered}
-\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{\partial {u}}{\partial x}\right)^{n}_{M+\frac{1}{2},j}-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{\partial {u}}{\partial x}\right)^{n-1}_{M+\frac{1}{2},j}\right]\\
-=\epsilon\left[\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n+1}_{M+\frac{1}{2},j}+\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n}_{M+\frac{1}{2},j}\right].
-\end{gathered}
-\end{equation*}
-The above equation after discretizing spatially becomes
-\begin{equation}\label[bc]{eqn:Jin-Braza-bc-full-consistent}
-\begin{gathered}
-\frac{\epsilon}{h_c h_n}u^{n+1}_{M+\frac{1}{2},j+1} - \left(\frac{2\epsilon}{h_s h_n}-\frac{1}{\Delta t}\right)u^{n+1}_{M+\frac{1}{2},j} + \frac{\epsilon}{h_c h_s}u^{n+1}_{M+\frac{1}{2},j-1}\\
-=-\frac{{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{u_{M+\frac{1}{2},j}^n-u_{M-\frac{1}{2},j}^n}{\Delta x_M}\right)-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{u_{M+\frac{1}{2},j}^{n-1}-u_{M-\frac{1}{2},j}^{n-1}}{\Delta x_M}\right)\right]\\
--\left[\frac{\epsilon}{h_c h_n}u^{n}_{M+\frac{1}{2},j+1}-\frac{2\epsilon}{h_s h_n}u^{n}_{M+\frac{1}{2},j} + \frac{\epsilon}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1}\right].
-\end{gathered}
-\end{equation}
-
-The fully discretized \cref{eqn:Jin-Braza-bc-full-consistent} from above is a system of linear equations at time step $n+1$ and only has to be solved for the outlet boundary values of $u$. We know both topmost velocity $u_{\text{top}}=u_{\text{freestream}}$ and bottommost $u_{\text{bot}}=u_{\text{wall}}$ which play roles of boundary values for this system of equations. However, there is an issue that no velocity values at time step $n+1$ are passed from the inner part of the domain, the whole equation is self-sufficient and takes only the inner data from previous time steps $n$ and $n-1$.
-
-\textbf{Left boundary.} 
+\subsubsection{Left boundary}\label{subsubsec:laplacian-left}
 The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-schemes}.
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -593,7 +443,8 @@ The exact value on the left boundary ($u_{\frac{1}{2},j}$ in a box on \cref{fig:
   \caption{$\hat{L}^u_{xx}$ at the left boundary.}\label{fig:luxx-left}
 \end{figure}
 
-\textbf{Top boundary.} Most of the flow that differs much from the freestream is likely to happen closer to the wall, thus, we can incorporate symmetric boundary conditions over the top. \cref{eqn:symmetric-bc} leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
+\subsubsection{Top boundary}\label{subsubsec:laplacian-top}
+Most of the flow that differs much from the freestream is likely to happen closer to the wall, thus, we can incorporate symmetric boundary conditions over the top. \cref{eqn:symmetric-bc} leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
 
 \begin{figure}[h]
 \centering{
@@ -619,7 +470,7 @@ It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary
 
 The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in \cref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix.
 
-\textbf{Bottom boundary.}
+\subsubsection{Bottom boundary}\label{subsubsec:laplacian-bottom}
 It is, in fact, possible to directly use the third velocity directly from the boundary. However, the order of such a scheme will then be reduced due to the large ratio of the distances between the neighbouring velocities. If, on the other hand, we introduce a ghost velocity $u_g$, we have the freedom of where to place it. Let us use \cref{eqn:laplacian-discretization-non-uniform-dx} and change the distances between velocities as in \cref{fig:luxx-bottom}, which leads to
 \begin{equation}
 \begin{aligned}
@@ -644,6 +495,104 @@ The position of $u_g$ is not fixed, we can make the order of the scheme $O(\Delt
 \end{equation}
 The coefficients from \cref{eqn:luxx-bot} are distributed into the $\hat{L}^u_{yy}$ matrix similarly to previous boundary cases.
 
+\subsubsection{Right boundary.}\label{subsubsec:laplacian-right}
+In order to express the rightmost unknown velocity components inside the domain it is required to use the boundary values for $u$ and ghost elements for $v$. The best case scenario would be to have Dirichlet velocity values $\boldsymbol{v}(t,1,y)\subset \mathbb{R}$ or Neumann boundary condition $\frac{\partial u}{\partial x}=0$ as in Colonius-Taira~\cite{Colonius:2008} at the outlet. However, since the behaviour of  solution at the right side of the domain is not known it is not possible to impose such boundary conditions. We will address the spatial discretization at the right boundary in \cref{subsec:laplacian-ABC}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Advection}\label{subsec:advection}
+
+%\begin{figure}
+%\centering
+%{\includegraphics[width=0.75\paperwidth]{advectionGrid.jpg} }
+%\caption{\small Advection on a staggered grid.}\label{fig:advectionGrid}
+%\end{figure}
+Since Explicit Adams-Bashforth~\cref{eqn:nonlinear-adams-bashforth} uses information from time steps $n$ and $n-1$, while we solve the system of equations for time step $n+1$ there is no need for upwinding or even more complicated schemes. For spatial discretization we will try to stick to the central schemes as they are more stable and less dependent on the flow direction. It is convenient to write such schemes for conservative form of the advection, moreover, this also keeps the error low, since there is no product of velocity with acceleration. Hence, let us rewrite advective derivatives in conservative form. 
+\begin{align}\label{eqn:advection-conservative}
+	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
+	&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\nonumber\\
+	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\nonumber\\
+	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(u\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
+	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
+\end{align}
+Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for \cref{eqn:advection-conservative}. 
+
+\subsubsection{Inner part}\label{subsubsec:advection-inner}
+Advective component from $x$-momentum was expressed in conservative form by \cref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008} as
+\begin{align}\label{eqn:adv-inner}
+	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
+	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
+\end{align}
+which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Using linear interpolation~\cite{Colonius:2008} of velocity values leads to
+\begin{align*}
+  (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
+  (uv)_{i-\frac{1}{2},j-\frac{1}{2}}&=\left(u_{i-\frac{1}{2},j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i-\frac{1}{2},j}-u_{i-\frac{1}{2},j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j-\frac{1}{2}} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j-\frac{1}{2}}-v_{i-1,j-\frac{1}{2}}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
+  &=\left(\frac{u_{i-\frac{1}{2},j}\Delta y_{j-1} +u_{i-\frac{1}{2},j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j-1\frac{1}{2}}\Delta x_{i-1} +v_{i-1,j-\frac{1}{2}}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
+\end{align*}
+
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.65\paperwidth]{ADV}
+  }
+  \caption{Advection discretization.}\label{fig:ADV}
+\end{figure}
+
+
+
+
+%One of the advantages of advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ (or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\epsilon \frac{\partial^2 u}{\partial y^2}$) is that it can be used to express $\frac{\partial uu}{\partial x}$ in terms of transient term as 
+%\begin{equation}
+%	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}\right)_{m+\frac{1}{2},j},
+%\end{equation}
+%or in terms of transient and diffusive components
+%\begin{equation}
+%	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}+\epsilon\frac{\partial ^2 u}{\partial y^2}\right)_{m+\frac{1}{2},j}.
+%\end{equation}
+%
+%The other advection summand
+%\begin{equation}
+%	\left(\frac{\partial uv}{\partial y}\right)_{m+\frac{1}{2},j}=\frac{\left( uv \right)_{m+\frac{1}{2},j+\frac{1}{2}}-\left( uv\right)_{m+\frac{1}{2},j-\frac{1}{2}}}{\Delta}
+%\end{equation}
+%requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use two neighbouring $v$ components and extrapolate them linearly as 
+%\begin{equation}
+%	v_{m+\frac{1}{2},j+\frac{1}{2}}=v_{m-1,j\pm\frac{1}{2}}+2\frac{v_{m,j\pm\frac{1}{2}}-v_{m-1,j\pm\frac{1}{2}}}{\Delta x_{m-1}+\Delta x_m}\left(\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
+%\end{equation}
+
+\subsubsection{Left boundary}\label{subsubsec:advection-left}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.30\paperwidth]{ADV-left}
+  }
+  \caption{Left boundary advection.}\label{fig:ADV-left}
+\end{figure}
+The exact value of the $uu_g$ element located outside the boundary (\cref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
+
+\subsubsection{Top boundary}\label{subsubsec:laplacian-top}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.35\paperwidth]{ADV-top}
+  }
+  \caption{Top boundary advection.}\label{fig:ADV-top}
+\end{figure}
+%The symmetric \cref{eqn:symmetric-bc} defines a mirror surface, which has the same effect on the solution as the semi-infinite boundary condition if the boundary layer thickness is less than the truncated domain height. Mathematically such boundary condition can be written as $v=\frac{\partial v}{\partial y}=0,\frac{\partial p}{\partial y}=0$. 
+Since the exact values of the velocity $u_{BC}$ and $v_{BC}=0$ in a freestream are known from \cref{eqn:symmetric-bc}, we can directly use them in our advection term computation making the second summand $uv=0$, in particular
+\begin{equation}
+	\left( \frac{\partial uu}{\partial x}+\frac{\partial uv}{\partial y}\right)_{i-\frac{1}{2},N}=2\frac{\left( uu\right)_{i,N}-\left( uu\right)_{i-1,N}}{\Delta x_i + \Delta x_{i-1}}+0.
+\end{equation}
+
+\subsubsection{Bottom boundary}\label{subsubsec:advection-bottom}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.30\paperwidth]{ADV-bottom}
+  }
+  \caption{Bottom boundary advection}\label{fig:ADV-bottom}
+\end{figure}
+Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary, due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
+
+The advective terms in the $y$-momentum equation are computed similarly. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
+
+\subsubsection{Right boundary}\label{subsubsec:advection-right}
+
+Similarly to Laplacian for the rightmost velocity components in \cref{subsubsec:laplacian-right} we need explicit values of $u$ and  $v$. The velocity values at time steps $n,n-1$ are to be determined in \cref{subsec:advection-ABC}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Divergence}\label{subsec:divergence}
@@ -828,120 +777,7 @@ which can be rewritten as
 \end{equation}
 where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{MN}]^T$ is the vector of pressure values at the cell centres. There are no pressure BC values in $\hat{bc}_p$ since no pressure gradient has to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Advection}\label{subsec:advection}
 
-%\begin{figure}
-%\centering
-%{\includegraphics[width=0.75\paperwidth]{advectionGrid.jpg} }
-%\caption{\small Advection on a staggered grid.}\label{fig:advectionGrid}
-%\end{figure}
-Since Explicit Adams-Bashforth~\cref{eqn:nonlinear-adams-bashforth} uses information from time steps $n$ and $n-1$, while we solve the system of equations for time step $n+1$ there is no need for upwinding or even more complicated schemes. For spatial discretization we will try to stick to the central schemes as they are more stable and less dependent on the flow direction. It is convenient to write such schemes for conservative form of the advection, moreover, this also keeps the error low, since there is no product of velocity with acceleration. Hence, let us rewrite advective derivatives in conservative form. 
-\begin{align}\label{eqn:advection-conservative}
-	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
-	&=u\frac{\partial u}{\partial x}+0+v \frac{\partial u}{\partial y}\nonumber\\
-	&= u\frac{\partial u}{\partial x}+ u\left(\frac{\partial u}{\partial x} +\frac{\partial v}{\partial y}\right ) +v \frac{\partial u}{\partial y}\nonumber\\
-	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(u\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
-	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
-\end{align}
-Our goal is to compute advection components at the unknown velocity coordinates. Below we will describe the discretization schemes for \cref{eqn:advection-conservative}. 
-
-\textbf{Inner part.} 
-Advective component from $x$-momentum was expressed in conservative form by \cref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008} as
-\begin{align}\label{eqn:adv-inner}
-	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
-	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
-\end{align}
-which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). We need to compute $uv$ at the nodes and $uu$ at cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Using linear interpolation~\cite{Colonius:2008} of velocity values leads to
-\begin{align*}
-  (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
-  (uv)_{i-\frac{1}{2},j-\frac{1}{2}}&=\left(u_{i-\frac{1}{2},j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i-\frac{1}{2},j}-u_{i-\frac{1}{2},j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j-\frac{1}{2}} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j-\frac{1}{2}}-v_{i-1,j-\frac{1}{2}}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
-  &=\left(\frac{u_{i-\frac{1}{2},j}\Delta y_{j-1} +u_{i-\frac{1}{2},j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j-1\frac{1}{2}}\Delta x_{i-1} +v_{i-1,j-\frac{1}{2}}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
-\end{align*}
-
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.65\paperwidth]{ADV}
-  }
-  \caption{Advection discretization.}\label{fig:ADV}
-\end{figure}
-
-
-\textbf{Right boundary (outlet).}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.45\paperwidth]{ADV-right}
-  }
-  \caption{Right boundary advection.}\label{fig:ADV-right}
-\end{figure}
-\cref{eqn:bc-u-right} rewritten for the time step $n$ is
-\begin{equation*}
-\begin{gathered}
-{{u}^{n}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
-=
-u^{n}_{M-\frac{1}{2},j}\frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^{n-1}.
-\end{gathered}
-\end{equation*}
-This can be used to obtain the value $u^{n}_{M+\frac{1}{2},j}$ at the right boundary. Then we use the \cref{eqn:adv-inner} for inner part as now all the necessary values are known. Similarly, \cref{eqn:bc-v-right} at time step $n$
-\begin{equation*}
-\begin{gathered}
-\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n}_{M+1,j-\frac{1}{2}}
-=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n}_{M,j-\frac{1}{2}}+bc_{ve}^{n-1}
-\end{gathered}
-\end{equation*}
-is used to express ghost velocity $v^{n}_{M+1,j-\frac{1}{2}}$, which we use to compute \cref{eqn:adv-inner} for inner part.
-
-
-%One of the advantages of advective boundary condition $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$ (or  $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=\epsilon \frac{\partial^2 u}{\partial y^2}$) is that it can be used to express $\frac{\partial uu}{\partial x}$ in terms of transient term as 
-%\begin{equation}
-%	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}\right)_{m+\frac{1}{2},j},
-%\end{equation}
-%or in terms of transient and diffusive components
-%\begin{equation}
-%	\left( \frac{\partial uu}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( u \frac{\partial u}{\partial x}\right)_{m+\frac{1}{2},j}=2\left( -\frac{\partial u}{\partial t}+\epsilon\frac{\partial ^2 u}{\partial y^2}\right)_{m+\frac{1}{2},j}.
-%\end{equation}
-%
-%The other advection summand
-%\begin{equation}
-%	\left(\frac{\partial uv}{\partial y}\right)_{m+\frac{1}{2},j}=\frac{\left( uv \right)_{m+\frac{1}{2},j+\frac{1}{2}}-\left( uv\right)_{m+\frac{1}{2},j-\frac{1}{2}}}{\Delta}
-%\end{equation}
-%requires values of $v$ at the nodes $m+\frac{1}{2},j\pm \frac{1}{2}$. We may use two neighbouring $v$ components and extrapolate them linearly as 
-%\begin{equation}
-%	v_{m+\frac{1}{2},j+\frac{1}{2}}=v_{m-1,j\pm\frac{1}{2}}+2\frac{v_{m,j\pm\frac{1}{2}}-v_{m-1,j\pm\frac{1}{2}}}{\Delta x_{m-1}+\Delta x_m}\left(\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
-%\end{equation}
-
-\textbf{Left boundary (inlet).} 
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.30\paperwidth]{ADV-left}
-  }
-  \caption{Left boundary advection.}\label{fig:ADV-left}
-\end{figure}
-The exact value of the $uu_g$ element located outside the boundary (\cref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
-
-\textbf{Top boundary (symmetric).}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.35\paperwidth]{ADV-top}
-  }
-  \caption{Top boundary advection.}\label{fig:ADV-top}
-\end{figure}
-%The symmetric \cref{eqn:symmetric-bc} defines a mirror surface, which has the same effect on the solution as the semi-infinite boundary condition if the boundary layer thickness is less than the truncated domain height. Mathematically such boundary condition can be written as $v=\frac{\partial v}{\partial y}=0,\frac{\partial p}{\partial y}=0$. 
-Since the exact values of the velocity $u_{BC}$ and $v_{BC}=0$ in a freestream are known from \cref{eqn:symmetric-bc}, we can directly use them in our advection term computation making the second summand $uv=0$, in particular
-\begin{equation}
-	\left( \frac{\partial uu}{\partial x}+\frac{\partial uv}{\partial y}\right)_{i-\frac{1}{2},N}=2\frac{\left( uu\right)_{i,N}-\left( uu\right)_{i-1,N}}{\Delta x_i + \Delta x_{i-1}}+0.
-\end{equation}
-
-\textbf{Bottom boundary (no-slip).}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.30\paperwidth]{ADV-bottom}
-  }
-  \caption{Bottom boundary advection}\label{fig:ADV-bottom}
-\end{figure}
-Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary, due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
-
-The advective terms in the $y$-momentum equation are computed similarly. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
 
 %\subsubsection{Resulting system}
 
@@ -1032,13 +868,13 @@ Though there are methods that may solve problems on unbounded domains, the major
 %In case of a truncated domain, the introduction of appropriate artificial boundary conditions (ABCs) is crucial for achieving numerical solutions. 
 The review papers on such BCs by Sani~\cite{Sani:1994} and Tsynkov~\cite{Tsynkov:1998} list and compare different artificial boundary conditions (ABC) applied to the various flow scenarios. Below we will discuss the options that are most applicable to \cref{eqs:NSE-dsm-bl-dimensional}. 
 
-In solutions of fluid flow, the reflection of waves at the outlet is common. Such behaviour is due to the elliptic nature of the incompressible Navier-Stokes. 
+In solutions of fluid flow, the reflection of waves at the outlet is common. Such behaviour may lead to issues due to incompressibility of the Navier-Stokes equations, i.e. a change of solution near the outlet will affect the solution at the inner part of the domain as well. 
 Engquist and Majda\cite{Engquist:1977} introduced one of the earliest and successful tools to address this problem. 
-The authors derive a hierarchy of highly absorbing local boundary conditions, serving as approximations to the theoretical boundary conditions nonlocally which were historically used as the only option. 
-An essential consideration for practical applications lies in ensuring that these boundary conditions yield well-posed mixed initial boundary value problems. 
+The authors derive a hierarchy of highly absorbing local boundary conditions, serving as approximations to the theoretical nonlocal boundary conditions which were historically used as the only non-reflective options. 
+%An essential consideration for practical applications lies in ensuring that these boundary conditions yield well-posed mixed initial boundary value problems. 
 Engquist and Majda admit that it is not possible to eliminate all of the reflections, however, it is possible to come up with condition such that for an arbitrary highly singular wave packet only low amplitude smooth reflections occur. %%%%% WHAT DOES THIS MEAN
-The main idea of the paper is to transition from space-time domain into frequency domain, factorize the equation on the boundary (within a smooth error) and eliminate the reflected waves.
-The methodology outlined herein is specifically employed by Engquist and Majda to construct absorbing artificial boundaries tailored for the acoustic wave equation in both Cartesian and polar coordinates, as well as for the linearized shallow water equations in two spatial dimensions. 
+The main idea of the paper is to transition from space-time domain into frequency domain, factorize the equation at the boundary (within a smooth error) and eliminate the reflected waves.
+The methodology outlined was employed by Engquist and Majda to construct absorbing artificial boundaries tailored for the acoustic wave equation in both Cartesian and polar coordinates, as well as for the linearized shallow water equations in two dimensions. 
 Although the method is not fully applicable to our problem, the authors systematically addressed and resolved the reflective behaviour of the outlet.
 
 Another way of overcoming the reflective behaviour of the fluid flow was developed by Liu~\cite{Liu:1993}. They studied the spatial instability of planar Poiseuille flow. The governing equations in this paper were solved for perturbed velocity components with tilde $\tilde{u}=u-u_0,\tilde{v}=v-v_0$, where $u_0,v_0$ are mean values of velocity components $u,v$. The general idea is the introduction of an additional buffer domain (\cref{fig:BC-buffer}) at the exit that involves the use of:
@@ -1132,8 +968,196 @@ turned out to be well posed~\cite{Engquist:1977,Kreiss:1970} . It is possible to
 \end{equation*}
 which can be matched to the momentum Navier-Stokes equation as
 \begin{equation}\label[bc]{eqn:absorbing-bc-dimensional}
-	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\frac{1}{\operatorname{Re}}\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
+	\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}-\epsilon\frac{\partial ^2 \boldsymbol{v}}{\partial y^2}=0.
 \end{equation}
+\subsection{Laplacian at the right boundary using ABC}\label{subsec:laplacian-ABC}
+%The aim is to make a second order scheme for the first derivative to keep consistency with the discretization of the inner part. Take the right most nodes, the aim is to eliminate the second derivative in equations below, cross multiply by coefficients to make up a common factor at second derivative, then subtract the equations. 
+%	\begin{equation}
+%	\begin{aligned}
+%	& u_m=u_{m+1}+\left.\left(x_m-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_m-x_{m+1}\right)^2}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/\frac{\left(x_{m-1}-x_{m+1}\right)^2}{2}. \\
+%	& u_{m-1}=u_{m+1}+\left.\left(x_{m-1}-x_{m+1}\right) \frac{\partial u}{\partial x}\right|_{m+1}+\left.\frac{\left(x_{m-1}-x_{m+1}\right.}{2 !} \frac{\partial^2}{\partial x^2}\right|_{m+1}+\ldots \bigg/ \frac{\left(x_m-x_{m+1}\right)^2}{2}.
+%	\end{aligned}
+%	\end{equation}
+%
+%After subtracting and simplifying the expression for the first partial derivative reduces to
+%\begin{equation}
+%\frac{\partial u}{\partial x}\bigg|_{m+1}=\frac{-u_{m-1}{\left(x_m-x_{m+1}\right)^2}+u_m{\left(x_{m-1}-x_{m+1}\right)^2}-u_{m+1}{\left(x_{m-1}-x_m\right)\left(\left[x_{m-1}-x_{m+1}\right]+\left[x_m-x_{m+1}\right]\right)}}{{\left(x_m-x_{m+1}\right)\left(x_{m-1}-x_{m+1}\right)\left(x_{m-1}-x_m\right)}}.
+%\end{equation}
+%
+%By applying simple Neumann boundary condition $\frac{\partial u}{\partial x}\big|_{m+1}=0$ we can express the right most value of the velocity with respect to the other two as
+%\begin{equation}
+%u_{m+1}=\frac{-u_{m-1}\left(x_m-x_{m+1}\right)^2+u_m\left(x_{m-1}-x_{m+1}\right)^2}{\left(x_{m-1}-x_m\right)\left(x_{m-1}-x_{m+1}+x_m-x_{m+1}\right)},
+%\end{equation}
+%which can be plugged into the boundary value in laplacian discretization \eqref{eqn:laplacian-discretization-non-uniform-dx} to obtain
+%
+%\begin{equation}
+%\begin{aligned}
+%\left.\frac{\partial^2 u}{\partial x^2}\right|_m & =\frac{\left[u_{m-1} \frac{-h_e^2}{h_w\left(2 h_e+h_w\right)}+u_m \frac{\left(h_e+h_w\right)^2}{h_w\left(2 h_e+h_w\right)}\right] h_w-u_m ( 2 h_c)+u_{m-1} (h_e)}{h_e h_w h_c}, \\
+%& =u_{m-1}\left[\frac{1}{h_w h_c}-\frac{h_e}{h_w h_d\left(2 h_e+h_w\right)}\right]+u_m\left[\frac{2 \frac{h_e+h_w}{2}}{h_e h_w h_c}+\frac{\left(h_e+h_w\right)^2}{h_e h_w h_c\left(2 h_e+h_w\right)}\right].
+%\end{aligned}
+%\end{equation}
+%\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}\textbf{ To be determined.}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.45\paperwidth]{ADV-right}
+  }
+  \caption{$\hat{L}^u_{xx},\hat{L}^v_{xx}$ at the right boundary ($m=M$).}\label{fig:luxx-right}
+\end{figure}
+The rightmost unknown element of \cref{eqn:NSE-dsm-bl-system-schemes} in $x$ direction is $u^{n+1}_{M-\frac{1}{2},j}$ on \cref{fig:luxx-right}. Denote the vertical distances between three neighbouring $u$ components as $h_n$ and $h_s$, which stand for distances to the north $u^n_{M+\frac{1}{2},j+1}$ and south $u^{n}_{M+\frac{1}{2},j-1}$ neighbours from the $u^{n}_{M+\frac{1}{2},j}$ between them, while central $h_c$ is the average of $h_s$ and $h_n$.  To apply \cref{eqn:laplacian-discretization-non-uniform-dx} we need to express $u^{n+1}_{M+\frac{1}{2},j}$ using \cref{eqn:Jin-Braza-bc-transient}.
+\begin{equation*}
+\begin{gathered}
+\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\frac{u^n_{M+\frac{1}{2},j}}{2}
+\left[
+\left(
+	\frac{u^{n+1}_{M+\frac{1}{2},j}-u^{n+1}_{M-\frac{1}{2},j}}{\Delta x_M}
+\right)
++\left(
+	\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
+\right)
+\right] =\\
+=\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right)
+\end{gathered}
+\end{equation*}
+leads to %%%%%%%%%%%%%%%%%
+\begin{equation}\label[bc]{eqn:bc-u-right-long}
+\begin{gathered}
+\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
+=
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}-\\
+-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
++\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right).
+\end{gathered}
+\end{equation}
+Note that $\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)$ can be made to never be zero regardless of the flow direction, hence dividing by it is allowed. The second line of fully discretized \cref{eqn:bc-u-right-long} is treated explicitly since we posses the flow data at time steps $n$ and earlier. Denote explicit terms as
+\begin{equation*}
+	bc_{u-\text{explicit}}^n=-\frac{u^n_{M+\frac{1}{2},j}}{2}\frac{u^{n}_{M+\frac{1}{2},j}-u^{n}_{M-\frac{1}{2},j}}{\Delta x_M}
++\frac{{u}^n_{M+\frac{1}{2},j}}{\Delta t}
++\epsilon\left(\frac{1}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1} - \frac{2}{h_n h_s}u^{n}_{M+\frac{1}{2},j} + \frac{1}{h_c h_n}u^n_{M+\frac{1}{2},j+1}\right),
+\end{equation*}
+which simplifies \cref{eqn:bc-u-right-long} to 
+\begin{equation}\label[bc]{eqn:bc-u-right}
+\begin{gathered}
+\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right){{u}^{n+1}_{M+\frac{1}{2},j}}
+=
+u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_{u-\text{explicit}}^n.
+\end{gathered}
+\end{equation}
+
+Next, we plug \cref{eqn:bc-u-right} into \cref{eqn:laplacian-discretization-non-uniform-dx}, which finally leads us to
+\begin{equation}\label{eqn:luxx-right}
+\begin{aligned}
+	\left.\frac{\partial ^2 u}{\partial x^2}\right|_{M-\frac{1}{2},j}^{n+1}
+	&=\frac{1}{h_c h_e}u^{n+1}_{M+\frac{1}{2},j} - \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}+h.o.t.\\
+	&=\frac{1}{h_c h_e}\frac{\left.u^{n+1}_{M-\frac{1}{2},j}\frac{u^n_{M+\frac{1}{2},j}}{2h_e}+bc_{u-\text{explicit}}^n\right.}{\left.\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right.}- \frac{2}{h_w h_e}u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j}+h.o.t.\\
+	&=\left[ \frac{1}{h_c h_e}\left(\frac{u^n_{M+\frac{1}{2},j}}{2h_e\left[\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right]} \right) -\frac{2}{h_w h_e}\right]u^{n+1}_{M-\frac{1}{2},j} + \frac{1}{h_c h_w}u^{n+1}_{M-\frac{1}{2}-1,j} + \frac{bc_{u-\text{explicit}}^n}{h_c h_e\left(\frac{1}{\Delta t} + \frac{u^n_{M+\frac{1}{2},j}}{2\Delta x_M}\right)}+h.o.t..
+\end{aligned}
+\end{equation}
+
+Condition for $v$ component is not as trivial as for $u$ since there is no $v$ directly at the boundary due to the staggered grid arrangement. We need to express $v_g=v_{M+1,j-\frac{1}{2}}$ in terms of the right-most unknown $v_{M,j-\frac{1}{2}}$ component for the diffusion operator. 
+We can use more than one value of $v$ from inner part of the domain to express the ghost velocity outside. However, this will lead to change of non-diagonal elements in diffusion operator, which will cause Laplacian matrix to be asymmetric. Therefore, we are restricted to use the elements of the main diagonal to express the ghost velocities outside the computational domain. Hence, interpolation leads to
+\begin{equation*}
+	v_{\text{BC}}=v_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}+v_{M,j-\frac{1}{2}}}{2},
+\end{equation*}
+where $v_{M+1,j-\frac{1}{2}}$ is ghost component outside the domain. It is also possible to apply central difference to the advection terms at the boundary $\left( \frac{\partial v}{\partial x}\right)_{M+\frac{1}{2},j-\frac{1}{2}}=\frac{v_{M+1,j-\frac{1}{2}}-v_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}$.
+
+\cref{eqn:Jin-Braza-bc-transient} using the approximations from above can be rewritten for $v_{M+\frac{1}{2},j-\frac{1}{2}}$ component at the boundary as
+\begin{equation*}
+\begin{gathered}
+\frac{{\left( \frac{v^{n+1}_{M+1,j-\frac{1}{2}}+v^{n+1}_{M,j-\frac{1}{2}}}{2}\right)}-\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2} \right) }{\Delta t}+\\
++\frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}
+\left[
+\left(
+	\frac{v^{n+1}_{M+1,j-\frac{1}{2}}-v^{n+1}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
+\right) \right.
++\left.\left(
+	\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}
+\right)
+\right]= \\
+=\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right],
+\end{gathered}
+\end{equation*}
+which is used to express ghost velocity $v^{n+1}_{M+1,j-\frac{1}{2}}$ after rearranging
+\begin{equation}\label[bc]{eqn:bc-v-right-long}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+\\
++\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
++ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
++\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
+\end{gathered}
+\end{equation}
+Let us denote explicit terms from last two rows as
+\begin{equation*}
+\begin{gathered}
+	bc_{v-\text{explicit}}^n=\left( \frac{v^n_{M+1,j-\frac{1}{2}}+v^n_{M,j-\frac{1}{2}}}{2\Delta t} \right)
++ \frac{\left.u^n_{M+\frac{1}{2},j-\frac{1}{2}}\right.}{2}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}-v^{n}_{M,j-\frac{1}{2}}}{\Delta x_{M+\frac{1}{2}}}\right)+\\
++\epsilon\left[\frac{1}{h_c h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}-1}+v^{n}_{M,j-\frac{1}{2}-1}}{2} \right) - \frac{2}{h_n h_s}\left(\frac{v^{n}_{M+1,j-\frac{1}{2}}+v^{n}_{M,j-\frac{1}{2}}}{2} \right) + \frac{1}{h_c h_n}\left(\frac{v^{n}_{M+1,j+\frac{1}{2}}+v^{n}_{M,j+\frac{1}{2}}}{2} \right)\right].
+\end{gathered}
+\end{equation*}
+Then \cref{eqn:bc-v-right-long} simplifies to
+\begin{equation}\label[bc]{eqn:bc-v-right}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n+1}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{v-\text{explicit}}^n.
+\end{gathered}
+\end{equation}
+
+The ultimate step is to plug \cref{eqn:bc-v-right} into \cref{eqn:laplacian-discretization-non-uniform-dx} which will result in diffusion approximation of $v$ in $x$ direction of the right-most unknown component
+\begin{equation}\label{{eqn:lvxx-right}}
+\begin{aligned}
+	\left.\frac{\partial ^2 v}{\partial x^2}\right|_{M,j-\frac{1}{2}}^{n+1}
+	&=\frac{1}{h_c h_e}v^{n+1}_{M+1,j-\frac{1}{2}} - \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}+h.o.t.\\
+	&=\frac{1}{h_c h_e}\left[\frac{\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right)v^{n+1}_{M,j-\frac{1}{2}}+bc_{v-\text{explicit}}^n}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.}\right]- \frac{2}{h_w h_e}v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}}+h.o.t.\\
+	&=\left[ \frac{1}{h_c h_e}\left(\frac{\left. -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e} \right.}{\left. \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right.} \right) -\frac{2}{h_w h_e}\right]v^{n+1}_{M,j-\frac{1}{2}} + \frac{1}{h_c h_w}v^{n+1}_{M-1,j-\frac{1}{2}} + \frac{bc_{v-\text{explicit}}^n}{h_c h_e\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2h_e}\right)}+h.o.t..
+\end{aligned}
+\end{equation}
+
+Let us now try to apply \cref{eqn:Jin-Braza-bc-transient-consistent} which is consistent with schemes for the inner part to the boundary values at the outlet
+\begin{equation*}
+\begin{gathered}
+\frac{{u}^{n+1}_{M+\frac{1}{2},j}-{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{\partial {u}}{\partial x}\right)^{n}_{M+\frac{1}{2},j}-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{\partial {u}}{\partial x}\right)^{n-1}_{M+\frac{1}{2},j}\right]\\
+=\epsilon\left[\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n+1}_{M+\frac{1}{2},j}+\left(\frac{\partial^2 {u}}{\partial y^2}\right)^{n}_{M+\frac{1}{2},j}\right].
+\end{gathered}
+\end{equation*}
+The above equation after discretizing spatially becomes
+\begin{equation}\label[bc]{eqn:Jin-Braza-bc-full-consistent}
+\begin{gathered}
+\frac{\epsilon}{h_c h_n}u^{n+1}_{M+\frac{1}{2},j+1} - \left(\frac{2\epsilon}{h_s h_n}-\frac{1}{\Delta t}\right)u^{n+1}_{M+\frac{1}{2},j} + \frac{\epsilon}{h_c h_s}u^{n+1}_{M+\frac{1}{2},j-1}\\
+=-\frac{{u}_{M+\frac{1}{2},j}^n}{\Delta t}+\left[\frac{3}{2}{u_{M+\frac{1}{2},j}^n}\left(\frac{u_{M+\frac{1}{2},j}^n-u_{M-\frac{1}{2},j}^n}{\Delta x_M}\right)-\frac{1}{2}{u_{M+\frac{1}{2},j}^{n-1}}\left(\frac{u_{M+\frac{1}{2},j}^{n-1}-u_{M-\frac{1}{2},j}^{n-1}}{\Delta x_M}\right)\right]\\
+-\left[\frac{\epsilon}{h_c h_n}u^{n}_{M+\frac{1}{2},j+1}-\frac{2\epsilon}{h_s h_n}u^{n}_{M+\frac{1}{2},j} + \frac{\epsilon}{h_c h_s}u^{n}_{M+\frac{1}{2},j-1}\right].
+\end{gathered}
+\end{equation}
+
+The fully discretized \cref{eqn:Jin-Braza-bc-full-consistent} from above is a system of linear equations at time step $n+1$ and only has to be solved for the outlet boundary values of $u$. We know both topmost velocity $u_{\text{top}}=u_{\text{freestream}}$ and bottommost $u_{\text{bot}}=u_{\text{wall}}$ which play roles of boundary values for this system of equations. However, there is an issue that no velocity values at time step $n+1$ are passed from the inner part of the domain, the whole equation is self-sufficient and takes only the inner data from previous time steps $n$ and $n-1$. Thus, \cref{eqn:Jin-Braza-bc-full-consistent} behaves as an independent equation from main \cref{eqn:NSE-dsm-bl-system-schemes}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Advection at the right boundary using ABC}\label{subsec:advection-ABC}
+%\textbf{Advection at the right boundary.}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.45\paperwidth]{ADV-right}
+  }
+  \caption{Right boundary advection.}\label{fig:ADV-right}
+\end{figure}
+\cref{eqn:bc-u-right} rewritten for the time step $n$ is
+\begin{equation*}
+\begin{gathered}
+{{u}^{n}_{M+\frac{1}{2},j}}\left(\frac{1}{\Delta t} + \frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}\right)
+=
+u^{n}_{M-\frac{1}{2},j}\frac{u^{n-1}_{M+\frac{1}{2},j}}{2\Delta x_M}+bc_e^{n-1}.
+\end{gathered}
+\end{equation*}
+This can be used to obtain the value $u^{n}_{M+\frac{1}{2},j}$ at the right boundary. Then we use the \cref{eqn:adv-inner} for inner part as now all the necessary values are known. Similarly, \cref{eqn:bc-v-right} at time step $n$
+\begin{equation*}
+\begin{gathered}
+\left( \frac{1}{2\Delta t} + \frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}}\right) v^{n}_{M+1,j-\frac{1}{2}}
+=\left( -\frac{1}{2\Delta t}+\frac{u^n_{M+\frac{1}{2},j-\frac{1}{2}}}{2\Delta x_{M+\frac{1}{2}}} \right)v^{n}_{M,j-\frac{1}{2}}+bc_{ve}^{n-1}
+\end{gathered}
+\end{equation*}
+is used to express ghost velocity $v^{n}_{M+1,j-\frac{1}{2}}$, which we use to compute \cref{eqn:adv-inner} for inner part.
 
 
 
@@ -1184,13 +1208,13 @@ which are then combined into
 0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
 \end{array}\right],
 \end{equation*}
-which both removes the $M^{-1}$ in $\hat{G}=\hat{M}^{-1}G$ when left multiplied and completes the symmetrization process of $\hat{L}$.
+which both removes the $M^{-1}$ in $\hat{G}=\hat{M}^{-1}G$ if left multiplied and completes the symmetrization process of $\hat{L}$.
 
 The identity ${q}=R\boldsymbol{v}$ implies $\boldsymbol{v}=R^{-1}{q}$, therefore, Laplacian matrix multiplied by the velocity vector is
 $$\hat{L}\boldsymbol{v}= \hat{L}R^{-1}{q},$$ 
 premultiplying by $\hat M$ we obtain
 $$\hat M\hat{L}R^{-1}{q},$$ 
-where $\hat M L R^{-1}$ is symmetric by construction.  
+where $\hat M L R^{-1}$ is symmetric by construction, hence, $\hat M\hat{A}R^{-1}=\hat M (\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}L) R^{-1}$ is also symmetric.  
 
 Using the above transformations we can modify \cref{eqn:NSE-dsm-bl-system-nonint}
 %\begin{equation*}
@@ -1249,6 +1273,77 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 	D{q}^{n+1}&=bc_2.
 \end{align*}
 
+
+	\section{Vorticity-stream function formulation}\label{sec:vorticity-streamfunction}
+	The algorithm to be used is a combination of classical formulation as in \cref{eqs:NSE} and vorticity-stream function \cref{eqn:transport-vorticity,eqn:vorticity-stream}.
+	Consider:
+	
+	\begin{enumerate}
+	\item	
+
+	Stream function $\psi(x,y,t):\boldsymbol{v}=\nabla \times \psi$ of an incompressible two-dimensional flow:
+	\begin{equation}
+	\label{eqn:streamfunction}
+		u = \frac{\partial \psi}{\partial y},\quad v=-\frac{\partial \psi}{\partial x},
+	\end{equation}
+	where $\boldsymbol{v}=(u,v)$.
+	
+	The velocity vector at every point of space and every moment of time is tangential to the line $\psi = const$ and such lines represent the streamlines of the flow. 
+	\item
+	
+	Vorticity $\omega = \nabla \times \boldsymbol{v}$, in two-dimensional case (x-y-plane) the only non-zero component of $\omega$ is $z$, which leads to
+	\begin{equation}
+	\label{eqn:vorticity}
+		\omega=\frac{\partial v}{\partial x} - \frac{\partial u}{\partial y}.
+	\end{equation}
+	\end{enumerate}
+	
+	Importantly, continuity \cref{eqn:continuity} is satisfied immediately by taking spatial derivatives of stream function \cref{eqn:streamfunction} components and adding them up. The governing \cref{eqs:NSE} can now be transformed. The new equations are changed to the following:
+	\begin{enumerate}
+		\item 
+			Transport equation for vorticity.
+			
+			Application of $(\nabla \times)$ to momentum and taking into account continuity \cref{eqn:continuity} together with the fact
+			\begin{equation*}
+				\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right) - 
+				\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
+			\end{equation*}
+			results in
+			\begin{equation}
+			\label{eqn:transport-vorticity}
+				\boxed{
+				\frac{\partial\omega}{\partial t} 
+				+ u \frac{\partial\omega}{\partial x} 
+				+ v\frac{\partial\omega}{\partial y} 
+				= \epsilon \left(\frac{\partial ^2 \omega}{\partial x^2} 
+				+ \frac{\partial^2 \omega}{\partial y^2} \right).
+				}
+			\end{equation}
+			
+		\item 
+		Vorticity-Stream function equation.
+		
+		After substituting stream function \cref{eqn:streamfunction} into vorticity \cref{eqn:vorticity} we obtain
+		\begin{equation}
+			\label{eqn:vorticity-stream}
+			\boxed{\nabla ^2 \psi = -\omega.}
+		\end{equation}	
+	\end{enumerate}
+	
+	These two equations above form a coupled system, and the pressure field does not explicitly appear in neither \cref{eqn:transport-vorticity} nor \cref{eqn:vorticity-stream} and, in principle, is not needed in the solution.
+	
+	The system (\cref{eqn:transport-vorticity,eqn:vorticity-stream}) requires boundary conditions on $\psi$ and $\omega$. For the stream function, imposing physically plausible conditions is not difficult. One has to write the proper boundary conditions for the velocity components and use vorticity \cref{eqn:vorticity} to represent them as conditions for $\psi$ and its derivatives. The situation is more difficult in the case of vorticity. There are no natural boundary conditions on $\omega$, but they can be derived from the conditions on $\psi$ by application of the \cref{eqn:vorticity-stream} at the boundary. The process of finding boundary conditions of $\omega$ typically results in expressions containing second derivatives, therefore, special numerical treatment is required.
+	
+	To overcome the issue above we first apply boundary conditions in terms of velocity and pressure and keep them explicit as in \cref{eqn:NSE-dsm-bl-system-schemes}. Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream} which results in 
+	\begin{equation}
+	\label{eqn:biharmonic-streamfunction}
+		\boxed{
+		\frac{\partial\nabla ^2 \psi}{\partial t} 
+		-\Delta ^2 \psi=-\operatorname{RHS_{\boldsymbol{v},p}},
+		}
+	\end{equation}
+where the right hand side terms were initially stated in terms of $\boldsymbol{v},p$ and transformed using the same operations as the left hand side of \cref{eqn:biharmonic-streamfunction}.
+
 \section{Nullspace method and pressure elimination}\label{sec:nullspace-method}
 
 The goal of this subsection is to show how unknown pressure variables can be eliminated from \cref{eqn:nse-normalized}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in \cref{eqn:nse-normalized} matrix $D$ is wider than tall for grids larger than $2\times 2$, hence it defines a nullspace. The nullspace of matrix $D$ is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
@@ -1260,7 +1355,7 @@ In the two-dimensional case, the matrix $C$ has two non-zero elements in each ro
 %A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.45\paperwidth]{C-example-2x2}
+  \includegraphics[width=0.40\paperwidth]{C-example-2x2}
   }
   \caption{$2\times 2$ example for $C$ matrix.}\label{fig:C-example-2x2}
 \end{figure}
@@ -1286,9 +1381,21 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
 \end{figure}
 The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. 
 %Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
-The desired product then becomes $DC=0$. $D=-G^T$ (\cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
+The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
 
-In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. Hence, the final chord of this method is the introduction of another new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} from \cref{sec:symmetrization} and is discussed in the following \cref{sec:algorithm}.
+In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=L$ being symmetric Laplacian and $C^TLC=L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. 
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+%\cref{eqn:vorticity-stream}
+Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
+
 
 
 \section{Resulting algorithm}\label{sec:algorithm}
@@ -1310,28 +1417,33 @@ and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equatio
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
 
-The algorithm to solve the discrete Navier-Stokes system of \cref{eqn:nse-normalized} can be described as follows:
+We assume that momentum equation from \cref{eqn:nse-normalized} modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
+The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
+Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
+Thus, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
-	\item Construct matrix $C$, such that $DC=0$ and $q_h=C\psi$.
-	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
-	\item Find $q^{n+1}_p$ from the non-homogeneous continuity equation using the methods described in the next \cref{sec:continuity-particular-solution}.
-	\item Split the solution $q^{n+1}$ into homogeneous and particular, then eliminate the pressure terms in the momentum equation.
-		\begin{align*}
-			Aq^{n+1}&=-Gp^{n+1}+S_1+bc_1,&\text{ where $S_1$ is momentum source term,}\\
-			A(q^{n+1}_h+q^{n+1}_p)&=D^Tp^{n+1}+S_1+bc_1, &\text{ premultiply by $C^T$,} \\
-			C^TAq^{n+1}_h&=C^T(S_1+bc_1-Aq^{n+1}_p), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\\
-			C^TAC\psi^{n+1}&=C^T(S_1+bc_1-Aq^{n+1}_p).
-		\end{align*}
-	\item Solve system (4) for $\psi^{n+1}$. 
-	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.
-	\item Compute $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.
-	\item Repeat steps (3-7) since the boundary values in $q^{n+1}$ were changed.
+	\item Construct matrix $C$, such that $DC=0$ and $q_h=C\psi$.\label[step]{step:1}
+	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.\label[step]{step:2}
+	\item Find $q^{n+1}_p$ from the non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method described in next \cref{sec:continuity-particular-solution}.\label[step]{step:3}
+	\item Split the solution $q^{n+1}$ into homogeneous and particular, then eliminate the pressure terms in the momentum equation.\label[step]{step:4}
+		\begin{align}
+			Aq^{n+1}&=-Gp^{n+1}+bc_1,\notag\\
+			A(q^{n+1}_h+q^{n+1}_p)&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
+			C^TAq^{n+1}_h&=C^T(bc_1-Aq^{n+1}_p), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
+			C^TAC\psi^{n+1}&=C^T(bc_1-Aq^{n+1}_p)\label[system]{eqn:resulting-system}.
+		\end{align}
+		The above \cref{eqn:resulting-system} is solving \cref{eqn:biharmonic-streamfunction} using Euler scheme $\frac{\partial \psi}{\partial t}=\frac{\psi^{n+1}-\psi^{n}}{\Delta t}$.
+	\item Solve resulting \cref{eqn:resulting-system} for $\psi^{n+1}$. \label[step]{step:5}
+	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.\label[step]{step:6}
+	\item Compute $q^{n+1}=q^{n+1}_p+q^{n+1}_h$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
+	\item Transition to the next time instance by repeating \cref{step:3,step:4,step:5,step:6,step:7} using the new boundary values from $q^{n+1}$.\label[step]{step:8}
 \end{enumerate}
+\cref{step:3,step:7} and changing values at the boundary of \cref{step:8} were not necessary in Colonius-Taira\cite{Colonius:2008}, whereas \cref{step:2} used homogeneous property $bc_2=0$ of continuity \cref{eqn:discrete-non-homogeneous-continuity}, making $q^{n+1}=q^{n+1}_h$.
 
 
 
-\subsection{A particular solution to the discrete continuity equation}\label{sec:continuity-particular-solution}
-\subsubsection{Particular solution using Lagrange multipliers}
+%\subsection{A particular solution to the discrete continuity equation}\label{sec:continuity-particular-solution}
+\section{Particular solution using Lagrange multipliers}\label{sec:continuity-particular-solution}
 It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
 \begin{equation}\label{eqn:lagrange-multipliers}
 	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
@@ -1439,66 +1551,6 @@ where $D^\dagger=D^T\left(D D^T\right)^{-1}$ is called pseudo-inverse. In the me
 %Citing Colonius~\cite{Colonius:2008} The second type of error associated with vorticity advecting or diffusing through the boundary is typically handled by posing outflow boundary conditions. For incompressible flow, these are usually called convective boundary conditions, whereas for compressible flow the term non-reflecting boundary condition is often used. Multidomain boundary conditions used on 3 domains: fine, medium, and coarse. 
 	
 	
-	\section{Vorticity-Streamfunction formulation}\label{sec:vorticity-streamfunction}
-	
-	Consider:
-	
-	\begin{enumerate}
-	\item	
-
-	Streamfunction $\psi(x,y,t)$ of an incompressible two-dimensional flow:
-	\begin{equation}
-	\label{eqn:streamfunction}
-		u = \frac{\partial \psi}{\partial y},\quad v=-\frac{\partial \psi}{\partial x},
-	\end{equation}
-	where $(u,v)=\boldsymbol{v}$.
-	
-	The velocity vector at every point of space and every moment of time is tangential to the line $\psi = const$ and such lines represent the streamlines of the flow. 
-	\item
-	
-	Vorticity $\omega = \nabla \times \boldsymbol{v}$, in two-dimensional case (x-y-plane) the only non-zero component of $\omega$ is $z$, which leads to
-	\begin{equation}
-	\label{eqn:vorticity}
-		\omega=\frac{\partial v}{\partial x} - \frac{\partial u}{\partial y}.
-	\end{equation}
-	\end{enumerate}
-	
-	Importantly, continuity equation~\eqref{eqn:continuity} is satisfied immediately by taking spatial derivatives of streamfunction~\eqref{eqn:streamfunction} components and adding them up. The governing equations~\eqref{eqs:NSE} can now be transformed. The new set of equations becomes:
-	\begin{enumerate}
-		\item 
-			Transport equation for vorticity.
-			
-			Application of $(\nabla \times)$ to momentum and taking into account continuity~\eqref{eqn:continuity} together with the fact
-			\begin{equation*}
-				\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right) - 
-				\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
-			\end{equation*}
-			results in
-			\begin{equation}
-			\label{eqn:transportVorticity}
-				\boxed{
-				\frac{\partial\omega}{\partial t} 
-				+ u \frac{\partial\omega}{\partial x} 
-				+ v\frac{\partial\omega}{\partial y} 
-				= \epsilon \left(\frac{\partial ^2 \omega}{\partial x^2} 
-				+ \frac{\partial^2 \omega}{\partial y^2} \right).
-				}
-			\end{equation}
-			
-		\item 
-		Vorticity-Streamfunction equation.
-		
-		After substituting streamfunction definition~\eqref{eqn:streamfunction} into vorticity~\eqref{eqn:vorticity} we obtain
-		\begin{equation}
-			\label{eqn:vorticity-stream}
-			\boxed{\nabla ^2 \psi = -\omega.}
-		\end{equation}	
-	\end{enumerate}
-	
-	These two equations above form a coupled system, and the pressure field (as promised at the end of Section \ref{sec:pressure-correction}) does not explicitly appear in neither equations~\eqref{eqn:transportVorticity} nor \eqref{eqn:vorticity-stream} and, in principle, is not needed in the solution.
-	
-	The system of equations (\eqref{eqn:transportVorticity},\eqref{eqn:vorticity-stream}) requires boundary conditions on $\psi$ and $\omega$. For the streamfunction, imposing physically plausible conditions is not difficult. One has to write the proper boundary conditions for the velocity components and use vorticity~\eqref{eqn:vorticity} to represent them as conditions for $\psi$ and its derivatives. The situation is more difficult in the case of vorticity. There are no natural boundary conditions on $\omega$, but they can be derived from the conditions on $\psi$ by application of the equation \eqref{eqn:vorticity-stream} at the boundary. The process of finding boundary conditions of $\omega$ typically results in expressions containing second derivatives, therefore, special numerical treatment is required.
- 
 
 
 \bibliographystyle{plain}
