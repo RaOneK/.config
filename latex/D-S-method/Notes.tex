@@ -243,7 +243,8 @@ The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-d
 \end{subequations}
 
 \section{Domain discretization}\label{sec:dsm-domain}
-Following the nondimensionalization of the governing equations, we now turn our attention to the process of domain discretization. This crucial step involves dividing the computational domain into discrete elements, allowing us to compute variables and their derivatives on a finite set of points called grid. Consider discretizing the area into $M$ intervals horizontally and $N$ intervals vertically forming a mesh of rectangular cells. To enhance memory access it is recommended to organize the data using vectors instead of matrices. The reason is that accessing memory using a single index $i$ works faster than double $i,j$ in most programming languages. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow and Welch~\cite{Harlow:1965}) to represent coordinates on the grid.
+Following the nondimensionalization of the governing equations, we now turn our attention to the process of domain discretization. This crucial step involves dividing the computational domain into discrete elements, allowing us to compute variables and their derivatives on a finite set of points called grid. Consider discretizing the area into $M$ intervals horizontally and $N$ intervals vertically forming a mesh of rectangular cells. To enhance memory access it is recommended to organize the data using vectors instead of matrices. 
+The reason behind is memory access time; a single index $i$ works faster than double $i,j$ in most programming languages. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow and Welch~\cite{Harlow:1965}) to represent coordinates on the grid.
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -254,7 +255,7 @@ Following the nondimensionalization of the governing equations, we now turn our 
 
 To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. 
 Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
-This calculation does not require any interpolation on staggered grids, furthermore, it is computationally cheaper and simple. 
+This calculation on staggered grids does not require any interpolation, furthermore, it is computationally cheaper and simpler to implement. 
 Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
 The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
 
@@ -267,7 +268,7 @@ Increasing the accuracy closer to the wall and the outlet does look advantageous
 
 This subsection focuses on the specific operators used in the discretization of \cref{eqs:NSE-dsm-bl}, providing the mathematical tools necessary to transform these continuous equations into a form that can be solved numerically.
 
-Denote discrete spatial operators as
+Denote discrete spatial operators as:
 \begin{enumerate}
 	\item[$\hat{L}$]:  Laplacian.
 	\item[$\hat{G}$]: Gradient.
