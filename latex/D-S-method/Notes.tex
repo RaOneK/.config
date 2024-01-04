@@ -1390,7 +1390,7 @@ The matrix $C$ has dimensions corresponding to unknown velocities times the numb
 %Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
 The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
 
-In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=L$ being symmetric Laplacian and $C^TLC=L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. 
+In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. 
 %\cref{eqn:vorticity-stream}
 %\cref{eqn:vorticity-stream}
 %\cref{eqn:vorticity-stream}
