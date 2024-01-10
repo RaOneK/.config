@@ -40,6 +40,7 @@
 \usepackage{float} % \figure{}[H] IN PLACE VIEW
 \usepackage[capitalize]{cleveref} % smart references in one bracket
 \usepackage{hyperref}
+\usepackage{amssymb} %rightleft arrows
 
 %
 % CREF rules
@@ -65,6 +66,11 @@
 \crefrangeformat{step}{#3Steps (#1)#4 to #5(#2)#6}
 \crefmultiformat{step}{#2Steps (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
 \crefrangemultiformat{step}{#3Steps ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+%diagram
+\crefformat{diagram}{#2Diagram (#1)#3}
+\crefrangeformat{diagram}{#3Diagrams (#1)#4 to #5(#2)#6}
+\crefmultiformat{diagram}{#2Diagrams (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{diagram}{#3Diagrams ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
 
 
 
@@ -157,6 +163,8 @@ If, however, one ends up solving the Poisson equation for pressure, an interesti
     \item Outlet BC stated early in non-dim truncated part, but discussion is much later.
     \item Continuous analogue of $C^T$ to be determined. Figured out that $C^TC=L$ and $C^TLC=L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
     \item Repeating \cref{fig:luxx-right-first} from first try of Laplacian and \cref{fig:luxx-right} after Artificial BC discussion.
+    \item Paraphrase \cite{Gamtumur:2019} in \cref{sec:algorithm} since most of it is copypaste.
+    \item Two identities above \cref{eqn:biharmonic-streamfunction} are missing algebra.
   \end{itemize}
 }
 \pagebreak
@@ -1327,8 +1335,139 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 	These two equations above form a coupled system, and the pressure field does not explicitly appear in neither \cref{eqn:transport-vorticity} nor \cref{eqn:vorticity-stream} and, in principle, is not needed in the solution.
 	
 	The system (\cref{eqn:transport-vorticity,eqn:vorticity-stream}) requires boundary conditions on $\psi$ and $\omega$. For the stream function, imposing physically plausible conditions is not difficult. One has to write the proper boundary conditions for the velocity components and use vorticity \cref{eqn:vorticity} to represent them as conditions for $\psi$ and its derivatives. The situation is more difficult in the case of vorticity. There are no natural boundary conditions on $\omega$, but they can be derived from the conditions on $\psi$ by application of the \cref{eqn:vorticity-stream} at the boundary. The process of finding boundary conditions of $\omega$ typically results in expressions containing second derivatives, therefore, special numerical treatment is required.
-	
-	To overcome the issue above we first apply boundary conditions in terms of velocity and pressure and keep them explicit as in \cref{eqn:NSE-dsm-bl-system-schemes}. Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream} which results in 
+
+
+
+
+
+\pagebreak
+\section{Prelude to the algorithm}\label{sec:algorithm-prelude}
+
+
+Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let vector  $X,Y$ and scalar $\phi,\psi$ fields vanish at boundary $\partial \Omega$. To extend the transpose to the operator $\operatorname{grad}$, we need to have inner products in $S F$ (scalar field) and in $V F$ (vector field) \cite{Gamtumur:2019}. We use
+$$
+\langle\phi, \psi\rangle=\int_{\Omega} \phi \psi,
+$$
+for scalar fields $\phi$ and $\psi$ in $\Omega$, and
+$$
+\langle X, Y\rangle=\int_{\Omega} X \cdot Y,
+$$
+for vector fields $X$ and $Y$ in $\Omega$. Then the transpose of grad is an operator $\operatorname{grad}^*: V F \rightarrow S F$ such that
+$$
+\langle X, \operatorname{grad} \phi\rangle=\left\langle\phi, \operatorname{grad}^* X\right\rangle,
+$$
+for all vector fields $X$ and scalar fields $\phi$ vanishing on the boundary of $\Omega$. To identify this operator, intergate the identity
+$$
+\nabla \cdot(\phi X)=\phi \nabla \cdot X+X \cdot \nabla \phi,
+$$
+and apply the divergence theorem, to get
+$$
+\int_{\partial \Omega} \phi X \cdot n=\int_{\Omega} \nabla \cdot(\phi X)=\int_{\Omega} \phi \nabla \cdot X+\int_{\Omega} X \cdot \nabla \phi .
+$$
+Since $\phi=0$ on $\partial \Omega$, we infer
+$$
+\langle\phi, \nabla \cdot X\rangle+\langle X, \nabla \phi\rangle=0,
+$$
+implying that the transpose of the gradient is the negative divergence, and the transpose of the divergence is the negative gradient:
+\begin{equation}\label{eqn:curl-grad}
+\operatorname{grad}^*=- \text { div }, \quad \text { div }^*=-\operatorname{grad} .
+\end{equation}
+
+This result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
+$$
+\int_{\Omega} \phi \operatorname{curl} X=\int_{\Omega} \phi \nabla \cdot X^{\perp}=-\int_{\Omega} X^{\perp} \cdot \nabla \phi=\int_{\Omega} X \cdot(\nabla \phi)^{\perp}=\int_{\Omega} X \cdot \nabla^{\perp} \phi,
+$$
+yielding
+\begin{equation}
+\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }\notag
+\end{equation}
+
+This establishes the first two connections in \cref{diag:div-curl-grad}.
+Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
+\begin{equation}\label[diagram]{diag:div-curl-grad}
+	S F \underset{\text {-div }}{\stackrel{\text { grad }}{\rightleftarrows}} V F \underset{\text { curl }}{\stackrel{\text { curl }}{\rightleftarrows}} V F \underset{\text {-grad }}{\stackrel{\text { div }}{\leftrightarrows}} S F,
+\end{equation}
+leaving only the transpose of curl. To this end, recall the identity
+$$
+\nabla \cdot(X \times Y)=(\nabla \times X) \cdot Y-X \cdot(\nabla \times Y).
+$$
+Since we consider only those vector fields vanishing at the boundary $\partial \Omega$, the integration by parts yields
+$$
+0=\int_{\partial \Omega}(X \times Y) \cdot n=\int_{\Omega} \nabla \cdot(X \times Y)=\int_{\Omega} X \cdot \nabla \times Y-\int_{\Omega} Y \cdot \nabla \times X=\langle X,\operatorname{curl}Y\rangle-\langle X,\operatorname{curl}^*Y\rangle ,
+$$
+which identifies the curl as the transpose of itself in 3-dimensions:
+\begin{equation}\label{eqn:curl-curl-orth}
+\text { curl }^*=\text { curl. }	
+\end{equation}
+
+
+For 3-dimensional vector fields we can write $\operatorname{curl}$ operator in a symmetric matrix form
+\begin{equation}\label{eqn:curl-transpose}
+	\operatorname{curl}:=
+	\begin{bmatrix}{}
+  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+\end{bmatrix}
+\equiv\begin{bmatrix}{}
+  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+\end{bmatrix}^*=:\operatorname{curl}^*,
+\end{equation}
+which agrees with \cref{eqn:curl-curl-orth}. When we transpose $\operatorname{curl}$ operator, the transpose of each derivative changes it's sign. Thus, we get a symmetric matrix $\operatorname{curl}^*=\operatorname{curl}$, since integrating by parts with respect to variable $s$ of vector fields $X(s),Y(s)$ leads to
+\begin{equation*}
+\langle \frac{d}{ds}X(s),Y(s) \rangle=\int_{\Omega} \frac{d X}{d s} Y(s) d s=\left.X(s) Y(s)\right|_{\partial \Omega}-\int_{\Omega} X(s) \frac{d Y}{d s} d s=\int_{\Omega} X(s) \left(-\frac{d }{d s} Y(s)\right) d s=\langle X(s), -\frac{d}{ds} Y(s)\rangle,
+\end{equation*}
+where $\left.X(s) Y(s)\right|_{\partial \Omega}$ vanishes at the boundary $\partial\Omega$.
+
+We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and keep them explicit as in \cref{eqn:NSE-dsm-bl-system-schemes}. 
+
+Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream}. 
+We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then use  $\boldsymbol{v}=\operatorname{curl}\psi$. Since, transient derivative and $\operatorname{curl}$ operators are commutative and $\div\boldsymbol{v}=0$, we get 
+\begin{equation}
+	\left(\frac{\partial}{\partial t}\right)\operatorname{curl}^*\operatorname{curl}\psi=-\frac{\partial}{\partial t}\nabla^2\psi,\tag{\text{??}}	
+\end{equation}
+and 
+\begin{equation}
+	\operatorname{curl}^*\nabla^2\operatorname{curl}\psi=-\nabla^4\psi.\tag{???}
+\end{equation}
+ 
+%\begin{equation*}
+%\begin{aligned}
+%	\begin{bmatrix}{}
+%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+%\end{bmatrix}^*
+%\begin{bmatrix}{}
+%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+%\end{bmatrix}
+%\begin{bmatrix}
+%	u\\
+%	v\\
+%	w
+%\end{bmatrix}
+%&=
+%-\begin{bmatrix}{}
+%\frac{\partial^2}{\partial z^2}+\frac{\partial^2}{\partial y^2} & -\frac{\partial^2}{\partial x \partial z} & -\frac{\partial^2}{\partial y \partial z} \\
+%-\frac{\partial^2}{\partial z \partial x} & \frac{\partial^2}{\partial z^2}+\frac{\partial^2}{\partial x^2} & -\frac{\partial^2}{\partial x \partial y} \\
+%-\frac{\partial^2}{\partial y \partial x} & -\frac{\partial^2}{\partial x \partial y} & \frac{\partial^2}{\partial y^2}+\frac{\partial^2}{\partial x^2}
+%\end{bmatrix}
+%\begin{bmatrix}
+%	u\\
+%	v\\
+%	w
+%\end{bmatrix}
+%\\
+%&=
+%\end{aligned}
+%\end{equation*}
+
+
+Hence, momentum \cref{eqn:momentum-intro} after the above steps results in 
 	\begin{equation}
 	\label{eqn:biharmonic-streamfunction}
 		\boxed{
@@ -1337,6 +1476,7 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 		}
 	\end{equation}
 where the right hand side terms were initially stated in terms of $\boldsymbol{v},p$ and transformed using the same operations as the left hand side of \cref{eqn:biharmonic-streamfunction}.
+
 
 
 \pagebreak
@@ -1393,6 +1533,7 @@ In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetr
 Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
 
 
+
 \pagebreak
 \section{Resulting algorithm}\label{sec:algorithm}
 
@@ -1413,10 +1554,12 @@ and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equatio
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
 
-We assume that momentum equation from \cref{eqn:nse-normalized} modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
+We assume that momentum equation from \cref{eqn:nse-normalized} is modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
 The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
 Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
-Thus, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
+
+
+Taking into account continuous operator identities in \cref{sec:algorithm-prelude}, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
 	\item Construct matrix $C$, such that $DC=0$ and $q_h=C\psi$.\label[step]{step:1}
 	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.\label[step]{step:2}
