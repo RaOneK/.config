@@ -164,7 +164,7 @@ If, however, one ends up solving the Poisson equation for pressure, an interesti
     \item Looks like continuous analogue of $C^T$ is determined. Figured out that $C^TC=-L$ and $C^TLC=-L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
     \item Repeating \cref{fig:luxx-right-first} from first try of Laplacian and \cref{fig:luxx-right} after Artificial BC discussion.
     \item Paraphrase \cite{Gamtumur:2019} in \cref{sec:algorithm} since most of it is copypaste.
-    \item Two identities above \cref{eqn:biharmonic-streamfunction} are missing algebra.
+    \item Boundary conditions for \cref{eqn:biharmonic-streamfunction} are zero or non-zero.
   \end{itemize}
 }
 \pagebreak
@@ -1428,48 +1428,68 @@ $$\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h,$$
 where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution satisfies $\nabla\cdot\boldsymbol{v}_p=\hat{\operatorname{bc}}_2$. Identity $\nabla\cdot v_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$, hence it is permissible use all identities with curl, grad and div derived in this section.
 
 Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream}. 
-We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then use  $\boldsymbol{v}=\operatorname{curl}\psi$. Since, transient derivative and $\operatorname{curl}$ operators are commutative and $\nabla\cdot\boldsymbol{v}_h=0$, we get 
-\begin{equation}
-	\left(\frac{\partial}{\partial t}\right)\operatorname{curl}^*\operatorname{curl}\psi=-\frac{\partial}{\partial t}\nabla^2\psi,\tag{\text{??}}	
-\end{equation}
-and 
-\begin{equation}
-	\operatorname{curl}^*\nabla^2\operatorname{curl}\psi=-\nabla^4\psi.\tag{???}
-\end{equation}
- 
-%\begin{equation*}
-%\begin{aligned}
-%	\begin{bmatrix}{}
-%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-%\end{bmatrix}^*
-%\begin{bmatrix}{}
-%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-%\end{bmatrix}
-%\begin{bmatrix}
-%	u\\
-%	v\\
-%	w
-%\end{bmatrix}
-%&=
-%-\begin{bmatrix}{}
-%\frac{\partial^2}{\partial z^2}+\frac{\partial^2}{\partial y^2} & -\frac{\partial^2}{\partial x \partial z} & -\frac{\partial^2}{\partial y \partial z} \\
-%-\frac{\partial^2}{\partial z \partial x} & \frac{\partial^2}{\partial z^2}+\frac{\partial^2}{\partial x^2} & -\frac{\partial^2}{\partial x \partial y} \\
-%-\frac{\partial^2}{\partial y \partial x} & -\frac{\partial^2}{\partial x \partial y} & \frac{\partial^2}{\partial y^2}+\frac{\partial^2}{\partial x^2}
-%\end{bmatrix}
-%\begin{bmatrix}
-%	u\\
-%	v\\
-%	w
-%\end{bmatrix}
-%\\
-%&=
-%\end{aligned}
-%\end{equation*}
+We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then substitute  $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$. Since time derivative and $\operatorname{curl}$ operators are commutative, $\operatorname{curl}^*=\operatorname{curl}$ and $\boldsymbol{\psi}=(0,0,\psi)$ for 2-dimensional case, we get 
+\begin{align}\label{eqn:streamfunction-transient}
+	\begin{bmatrix}{}
+  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+	\end{bmatrix}
+	\left(\frac{\partial}{\partial t}\right)
+	\begin{bmatrix}{}
+  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+	\end{bmatrix}
+	\begin{bmatrix}
+		0\\
+		0\\
+		\psi
+	\end{bmatrix}&=
+	\left(\frac{\partial}{\partial t}\right)
+	\begin{bmatrix}
+		-\frac{\partial^2}{\partial y^2}-\frac{\partial^2}{\partial z^2} & \frac{\partial^2}{\partial x\partial y} & \frac{\partial^2}{\partial x \partial z}\\
+		\frac{\partial ^2}{\partial x \partial y} & -\frac{\partial ^2}{\partial x^2}-\frac{\partial ^2}{\partial z^2} & \frac{\partial ^2}{\partial y \partial z}\\
+		\frac{\partial ^2}{\partial x \partial z} & -\frac{\partial ^2}{\partial y \partial z} & -\frac{\partial ^2}{\partial x^2}-\frac{\partial ^2}{\partial y^2}
+	\end{bmatrix}
+	\begin{bmatrix}
+		0\\
+		0\\
+		\psi
+	\end{bmatrix}
+	\notag\\
+	&=-\left(\frac{\partial}{\partial t}\right)\nabla^2\psi\implies
+	\notag\\
+	\implies \left(\frac{\partial}{\partial t}\right)\operatorname{curl}^*\operatorname{curl}\boldsymbol{\psi}=-\left(\frac{\partial}{\partial t}\right)\nabla^2\psi.
+\end{align}
 
+Similarly to above, we obtain biharmonic operator from viscous terms by applying $\operatorname{curl}^*$ to the left and using $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ from the right of Laplacian.
+\begin{align}\label{eqn:streamfunction-viscous}
+	&\begin{bmatrix}{}
+  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+	\end{bmatrix}
+	\begin{bmatrix}
+		\nabla^2 & 0 & 0\\
+		0 & \nabla^2 & 0\\
+		0 & 0 & \nabla^2
+	\end{bmatrix}
+	\begin{bmatrix}{}
+  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+	\end{bmatrix}
+	\begin{bmatrix}
+		0\\
+		0\\
+		\psi
+	\end{bmatrix}=
+	\notag\\
+	&=\left(\frac{\partial^2}{\partial x \partial z}\nabla^2 + \frac{\partial ^2}{\partial y\partial z}\nabla^2 - \frac{\partial ^2}{\partial x^2}\nabla^2 -\frac{\partial ^2}{\partial y^2}\nabla^2\right)\psi=-\nabla^4\psi\implies
+	\notag\\
+	&\implies \operatorname{curl}^*\nabla^2\operatorname{curl}\psi=-\nabla^4\psi.
+\end{align}
 
 Hence, momentum \cref{eqn:momentum-intro} after the above steps results in 
 	\begin{equation}
@@ -1479,7 +1499,11 @@ Hence, momentum \cref{eqn:momentum-intro} after the above steps results in
 		+\nabla ^4 \psi=\operatorname{RHS_{\boldsymbol{v},p}},
 		}
 	\end{equation}
-where the right hand side terms were initially stated in terms of $\boldsymbol{v},p$ and transformed using the same operations as the left hand side of \cref{eqn:biharmonic-streamfunction}.
+where the right hand side terms were initially stated in terms of $\boldsymbol{v},p$ as a vector and transformed using the same operations as  \cref{eqn:streamfunction-viscous,eqn:streamfunction-transient}. \cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions (\textbf{LOOKS LIKE ISSUE}), whereas to obtain the particular solution we need to solve $\nabla\cdot\boldsymbol{v}_p=\hat{\operatorname{bc}}_2$ for $v_p$ with non-zero boundary conditions. Finally, we arrive to the general solution of \cref{eqs:NSE} 
+\begin{equation}
+\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.
+\end{equation}
+
 
 
 
