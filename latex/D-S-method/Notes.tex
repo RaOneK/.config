@@ -1341,7 +1341,7 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 
 
 \pagebreak
-\section{Prelude to the algorithm}\label{sec:algorithm-prelude}
+\section{Prelude to the algorithm using continuous operators}\label{sec:algorithm-prelude}
 
 
 Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let vector  $X,Y$ and scalar $\phi,\psi$ fields vanish at boundary $\partial \Omega$. To extend the transpose to the operator $\operatorname{grad}$, we need to have inner products in $S F$ (scalar field) and in $V F$ (vector field) \cite{Gamtumur:2019}. We use
@@ -1425,10 +1425,10 @@ We can proceed to the algorithm now. To overcome the issue of stating boundary c
 
 Assume that the solution to \cref{eqs:NSE} can be decomposed into sum of homogeneous and inhomogeneous velocity vector fields
 $$\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h,$$
-where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution satisfies $\nabla\cdot\boldsymbol{v}_p=\hat{bc}_2$. Identity $\nabla\cdot v_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$.
+where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution satisfies $\nabla\cdot\boldsymbol{v}_p=\hat{bc}_2$. Identity $\nabla\cdot v_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$, hence it is permissible use all identities with curl, grad and div derived in this section.
 
 Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream}. 
-We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then use  $\boldsymbol{v}=\operatorname{curl}\psi$. Since, transient derivative and $\operatorname{curl}$ operators are commutative and $\div\boldsymbol{v}=0$, we get 
+We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then use  $\boldsymbol{v}=\operatorname{curl}\psi$. Since, transient derivative and $\operatorname{curl}$ operators are commutative and $\nabla\cdot\boldsymbol{v}_h=0$, we get 
 \begin{equation}
 	\left(\frac{\partial}{\partial t}\right)\operatorname{curl}^*\operatorname{curl}\psi=-\frac{\partial}{\partial t}\nabla^2\psi,\tag{\text{??}}	
 \end{equation}
@@ -1484,7 +1484,7 @@ where the right hand side terms were initially stated in terms of $\boldsymbol{v
 
 
 \pagebreak
-\section{Nullspace method and pressure elimination}\label{sec:nullspace-method}
+\section{Nullspace method and pressure elimination in terms of discrete operators}\label{sec:nullspace-method}
 
 The goal of this subsection is to show how unknown pressure variables can be eliminated from \cref{eqn:nse-normalized} similarly to \cref{sec:vorticity-streamfunction}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in \cref{eqn:nse-normalized} matrix $D$ is wider than tall for grids larger than $2\times 2$, hence it defines a nullspace. The nullspace of matrix $D$ is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
 
