@@ -1423,6 +1423,10 @@ where $\left.X(s) Y(s)\right|_{\partial \Omega}$ vanishes at the boundary $\part
 
 We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and keep them explicit as in \cref{eqn:NSE-dsm-bl-system-schemes}. 
 
+Assume that the solution to \cref{eqs:NSE} can be decomposed into sum of homogeneous and inhomogeneous velocity vector fields
+$$\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h,$$
+where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution satisfies $\nabla\cdot\boldsymbol{v}_p=\hat{bc}_2$. Identity $\nabla\cdot v_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$.
+
 Our goal is to modify the implicit (left) part of \cref{eqn:NSE-dsm-bl-system-schemes} by transforming it into vorticity transport \cref{eqn:transport-vorticity} together with vorticity stream function substitution \cref{eqn:vorticity-stream}. 
 We first keep transient, gradient and viscous terms on the left hand side, whereas non-linear terms are linearized to become a vector and moved to the right. Next, we apply $\operatorname{curl}^*$ to momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}\operatorname{grad}=0$), then use  $\boldsymbol{v}=\operatorname{curl}\psi$. Since, transient derivative and $\operatorname{curl}$ operators are commutative and $\div\boldsymbol{v}=0$, we get 
 \begin{equation}
