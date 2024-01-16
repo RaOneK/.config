@@ -325,13 +325,13 @@ where $\left.X(s) Y(s)\right|_{\partial \Omega}$ vanishes at the boundary $\part
 
 We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and make them as external force function similarly to Duhammel Principle, which states that the solution to homogeneous heat equation
 $$
-\begin{cases}u_t(x, t)-\Delta u(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ u(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
+\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
 $$
 can be represented as inhomogeneous problem
 $$
-\begin{cases}u_t(x, t)-\Delta u(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ u(x, 0)=0 & x \in \mathbb{R}^n\end{cases}
+\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=0 & x \in \mathbb{R}^n\end{cases},
 $$
- 
+but instead of inictial conditions we will apply similar procedure to BC.
 
 Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
 $$\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h,$$
