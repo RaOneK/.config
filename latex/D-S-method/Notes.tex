@@ -309,95 +309,96 @@ implying that the transpose of the gradient is the negative divergence, and the 
 	\operatorname{grad}^*=- \text { div }, \quad \text { div }^*=-\operatorname{grad} .
 \end{equation}
 
-The operator $\nabla^{\perp}$ defined by
-\begin{equation}\label{eqn:grad-perp}
-	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
-	=\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y} \psi\\
-	-\frac{\partial}{\partial x} \psi
-	\end{bmatrix*}
-\end{equation}
-is called the grad-perp or the rotated gradient. The notation
-\begin{equation}
-	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
-\end{equation}
-can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
+%The operator $\nabla^{\perp}$ defined by
+%\begin{equation}\label{eqn:grad-perp}
+%	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
+%	=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y} \psi\\
+%	-\frac{\partial}{\partial x} \psi
+%	\end{bmatrix*}
+%\end{equation}
+%is called the grad-perp or the rotated gradient. The notation
+%\begin{equation}
+%	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
+%\end{equation}
+%can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
 
-The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
-\begin{equation}
-\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
-=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
-=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
-=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
-=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
-\end{equation}
-yielding
-\begin{equation}\label{eqn:curl-grad-perp}
-\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
-\end{equation}
+%The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
+%\begin{equation}
+%\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
+%=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
+%=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
+%=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
+%=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
+%\end{equation}
+%yielding
+%\begin{equation}\label{eqn:curl-grad-perp}
+%\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
+%\end{equation}
 
-We now compute $\operatorname{curl}^*\operatorname{curl}$ in 2D. We can write curl as
+We now compute $\operatorname{curl}^*\operatorname{curl}$ product in 2D. 
 \begin{equation}
 	\operatorname{curl}
 	=
 	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
+	\frac{\partial}{\partial y} \\
+	-\frac{\partial}{\partial x}
 	\end{bmatrix*},
 \end{equation}
-then from \cref{eqn:grad-perp,eqn:curl-grad-perp}
+and
 \begin{equation}
 	\operatorname{curl}^*
 	=
 	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}&
-	-\frac{\partial}{\partial x}
+	-\frac{\partial}{\partial y}&
+	\frac{\partial}{\partial x}
 	\end{bmatrix*}.
 \end{equation}
 We now compute their product applied to stream function $\psi$
 \begin{equation}\label{eqn:curl-adj-curl}
 	\operatorname{curl}^*\operatorname{curl}\psi=
 	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}&
-	-\frac{\partial}{\partial x}
+	-\frac{\partial}{\partial y}&
+	\frac{\partial}{\partial x}
 	\end{bmatrix*}
 	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
+	\frac{\partial}{\partial y} \\
+	-\frac{\partial}{\partial x}
 	\end{bmatrix*}
 	\psi
 	=\left(-\frac{\partial^2}{\partial y^2} -\frac{\partial^2 }{\partial x^2}\right) \psi =-\nabla^2 \psi.
 \end{equation}
-By taking into account commutativity of time and spatial derivatives we obtain
+By taking into account commutativity of partial derivatives with respect to time and space we obtain
 \begin{equation}
-	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right)
+	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right).
 \end{equation}
-Finally, we compute
+Moreover, since Laplacian is a scalar operator, it can commute with curl
 \begin{align}
-	\operatorname{curl}^*\operatorname{grad}^2\operatorname{curl}\psi
-	&=\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}&
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\begin{bmatrix}
-	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
-	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
-	\end{bmatrix}
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi\\
-	&=\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
-	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
-	\end{bmatrix*}
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi\\
-	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
+	\operatorname{curl}^*\nabla^2\operatorname{curl}\psi
+%	&=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y}&
+%	-\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\begin{bmatrix}
+%	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
+%	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
+%	\end{bmatrix}
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y} \\
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\psi\\
+%	&=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
+%	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
+%	\end{bmatrix*}
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y} \\
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\psi\\
+%	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
+	=\operatorname{curl}^*\operatorname{curl}\nabla^2\psi
 	&=\nabla^4\psi.
 \end{align}
 
