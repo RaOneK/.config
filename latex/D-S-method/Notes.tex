@@ -121,7 +121,12 @@ When designing a finite difference or finite volume scheme, we have to choose wh
 The obvious choice seems to have a single set of points, at which all the variables and all the equations are discretized. 
 Such a grid has the name of a \textit{collocated} or \textit{regular} grid. 
 Albeit simple and easy in operation, the collocated grids were out of favor for a long time because of their tendency to generate spurious oscillations in the solution (cf. \S 10.2 in \cite{Zikanov:2010}) and hence staggered grids are used since the work of Harlow and Welch \cite{Harlow:1965} introducing the marker-and-cell (MAC) method, cf. \cref{fig:grid-MAC}. 
-Colonius~\cite{Colonius:2008} uses MAC grid~\cref{fig:grid-MAC}, where the indexing uses only integer indices, i.e.  $u_{i-\frac{1}{2},j}$ and $v_{i,j-\frac{1}{2}}$ lie on left and bottom sides of cell $i,j$.  
+Colonius~\cite{Colonius:2008} uses MAC grid~\cref{fig:grid-MAC}, where the indexing uses only integer indices, i.e.  $u_{i-\frac{1}{2},j},v_{i,j-\frac{1}{2}}$ are denoted as $u_{i,j},v_{i,j}$ and lie on left and bottom sides of cell $i,j$.  
+
+\textbf{HAVE TO EITHER CHANGE ALL INDICES TO MATCH \cref{fig:grid-staggered}, or change indexation in \cref{fig:grid-staggered} to match Harlow-Welch \cite{Harlow:1965}.}
+
+In this paper grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{M+\frac{1}{2}},y_{N+\frac{1}{2}})=(1,1)$. 
+	The width $\Delta x$ and height $\Delta y$ of each cell have the same indexation as the corresponding cells they belong to. 
 
 \begin{figure}[H]
 \centering
@@ -642,18 +647,24 @@ The reason behind is memory access time; a single index $i$ works faster than do
   \centering{
   \includegraphics[width=0.40\paperwidth]{grid-bl}
   }
-  \caption{Domain discretization}\label{bl-domain-discretization}
+  \caption{Domain discretization (here $m=M, n=N$)}\label{bl-domain-discretization}
 \end{figure}
 
-To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
-Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
-This calculation on staggered grids does not require any interpolation, furthermore, it is computationally cheaper and simpler to implement. 
+To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. 
+	Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
+	Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
+	This calculation on staggered grids does not require any interpolation, furthermore, it is computationally cheaper and simpler to implement. 
 
 The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
+	The number of unknown components inside the domain (excluding boundaries) is $M(N-1)$ for $v$ and $(M-1)N$ for $u$. 
+	At the row with coordinate $y_1$ there are $M-1$ unknown $u$ components located inside the domain with a total of $N$ such $y$ coordinates. 
 
-The number of unknown components inside the domain (excluding boundaries) is $M(N-1)$ for $v$ and $(M-1)N$ for $u$. In \cref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. To address this, we will express the values on the boundary using \cref{eqn:NSE-dsm-bl-bc-outlet} in terms of data from inner part of the domain. These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $M(N-1)+(M-1)N$.
+In \cref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. 
+	To address this, we will express the values on the boundary using \cref{eqn:NSE-dsm-bl-bc-outlet} in terms of data from inner part of the domain. 
+	These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $M(N-1)+(M-1)N$.
 
-Increasing the accuracy closer to the wall and the outlet does look advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. Grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{M+\frac{1}{2}},y_{N+\frac{1}{2}})=(1,1)$. The intervals $\Delta x, \Delta y$ have the same indexation as the corresponding cells they belong to. 
+Increasing the accuracy closer to the wall and the outlet does look advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. 
+	
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -892,6 +903,7 @@ The position of $u_g$ is not fixed, we can make the order of the scheme $O(\Delt
 \end{equation}
 The coefficients from \cref{eqn:luxx-bot} are distributed into the $\hat{L}^u_{yy}$ matrix similarly to previous boundary cases.
 
+
 \subsubsection{Right boundary.}\label{subsubsec:laplacian-right}
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -899,6 +911,8 @@ The coefficients from \cref{eqn:luxx-bot} are distributed into the $\hat{L}^u_{y
   }
   \caption{$\hat{L}^u_{xx},\hat{L}^v_{xx}$ at the right boundary ($m=M$).}\label{fig:luxx-right-first}
 \end{figure}
+\textbf{INDICATE GHOST VELOCITY POINT}
+
 In order to express the rightmost unknown velocity component $u_{M-\frac{1}{2},j}$ inside the domain it is required to use the boundary values of $u_{M+\frac{1}{2},j}$ and ghost elements for $v_g$ as in \cref{fig:luxx-right-first}. The best case scenario would be to have Dirichlet velocity values $\boldsymbol{v}(t,1,y)\subset \mathbb{R}$ or Neumann boundary condition $\left.\frac{\partial u}{\partial x}\right|_{M+\frac{1}{2},j}=0$ as in Colonius-Taira~\cite{Colonius:2008} at the outlet. However, since the solution of \cref{eqs:NSE-dsm-bl} at the right boundary of the domain might not have the same behaviour, it is not possible to impose such boundary conditions for our problem statement. We will address the spatial discretization of Laplacian at the right boundary in \cref{subsec:laplacian-ABC}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1003,7 +1017,7 @@ Similarly to Laplacian for the right side in \cref{subsubsec:laplacian-right} we
 One of the advantages of the staggered grid is that the discrete divergence $D$ and gradient $G$ operators are equal to the negative transpose of each other. 
 %Our goal is to eliminate the pressure from the system, \cref{sec:nullspace-method} will explain the use of this property in detail. 
 In this section we will show one side of why this identity is true, the other part could be found in \cref{subsec:gradient}.
-The second line of \cref{eqn:nse-matrix} reads
+The second line of \cref{eqn:NSE-dsm-bl-system-schemes} reads
 \begin{equation*}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=\hat{bc}_2,\\
@@ -1026,7 +1040,10 @@ v \Delta x
 \end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2,
 \end{gathered}
 \end{equation*}
-where vector $q$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. Matrix
+where vector $q=\left[\begin{array}{l}
+u \Delta y \\
+v \Delta x
+\end{array}\right]$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. Matrix
 \begin{equation}\label{eqn:delta-xy}
 	\Delta _{xy}=
 	\begin{bmatrix}{}
