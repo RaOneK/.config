@@ -270,7 +270,7 @@ The remainder of the present paper is organized as follows.
 		One has to write the proper boundary conditions for the velocity components and use the definition of \cref{eqn:streamfunction} to represent them as conditions for $\psi$. 
 		Values for $\psi$ and its derivatives are obtained by integrating \cref{eqn:streamfunction}. For instance, in case of vertical boundary 
 		\begin{align}
-			&0=v=-\frac{\partial\psi}{\partial x}\implies\psi=const\text{ (can make value compatible with other BCs)},	\\	
+			&0=v=-\frac{\partial\psi}{\partial x}\implies\psi=const\text{ (can be made compatible with other BCs)},	\\	
 			&1=u=\frac{\partial\psi}{\partial y}\implies\frac{\partial\psi}{\partial y}=1.
 		\end{align}
 		The situation is more difficult in the case of vorticity. 
@@ -283,130 +283,6 @@ The remainder of the present paper is organized as follows.
 
 \pagebreak
 \section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}
-
-
-Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let all vector $\boldsymbol{X},\boldsymbol{Y}$ and scalar $\phi,\psi$ fields vanish at $\partial \Omega$. Denote by $SF$ the set of all scalar fields in $\Omega$, and by $VF$ the set of all vector fields in $\Omega$. To extend the transpose to the operator $\operatorname{grad}$, we need to have inner products in inner product space \cite{Gamtumur:2019}. We use
-\begin{equation}
-	\langle\phi, \psi\rangle=\int_{\Omega} \phi \psi\ dV,
-\end{equation}
-for scalar fields $\phi$ and $\psi$ in $\Omega$, and
-\begin{equation}
-	\langle \boldsymbol{X}, \boldsymbol{Y}\rangle=\int_{\Omega} \boldsymbol{X} \cdot \boldsymbol{Y}\ dV,
-\end{equation}
-for vector fields $\boldsymbol{X}$ and $\boldsymbol{Y}$ in $\Omega$. Then the transpose of grad is an operator $\operatorname{grad}^*: V F \rightarrow S F$ such that
-\begin{equation}
-	\langle  \operatorname{grad} \phi,\boldsymbol{X}\rangle=\left\langle\phi, \operatorname{grad}^* \boldsymbol{X}\right\rangle,
-\end{equation}
-for all vector fields $\boldsymbol{X}$ and scalar fields $\phi$ vanishing at the boundary $\partial \Omega$. To identify this operator, integrate the identity
-\begin{equation}
-	\nabla \cdot(\phi \boldsymbol{X})= \nabla \phi\cdot \boldsymbol{X}+ \phi \nabla \cdot \boldsymbol{X},
-\end{equation}
-and apply the divergence theorem, to get
-\begin{equation}
-	\int_{\partial \Omega} \phi \boldsymbol{X} \cdot \boldsymbol{n}\ dS=\int_{\Omega} \nabla \cdot(\phi \boldsymbol{X})\ dV=\int_{\Omega} \nabla \phi\cdot \boldsymbol{X}\ dV +\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}\ dV .
-\end{equation}
-Since $\phi=0$ on $\partial \Omega$, we infer
-\begin{equation}
-	\langle \nabla \phi,\boldsymbol{X}\rangle+\langle\phi, \nabla \cdot \boldsymbol{X}\rangle=0,
-\end{equation}
-implying that the transpose of the gradient is the negative divergence, and the transpose of the divergence is the negative gradient:
-\begin{equation}\label{eqn:curl-grad}
-	\operatorname{grad}^*=- \text { div }, \quad \text { div }^*=-\operatorname{grad} .
-\end{equation}
-
-%The operator $\nabla^{\perp}$ defined by
-%\begin{equation}\label{eqn:grad-perp}
-%	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
-%	=\begin{bmatrix*}[r]
-%	\frac{\partial}{\partial y} \psi\\
-%	-\frac{\partial}{\partial x} \psi
-%	\end{bmatrix*}
-%\end{equation}
-%is called the grad-perp or the rotated gradient. The notation
-%\begin{equation}
-%	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
-%\end{equation}
-%can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
-
-%The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
-%\begin{equation}
-%\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
-%=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
-%=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
-%=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
-%=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
-%\end{equation}
-%yielding
-%\begin{equation}\label{eqn:curl-grad-perp}
-%\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
-%\end{equation}
-
-We now compute $\operatorname{curl}^*\operatorname{curl}$ product in 2D. 
-\begin{equation}
-	\operatorname{curl}
-	=
-	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y} \\
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*},
-\end{equation}
-and
-\begin{equation}
-	\operatorname{curl}^*
-	=
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y}&
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}.
-\end{equation}
-We now compute their product applied to stream function $\psi$
-\begin{equation}\label{eqn:curl-adj-curl}
-	\operatorname{curl}^*\operatorname{curl}\psi=
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y}&
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y} \\
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi
-	=\left(-\frac{\partial^2}{\partial y^2} -\frac{\partial^2 }{\partial x^2}\right) \psi =-\nabla^2 \psi.
-\end{equation}
-By taking into account commutativity of partial derivatives with respect to time and space we obtain
-\begin{equation}
-	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right).
-\end{equation}
-Moreover, since Laplacian is a scalar operator, it can commute with curl
-\begin{align}
-	\operatorname{curl}^*\nabla^2\operatorname{curl}\psi
-%	&=\begin{bmatrix*}[r]
-%	\frac{\partial}{\partial y}&
-%	-\frac{\partial}{\partial x}
-%	\end{bmatrix*}
-%	\begin{bmatrix}
-%	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
-%	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
-%	\end{bmatrix}
-%	\begin{bmatrix*}[r]
-%	-\frac{\partial}{\partial y} \\
-%	\frac{\partial}{\partial x}
-%	\end{bmatrix*}
-%	\psi\\
-%	&=\begin{bmatrix*}[r]
-%	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
-%	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
-%	\end{bmatrix*}
-%	\begin{bmatrix*}[r]
-%	-\frac{\partial}{\partial y} \\
-%	\frac{\partial}{\partial x}
-%	\end{bmatrix*}
-%	\psi\\
-%	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
-	=\operatorname{curl}^*\operatorname{curl}\nabla^2\psi
-	&=\nabla^4\psi.
-\end{align}
-
 
 %This establishes the first two connections in \cref{diag:div-curl-grad}.
 %Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
@@ -458,102 +334,203 @@ Moreover, since Laplacian is a scalar operator, it can commute with curl
 %where $\left.\boldsymbol{X}(s) \boldsymbol{Y}(s)\right|_{\partial \Omega}$ vanishes at the boundary $\partial\Omega$. 
 %Thus, symmetric matrix $\operatorname{curl}^*=\operatorname{curl}$ is obtained.
 
-We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and make them as external force function similarly to Duhammel Principle, which states that the homogeneous heat equation
+%The operator $\nabla^{\perp}$ defined by
+%\begin{equation}\label{eqn:grad-perp}
+%	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
+%	=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y} \psi\\
+%	-\frac{\partial}{\partial x} \psi
+%	\end{bmatrix*}
+%\end{equation}
+%is called the grad-perp or the rotated gradient. The notation
+%\begin{equation}
+%	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
+%\end{equation}
+%can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
+
+%The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
+%\begin{equation}
+%\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
+%=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
+%=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
+%=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
+%=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
+%\end{equation}
+%yielding
+%\begin{equation}\label{eqn:curl-grad-perp}
+%\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
+%\end{equation}
+
+We now modify momentum \cref{eqn:momentum-dimensional} in 2D in a similar manner as in \cref{sec:vorticity-streamfunction} with a help of differential operators. Define
 \begin{equation}
-	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
+	\operatorname{curl}
+	=
+	\begin{bmatrix*}[r]
+	\frac{\partial}{\partial y} \\
+	-\frac{\partial}{\partial x}
+	\end{bmatrix*}.
 \end{equation}
-can be represented as inhomogeneous problem
+Hence, by \cref{eqn:streamfunction} we have $\boldsymbol{v}=\operatorname{curl}\psi$. Also define
 \begin{equation}
-	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=0 & x \in \mathbb{R}^n\end{cases},
+	\operatorname{curl}^*
+	=
+	\begin{bmatrix*}[r]
+	-\frac{\partial}{\partial y}&
+	\frac{\partial}{\partial x}
+	\end{bmatrix*}.
 \end{equation}
-but instead of inictial conditions we will apply similar procedure to BCs.
-
-Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
-\begin{equation}
-	\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h,
+Let us now compute $\operatorname{curl}^*$ applied to velocity vector $\boldsymbol{v}$
+\begin{equation}\label{eqn:curl-adj-curl}
+	\operatorname{curl}^*\boldsymbol{v}=\operatorname{curl}^*\operatorname{curl}\psi=
+	\begin{bmatrix*}[r]
+	-\frac{\partial}{\partial y}&
+	\frac{\partial}{\partial x}
+	\end{bmatrix*}
+	\begin{bmatrix*}[r]
+	\frac{\partial}{\partial y} \\
+	-\frac{\partial}{\partial x}
+	\end{bmatrix*}
+	\psi
+	=\left(-\frac{\partial^2}{\partial y^2} -\frac{\partial^2 }{\partial x^2}\right) \psi =-\nabla^2 \psi.
 \end{equation}
-where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. Homogeneous equation $\nabla\cdot \boldsymbol{v}_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$, hence it is permissible to use all identities with curl, grad and div derived in this section.
+By taking into account commutativity of partial derivatives with respect to time and space we obtain
+\begin{equation}\label{eqn:transient-laplacian-psi}
+	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right).
+\end{equation}
+Applying $\operatorname{curl}^*$ to Laplacian of velocity leads to
+\begin{align}\begin{split}\label{eqn:biharmonic-psi}
+	\operatorname{curl}^*\nabla^2\boldsymbol{v}
+	&=\operatorname{curl}^*\nabla^2\operatorname{curl}\psi\\
+	&=\begin{bmatrix*}[r]
+	\frac{\partial}{\partial y}&
+	-\frac{\partial}{\partial x}
+	\end{bmatrix*}
+	\begin{bmatrix}
+	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
+	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
+	\end{bmatrix}
+	\begin{bmatrix*}[r]
+	-\frac{\partial}{\partial y} \\
+	\frac{\partial}{\partial x}
+	\end{bmatrix*}
+	\psi\\
+	&=\begin{bmatrix*}[r]
+	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
+	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
+	\end{bmatrix*}
+	\begin{bmatrix*}[r]
+	-\frac{\partial}{\partial y} \\
+	\frac{\partial}{\partial x}
+	\end{bmatrix*}
+	\psi\\
+	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
+%	=\operatorname{curl}^*\operatorname{curl}\nabla^2\psi
+	&=-\nabla^4\psi\\
+	&=-\nabla^2\left(\nabla^2\psi\right).
+\end{split}\end{align}
 
-Our goal isto obtain equation in terms of $\psi$ by modifying \cref{eqn:momentum-intro}. 
-The procedure lies in transforming this equation into vorticity transport \cref{eqn:transport-vorticity} with the help of vorticity stream function substitution \cref{eqn:vorticity-stream} and $\operatorname{curl}$, $\operatorname{curl}^*$ operators. 
-Firstly, we put transient, gradient and viscous terms to the left hand side, whereas non-linear terms are linearized and moved to the right. 
-Next, we substitute $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ and apply $\operatorname{curl}^*$ to rearranged momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}^*\operatorname{grad}=\operatorname{curl}\operatorname{grad}=0$). 
-Since time derivative and $\operatorname{curl}$ operators are commutative, $\operatorname{curl}^*=\operatorname{curl}$ and $\boldsymbol{\psi}=(0,0,\psi(t,x,y))$ for 2-dimensional case, we get 
-\begin{align}\label{eqn:streamfunction-transient}
-	\begin{bmatrix}{}
-  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-	\end{bmatrix}
-	\left(\frac{\partial}{\partial t}\right)
-	\begin{bmatrix}{}
-  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-	\end{bmatrix}
-	\begin{bmatrix}
-		0\\
-		0\\
-		\psi
-	\end{bmatrix}&=
-	\left(\frac{\partial}{\partial t}\right)
-	\begin{bmatrix}
-		-\frac{\partial^2}{\partial y^2}-\frac{\partial^2}{\partial z^2} & \frac{\partial^2}{\partial x\partial y} & \frac{\partial^2}{\partial x \partial z}\\
-		\frac{\partial ^2}{\partial x \partial y} & -\frac{\partial ^2}{\partial x^2}-\frac{\partial ^2}{\partial z^2} & \frac{\partial ^2}{\partial y \partial z}\\
-		\frac{\partial ^2}{\partial x \partial z} & -\frac{\partial ^2}{\partial y \partial z} & -\frac{\partial ^2}{\partial x^2}-\frac{\partial ^2}{\partial y^2}
-	\end{bmatrix}
-	\begin{bmatrix}
-		0\\
-		0\\
-		\psi
-	\end{bmatrix}
-	\notag\\
-	&=-\left(\frac{\partial}{\partial t}\right)\nabla^2\psi\implies
-	\notag\\
-	\implies \operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\boldsymbol{\psi}=-\left(\frac{\partial}{\partial t}\right)\nabla^2\psi.
-\end{align}
 
-Similarly to above, we obtain biharmonic operator from viscous terms by applying $\operatorname{curl}^*$ to the left and using $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ from the right of Laplacian.
-\begin{align}\label{eqn:streamfunction-viscous}
-	&\begin{bmatrix}{}
-  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-	\end{bmatrix}
-	\begin{bmatrix}
-		\nabla^2 & 0 & 0\\
-		0 & \nabla^2 & 0\\
-		0 & 0 & \nabla^2
-	\end{bmatrix}
-	\begin{bmatrix}{}
-  	0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-  	\frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-  	-\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-	\end{bmatrix}
-	\begin{bmatrix}
-		0\\
-		0\\
-		\psi
-	\end{bmatrix}=
-	\notag\\
-	&=\left(\underbrace{\frac{\partial^2}{\partial x \partial z}\nabla^2 + \frac{\partial ^2}{\partial y\partial z}\nabla^2}_{\text{become zero when applied to } \psi} - \frac{\partial ^2}{\partial x^2}\nabla^2 -\frac{\partial ^2}{\partial y^2}\nabla^2\right)\psi=-\nabla^4\psi\implies
-	\notag\\
-	&\implies \operatorname{curl}^*\nabla^2\operatorname{curl}\boldsymbol{\psi}=-\nabla^4\psi.
-\end{align}
 
-Hence, momentum \cref{eqn:momentum-intro} after the above steps results in 
+
+%We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and make them as external force function similarly to Duhammel Principle, which states that the homogeneous heat equation
+%\begin{equation}
+%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
+%\end{equation}
+%can be represented as inhomogeneous problem
+%\begin{equation}
+%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=0 & x \in \mathbb{R}^n\end{cases},
+%\end{equation}
+%but instead of inictial conditions we will apply similar procedure to BCs.
+
+Our goal is to obtain equation in terms of $\psi$ by modifying \cref{eqn:momentum-intro}. 
+	The procedure lies in transforming this equation into vorticity transport \cref{eqn:transport-vorticity} with the help of vorticity stream function substitution \cref{eqn:vorticity-stream} and $\operatorname{curl}$, $\operatorname{curl}^*$ operators. 
+	Firstly, we put transient, gradient and viscous terms to the left hand side, whereas non-linear terms are linearized and moved to the right. 
+	Next, we substitute $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ and apply $\operatorname{curl}^*$ to rearranged momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}^*\operatorname{grad}=\begin{bmatrix*}[r]-\frac{\partial}{\partial y}&\frac{\partial}{\partial x}	\end{bmatrix*}\begin{bmatrix*}[r] \frac{\partial}{\partial x}\\ \frac{\partial}{\partial y} \end{bmatrix*}=0$). 
+	For 2-dimensional case from \cref{eqn:biharmonic-psi,eqn:transient-laplacian-psi} , we get
+	\begin{align}
+		\operatorname{curl}^*\left( \frac{\partial \boldsymbol{v}}{\partial t} -\epsilon \nabla^2 \boldsymbol{v} \right)
+			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
+		\operatorname{curl}^*\left( \frac{\partial }{\partial t}\operatorname{curl}\psi -\epsilon \nabla^2 \operatorname{curl}\psi \right)
+			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
+		\left(\frac{\partial}{\partial t} -\epsilon \nabla^2\right)\left(-\nabla^2\psi\right)
+			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\label{eqn:biharmonic-heat-eqn}
+	\end{align}
+	
+%	Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
+%\begin{equation}
+%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
+%\end{equation}
+%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
+%	Homogeneous equation $\nabla\cdot \boldsymbol{v}_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$.
+	
+	Solving \cref{eqn:biharmonic-heat-eqn} for $\nabla^2\psi$ is equivalent to obtaining solution for Poisson \cref{eqn:vorticity-stream}. However, we can go through it and solve \cref{eqn:biharmonic-heat-eqn} in one step by obtaining $\psi$ from biharmonic equation
 	\begin{equation}
 	\label{eqn:biharmonic-streamfunction}
 		\boxed{
 		-\frac{\partial\nabla ^2 \psi}{\partial t} 
-		+\nabla ^4 \psi=\operatorname{RHS_{\boldsymbol{v},p}},
+		+\nabla ^4 \psi=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right),
 		}
 	\end{equation}
-where the right hand side contains boundary conditions and non-linear advective terms, which were initially stated in terms of $\boldsymbol{v},p$ and transformed through premultiplication by $\operatorname{curl}^*$. \cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions (\textbf{LOOKS LIKE ISSUE, BECAUSE WE HAVE TO SOLVE MOMENTUM WITH 0 BC FOR TRANSIENT AND LAPLACIAN TERMS}), whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
+where the right hand side contains boundary conditions (in numerical sense) and non-linear advective terms, which were initially stated in terms of $\boldsymbol{v},p$ and transformed through premultiplication by $\operatorname{curl}^*$. 
+
+Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
 \begin{equation}
-\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
+	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
+\end{equation}
+where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
+We will discuss the numerical details of this approach in \cref{sec:discrete-operators,sec:algorithm}.
+	Vector field $\boldsymbol{v}_h$ considers the solution of biharmonic \cref{eqn:biharmonic-streamfunction} for $\psi$ vanishing at the boundary $\partial \Omega$, which matches the numerical computations of the Laplacian operator for $\psi$ in \cref{sec:nullspace-method}.
+	\cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions, whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
+	\begin{equation}
+		\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
+	\end{equation}
+
+
+\subsection{Vector fields that vanish at the boundary}
+This subsection is a side note for \cref{sec:prelude-algorithm}, here we discuss some properties of differential operators in vector calculus. Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let all vector $\boldsymbol{X},\boldsymbol{Y}$ and scalar $\phi,\psi$ fields vanish at $\partial \Omega$. Denote by $SF$ the set of all scalar fields in $\Omega$, and by $VF$ the set of all vector fields in $\Omega$. In this subsection we need to have inner products in inner product space \cite{Gamtumur:2019}. Define inner products as
+\begin{equation}
+	\langle\phi, \psi\rangle=\int_{\Omega} \phi \psi\ dV,\quad
+	\langle \boldsymbol{X}, \boldsymbol{Y}\rangle=\int_{\Omega} \boldsymbol{X} \cdot \boldsymbol{Y}\ dV.
+\end{equation}
+Then the transpose of grad is an operator $\operatorname{grad}^*: V F \rightarrow S F$ such that
+\begin{equation}
+	\langle  \operatorname{grad} \phi,\boldsymbol{X}\rangle=\left\langle\phi, \operatorname{grad}^* \boldsymbol{X}\right\rangle,
+\end{equation}
+for all vector fields $\boldsymbol{X}$ and scalar fields $\phi$ vanishing at the boundary $\partial \Omega$. To identify this operator, integrate the identity
+\begin{equation}
+	\nabla \cdot(\phi \boldsymbol{X})= \nabla \phi\cdot \boldsymbol{X}+ \phi \nabla \cdot \boldsymbol{X},
+\end{equation}
+and apply the divergence theorem, to get
+\begin{equation}\label{eqn:div-grad}
+	\int_{\partial \Omega} \phi \boldsymbol{X} \cdot \boldsymbol{n}\ dS=\int_{\Omega} \nabla \cdot(\phi \boldsymbol{X})\ dV=\int_{\Omega} \nabla \phi\cdot \boldsymbol{X}\ dV +\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}\ dV.
+\end{equation}
+Since $\phi=0$ on $\partial \Omega$, left side of \cref{eqn:div-grad} vanishes. Hence, we infer
+\begin{equation}
+	0=\langle \nabla \phi,\boldsymbol{X}\rangle+\langle\phi, \nabla \cdot \boldsymbol{X}\rangle,
+\end{equation}
+implying that the transpose of the gradient is the negative divergence, and the transpose of the divergence is the negative gradient:
+\begin{equation}\label{eqn:curl-grad}
+	\operatorname{grad}^*=- \text { div }, \quad \text { div }^*=-\operatorname{grad} .
 \end{equation}
 
+To this end, recall the identity
+\begin{equation}
+\nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})=(\nabla \times \boldsymbol{X}) \cdot \boldsymbol{Y}-\boldsymbol{X} \cdot(\nabla \times \boldsymbol{Y}).
+\end{equation}
+Navier-Stokes \cref{eqs:NSE} are defined in the whole domain $\mathbb{R}^2$ in our problem and operators $\operatorname{curl},\operatorname{grad},\operatorname{div}$ are local. Therefore, we are allowed to consider velocity vector fields that vanish at the boundaries $\pm\infty$.
+Since we consider only those vector fields that go to zero at $\partial \Omega$, divergence theorem yields
+\begin{multline}
+	0
+	=	\int_{\partial \Omega}(\boldsymbol{X} \times \boldsymbol{Y}) \cdot \boldsymbol{n}\ dS
+	=\int_{\Omega} \nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})\ dV=\\
+	=\int_{\Omega} \left(\nabla \times \boldsymbol{X}\right)\cdot \boldsymbol{Y}\ dV
+		-\int_{\Omega} \boldsymbol{X} \cdot \left(\nabla \times \boldsymbol{Y}\right)\ dV
+	=\langle \operatorname{curl}\boldsymbol{X},\boldsymbol{Y}\rangle-\langle \boldsymbol{X},\operatorname{curl}^*\boldsymbol{Y}\rangle ,
+\end{multline}
+which identifies the curl as the transpose of itself:
+\begin{equation}\label{eqn:curl-curl-orth}
+\text { curl }^*=\text { curl. }	
+\end{equation}
 
 
 \pagebreak
@@ -1719,7 +1696,7 @@ The matrix $C$ has dimensions corresponding to unknown velocities times the numb
 %Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
 The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
 
-In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. 
+In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
 %\cref{eqn:vorticity-stream}
 %\cref{eqn:vorticity-stream}
 %\cref{eqn:vorticity-stream}
