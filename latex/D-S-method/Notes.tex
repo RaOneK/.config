@@ -162,7 +162,7 @@ The remainder of the present paper is organized as follows.
 	Formulation of the problem in terms of PDE and boundary conditions on a finite domain is performed in \cref{sec:problem-statement-dimentional,sec:nondimensionalization,sec:problem-statement-nondimensional}. 
 	In \cref{sec:domain-discretization,sec:discrete-operators}, we discretize the problem. 
 	Boundary conditions are discussed in \cref{sec:artificial-bc}. 
-	Symmetrization of the resulting system of linear equations is performed in \cref{sec:symmetrization}.
+	Symmetrization of the resulting system of linear equations is performed in \cref{sec:normalization}.
 	In \cref{sec:nullspace-method}, we discuss the discrete approach to the algorithm, which is finalized in \cref{sec:algorithm}. 
 	The method to obtain a particular solution is described in \cref{sec:particular-solution}.
 	A summary and discussion are given in \cref{sec:summary}.
@@ -201,6 +201,14 @@ The remainder of the present paper is organized as follows.
     \item Paraphrase \cite{Gamtumur:2019} in \cref{sec:algorithm} since most of it is copypaste.
     \item Boundary conditions for \cref{eqn:biharmonic-streamfunction} are zero or non-zero.
     \item Move discrete particular solution \cref{sec:particular-solution} to the front of algorithm \cref{sec:algorithm} and include relationship of particular solution to continuity equation with $\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h$ in prelude to the algorithm \cref{sec:prelude-algorithm}?
+    \item change number of unknowns to include right bdry
+    \item D = -G looks ok, but pressure bc arises
+    \item curl* and curl with bc extra, curl* looks done on paper, indeed a ghost vector arises
+    \item NLBC -> L -> C'C. Here curl* looks to be not equal to C'.
+    \item TOP ABC
+    \item change top boundary condition from SYMMETRY to slip no penetration
+    \item find bc for psi in poisson of stream function. 
+    \item Change motivation in symmetrization to normalization.
   \end{itemize}
 }
 
@@ -1057,47 +1065,84 @@ To provide a good visual example, consider $2 \times 2$ grid as in \cref{fig:D-e
 %\begin{equation}
 %  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
 %\end{equation}
-\begin{alignat*}{2}
-	V_{1,1}:\frac{u_{\frac{3}{2},1} - u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}} - v_{1,\frac{1}{2}}}{\Delta y_1}=0,\\
-	V_{2,1}: \frac{u_{\frac{5}{2},1} - u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}} - v_{2,\frac{1}{2}}}{\Delta y_1}=0,\\
-	V_{1,2}:\frac{u_{\frac{3}{2},2} - u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}} - v_{1,\frac{3}{2}}}{\Delta y_2}=0,\\
-	V_{2,2}:\frac{u_{\frac{5}{2},2} - u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}} - v_{2,\frac{3}{2}}}{\Delta y_2}=0.
-\end{alignat*}
+%\begin{alignat*}{2}
+%	V_{1,1}:\frac{u_{\frac{3}{2},1} - u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}} - v_{1,\frac{1}{2}}}{\Delta y_1}=0,\\
+%	V_{2,1}: \frac{u_{\frac{5}{2},1} - u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}} - v_{2,\frac{1}{2}}}{\Delta y_1}=0,\\
+%	V_{1,2}:\frac{u_{\frac{3}{2},2} - u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}} - v_{1,\frac{3}{2}}}{\Delta y_2}=0,\\
+%	V_{2,2}:\frac{u_{\frac{5}{2},2} - u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}} - v_{2,\frac{3}{2}}}{\Delta y_2}=0.
+%\end{alignat*}
+%
+%%\begin{enumerate}
+%%	\item[$V_{1,1}$]: $\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0$.
+%%	\item[$V_{1,2}$]: $\frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0$.
+%%	\item[$V_{2,1}$]: $\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0$.
+%%	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
+%%\end{enumerate}
+%
+%After applying the boundary conditions to the above equations, we obtain the system
+%\begin{equation}\label[system]{eqn:divergence-matrix}
+%	\begin{bmatrix}{}
+%		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
+%		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
+%		0		&0	&\frac{1}{\Delta x_1\Delta y_2}	&0\\
+%		0		&0	&0	&\frac{1}{\Delta x_2\Delta y_2}
+%	\end{bmatrix}
+%	\begin{bmatrix*}[r]{}
+%		1	&0	&1	&0\\
+%		-1	&0	&0	&1\\
+%		0	&1	&-1	&0\\
+%		0	&-1	&0	&-1
+%	\end{bmatrix*}
+%	\begin{bmatrix}{}
+%	u_{\frac{3}{2},1}	\Delta y_1\\
+%	u_{\frac{3}{2},2}	\Delta y_2\\
+%	v_{1,\frac{3}{2}}	\Delta x_1\\
+%	v_{2,\frac{3}{2}}	\Delta x_2\\
+%	\end{bmatrix}
+%	=
+%	\begin{bmatrix}{}
+%	\frac{u_{\frac{1}{2},1}}{\Delta x_1}		+	\frac{v_{1,\frac{1}{2}}}{\Delta y_1}\\
+%	-\frac{u_{\frac{5}{2},1}}{\Delta x_2}	+ 	\frac{v_{2,\frac{1}{2}}}{\Delta y_1}\\
+%	\frac{u_{\frac{1}{2},2}}{\Delta x_1} 	-	\frac{v_{1,\frac{5}{2}}}{\Delta y_2}\\
+%	-\frac{u_{\frac{5}{2},2}}{\Delta x_2}		-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}	
+%	\end{bmatrix},
+%\end{equation}
 
-%\begin{enumerate}
-%	\item[$V_{1,1}$]: $\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0$.
-%	\item[$V_{1,2}$]: $\frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0$.
-%	\item[$V_{2,1}$]: $\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0$.
-%	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
-%\end{enumerate}
-
-After applying the boundary conditions to the above equations, we obtain the system
+$$
+\begin{aligned}
+& V_{1,1}: \frac{u_{\frac{3}{2},1}-u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}}-v_{1,\frac{1}{2}}}{\Delta y_1}=0, \\
+& V_{1,2}: \frac{u_{\frac{5}{2},1}-u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}}-v_{2,\frac{1}{2}}}{\Delta y_1}=0, \\
+& V_{2,1}: \frac{u_{\frac{3}{2},2}-u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}}-v_{1,\frac{3}{2}}}{\Delta y_2}=0, \\
+& V_{2,2}: \frac{u_{\frac{5}{2},2}-u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}}-v_{2,\frac{3}{2}}}{\Delta y_2}=0 .
+\end{aligned}
+$$
+16
+After applying the boundary conditions (circled on the figure 7) to the above equations, we obtain the system
 \begin{equation}\label[system]{eqn:divergence-matrix}
-	\begin{bmatrix}{}
-		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
-		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
-		0		&0	&\frac{1}{\Delta x_1\Delta y_2}	&0\\
-		0		&0	&0	&\frac{1}{\Delta x_2\Delta y_2}
-	\end{bmatrix}
-	\begin{bmatrix*}[r]{}
-		1	&0	&1	&0\\
-		-1	&0	&0	&1\\
-		0	&1	&-1	&0\\
-		0	&-1	&0	&-1
-	\end{bmatrix*}
-	\begin{bmatrix}{}
-	u_{\frac{3}{2},1}	\Delta y_1\\
-	u_{\frac{3}{2},2}	\Delta y_2\\
-	v_{1,\frac{3}{2}}	\Delta x_1\\
-	v_{2,\frac{3}{2}}	\Delta x_2\\
-	\end{bmatrix}
-	=
-	\begin{bmatrix}{}
-	\frac{u_{\frac{1}{2},1}}{\Delta x_1}		+	\frac{v_{1,\frac{1}{2}}}{\Delta y_1}\\
-	-\frac{u_{\frac{5}{2},1}}{\Delta x_2}	+ 	\frac{v_{2,\frac{1}{2}}}{\Delta y_1}\\
-	\frac{u_{\frac{1}{2},2}}{\Delta x_1} 	-	\frac{v_{1,\frac{5}{2}}}{\Delta y_2}\\
-	-\frac{u_{\frac{5}{2},2}}{\Delta x_2}		-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}	
-	\end{bmatrix},
+\left[\begin{array}{cccc}
+\frac{1}{\Delta x_1 \Delta y_1} & 0 & 0 & 0 \\
+0 & \frac{1}{\Delta x_2 \Delta y_1} & 0 & 0 \\
+0 & 0 & \frac{1}{\Delta x_1 \Delta y_2} & 0 \\
+0 & 0 & 0 & \frac{1}{\Delta x_2 \Delta y_2}
+\end{array}\right]\left[\begin{array}{rrrrrr}
+1 & 0 & 0 & 0 & 1 & 0 \\
+-1 & 1 & 0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 & -1 & 0 \\
+0 & 0 & -1 & 1 & 0 & -1
+\end{array}\right]\left[\begin{array}{l}
+u_{\frac{3}{2},1} \Delta y_1 \\
+u_{\frac{4}{2},1} \Delta y_1 \\
+u_{\frac{3}{2},2} \Delta y_2 \\
+u_{\frac{5}{2},2} \Delta y_2 \\
+v_{1,\frac{3}{2}} \Delta x_1 \\
+v_{2,\frac{3}{2}} \Delta x_2
+\end{array}\right]=
+\begin{bmatrix}{}
+\frac{u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{1}{2}}}{\Delta y_1} \\
+\frac{v_{2,\frac{1}{2}}}{\Delta y_1} \\
+\frac{u_{\frac{1}{2},2}}{\Delta x_1}-\frac{v_{1,\frac{5}{2}}}{\Delta y_2} \\
+-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
+\end{bmatrix},
 \end{equation}
 which in general case is written as 
 $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
@@ -1115,11 +1160,11 @@ The velocity values known at the boundaries are shifted to the right-hand side a
 %% MIGHT ALSO NEED TO CHECK WITH THE PREMULTIPLICATION OF DELTA X
 \subsection{Gradient}\label{subsec:gradient} 
 
-The pressure gradients are computed at the same coordinates as the unknown velocities according to \cref{eqn:nse-matrix}. Below we will arrive to the conclusion that the discrete gradient and divergence operators satisfy
+The pressure gradients are computed at the same coordinates as the unknown velocities according to \cref{eqn:nse-matrix}. Below we will show that the discrete gradient and divergence operators satisfy
 \begin{equation}\label{eqn:g-dt}
   {G}=-{D^T}
 \end{equation}
-on staggered/MAC grids. 
+on staggered/MAC grids by construction. 
 
 As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on \cref{fig:G-example-2x2}):
 
@@ -1130,53 +1175,107 @@ As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G
   \caption{$2\times 2$ grid example for gradient operator.}\label{fig:G-example-2x2}
 \end{figure}
 
-\begin{alignat*}{2}
-	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},1} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
-	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},2} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left( P_{2,2}-P_{2,1} \right),\\
-	\left.\frac{\partial P}{\partial y}\right|_{1,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left(P_{2,1}-P_{1,1} \right),\\
-	\left.\frac{\partial P}{\partial y}\right|_{2,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left( P_{2,2}-P_{1,2} \right).
-\end{alignat*}
+%\begin{alignat*}{2}
+%	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},1} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left(P_{1,2}-P_{1,1}\right),\\
+%	\left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2},2} &=&	\frac{2}{{\Delta x_1 + \Delta x_2}}&\left( P_{2,2}-P_{2,1} \right),\\
+%	\left.\frac{\partial P}{\partial y}\right|_{1,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left(P_{2,1}-P_{1,1} \right),\\
+%	\left.\frac{\partial P}{\partial y}\right|_{2,\frac{3}{2}} &=&	\frac{2}{{\Delta y_1 + \Delta y_2}}&\left( P_{2,2}-P_{1,2} \right).
+%\end{alignat*}
+%
+%The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
+%\begin{equation}\label[system]{eqn:gradient-matrix}
+%	\begin{bmatrix}{}
+%		\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	\\
+%		0	&\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	\\
+%		0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}	&0	\\
+%		0	&0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}\\
+%	\end{bmatrix}
+%	\begin{bmatrix*}[r]
+%	-1 & 1 & 0 & 0 \\
+%	0 & 0 & -1 & 1 \\
+%	-1 & 0 & 1 & 0 \\
+%	0 & -1 & 0 & 1
+%	\end{bmatrix*}
+%	\begin{bmatrix}{}
+%  		P_{1,1} \\
+%	  	P_{2,1} \\
+%		P_{1,2} \\
+%		P_{2,2}
+%	\end{bmatrix}
+%	=
+%	\begin{bmatrix}{}
+%		0\\
+%		0\\
+%		0\\
+%		0
+%	\end{bmatrix},
+%\end{equation}
+%which can be rewritten as
+%\begin{equation}
+%	\hat{M}^{-1}{G} 
+%	\begin{bmatrix}{}
+%  		p_{1,1} \\
+%	  	p_{1,2} \\
+%	  	\vdots \\
+%	  	p_{MN}
+%	\end{bmatrix}
+%=\hat{bc}_p,
+%\end{equation}
+$$
+\begin{aligned}
+u_{1,2} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,1}-p_{1,1}\right), \\
+u_{1,3} & : \frac{1}{\Delta x_2}\left(p_{3,1}-p_{2,1}\right), \\
+u_{2,2} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,2}-p_{1,2}\right), \\
+u_{2,3} & : \frac{1}{\Delta x_2}\left(p_{3,2}-p_{2,2}\right), \\
+v_{2,1} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{1,2}-p_{1,1}\right), \\
+v_{2,2} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{2,2}-p_{2,1}\right) .
+\end{aligned}
+$$
 
 The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
 \begin{equation}\label[system]{eqn:gradient-matrix}
-	\begin{bmatrix}{}
-		\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	&0	\\
-		0	&\frac{2}{\Delta x_1 + \Delta x_2}	&0	&0	\\
-		0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}	&0	\\
-		0	&0	&0	&\frac{2}{\Delta y_1 + \Delta y_2}\\
-	\end{bmatrix}
-	\begin{bmatrix*}[r]
-	-1 & 1 & 0 & 0 \\
-	0 & 0 & -1 & 1 \\
-	-1 & 0 & 1 & 0 \\
-	0 & -1 & 0 & 1
-	\end{bmatrix*}
-	\begin{bmatrix}{}
-  		P_{1,1} \\
-	  	P_{2,1} \\
-		P_{1,2} \\
-		P_{2,2}
-	\end{bmatrix}
-	=
-	\begin{bmatrix}{}
-		0\\
-		0\\
-		0\\
-		0
-	\end{bmatrix},
+\left[\begin{array}{cccccc}
+\frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 & 0 & 0 & 0 \\
+0 & \frac{1}{\Delta x_2} & 0 & 0 & 0 & 0 \\
+0 & 0 & \frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 & 0 \\
+0 & 0 & 0 & \frac{1}{\Delta x_2} & 0 & 0 \\
+0 & 0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2} & 0 \\
+0 & 0 & 0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2}
+\end{array}\right]
+\left(\left[\begin{array}{rrrr}
+-1 & 1 & 0 & 0 \\
+0 & -1 & 0 & 0 \\
+0 & 0 & -1 & 1 \\
+0 & 0 & 0 & -1 \\
+-1 & 0 & 1 & 0 \\
+0 & -1 & 0 & 1
+\end{array}\right]
+\begin{bmatrix}{}
+  p_{1,1} \\
+  p_{2,1} \\
+  p_{1,2} \\
+  p_{2,2} 
+\end{bmatrix}
++\left[\begin{array}{c}
+0 \\
+p_{3,1} \\
+0 \\
+ p_{3,2} \\
+0 \\
+0
+\end{array}\right]\right),
 \end{equation}
-which can be rewritten as
-\begin{equation}
-	\hat{M}^{-1}{G} 
-	\begin{bmatrix}{}
-  		p_{1,1} \\
-	  	p_{1,2} \\
-	  	\vdots \\
-	  	p_{MN}
-	\end{bmatrix}
-=\hat{bc}_p,
-\end{equation}
-where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...p_{MN}]^T$ is the vector of pressure values at the cell centres. There are no pressure BC values in $\hat{bc}_p$ since no pressure gradient has to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
+which can be written in compact format as
+$$
+\nabla p+b c_p \Longleftrightarrow 
+\Delta_{x y} \left(\hat{G}\left[\begin{array}{c}
+p_{1,1} \\
+p_{1,2} \\
+\vdots \\
+p_{m n+(n-1) m}
+\end{array}\right]+b c_p\right)
+$$
+where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...,p_{m n+(n-1) m}]^T$ is the vector of pressure values at the cell centres. There are some pressure BC values in ${bc}_p$ since there is a pressure gradient that has to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
 
 
 
@@ -1546,7 +1645,7 @@ is used to express ghost velocity $v^{n}_{M+1,j-\frac{1}{2}}$, which we use to c
 
 
 \pagebreak
-\section{Symmetrization}\label{sec:symmetrization}
+\section{Normalization}\label{sec:normalization}
 
 The most effective methods for solving systems of linear equations often work optimally with symmetric matrices, making symmetry a desirable property. In order to achieve a symmetric system, we introduce two matrices - the diagonal scaling matrix $\hat{M}$ and the diagonal flux matrix $R$. These matrices are defined as
 \begin{align*}
