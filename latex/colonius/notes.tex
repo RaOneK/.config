@@ -1,0 +1,132 @@
+\documentclass{article}
+\LARGE
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+
+
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=cyan]{hyperref}
+\numberwithin{equation}{section}
+\usepackage{graphicx,wrapfig,lipsum,subfigure,sidecap,epsfig}
+\usepackage{caption}
+\usepackage{cancel}
+%\usepackage{graphicx,subfigure,sidecap,epsfig} % Rouslan's subfig package
+\usepackage{soul}
+%\usepackage[colorlinks=true,linkcolor=red]{hyperref}%
+\usepackage{mathtools}
+\usepackage{eqparbox}
+\usepackage{float} % \figure{}[H] IN PLACE VIEW
+\usepackage[capitalize]{cleveref} % smart references in one bracket
+\usepackage{hyperref}
+\usepackage{amssymb} % rightleft arrows
+\usepackage{cancel} % \cancelto{<value>}{expression} diagonally
+
+%
+% CREF rules
+% Equation(s)
+\crefformat{equation}{#2Eq. (#1)#3}
+\crefrangeformat{equation}{#3Eqs. (#1)#4 to #5(#2)#6}
+\crefmultiformat{equation}{#2Eqs. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{equation}{#3Eqs. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Plural eqn
+\crefformat{pluralequation}{#2Eqs.~(#1)#3}
+% System
+\crefformat{system}{#2Sys.~(#1)#3}
+\crefrangeformat{system}{#3Sys. (#1)#4 to #5(#2)#6}
+\crefmultiformat{system}{#2Sys. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{system}{#3Sys. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Boundary conditions
+\crefformat{bc}{#2BC (#1)#3}
+\crefrangeformat{bc}{#3BCs (#1)#4 to #5(#2)#6}
+\crefmultiformat{bc}{#2BCs (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{bc}{#3BCs ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Steps
+\crefformat{step}{#2Step (#1)#3}
+\crefrangeformat{step}{#3Steps (#1)#4 to #5(#2)#6}
+\crefmultiformat{step}{#2Steps (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{step}{#3Steps ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+%diagram
+\crefformat{diagram}{#2Diagram (#1)#3}
+\crefrangeformat{diagram}{#3Diagrams (#1)#4 to #5(#2)#6}
+\crefmultiformat{diagram}{#2Diagrams (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{diagram}{#3Diagrams ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+
+
+
+%\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
+\usepackage[nocompress]{cite}
+%\bibliographystyle{ieeetr} % trash style mess up the order in bib
+
+\graphicspath{{figures/}}
+
+
+%%% Todos
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+\marginpar{\textsc{\tiny \hspace{0.5cm} ToDo}} \framebox{\begin{minipage}[c]{0.95
+\textwidth} \small \tt #1 \end{minipage}}\vspace{5 mm}\par}
+
+
+
+\title{Discrete stream function method \\ for the incompressible Navier-Stokes equations \\with simple boundary conditions}
+\author{Rauan}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The goal of these notes is to present the detailed overview of discrete stream function method for solving incompressible Navier-Stokes equations with simple boundary conditions. We will discuss in detail the scheme formulation, transient and spatial discretizations. Special attention will be paid to the change of unknown variables. After studying these notes one must get a coherent picture of the application of discrete stream function method to incompressible flows with simple BCs and be able to implement the scheme in code.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:introduction}
+
+In these notes we will be concerned with the discretization of the Navier-Stokes equations describing the flow of an incompressible fluid:
+\begin{subequations}
+\label[pluralequation]{eqs:NSE}
+\begin{align}
+\label{eqn:momentum-intro}
+\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} &= -\nabla p + \epsilon \nabla \cdot \nabla \boldsymbol{v} \\
+\label{eqn:continuity}
+\nabla \cdot \boldsymbol{v} &= 0,
+\end{align}
+\end{subequations}
+which are written here in the non-dimensional form, i.e. $\epsilon \equiv Re^{-1}$ for brevity; also $\boldsymbol{v}$ is the velocity and $p$ pressure fields. The boundary conditions are assumed to be simple, i.e.  boundary conditions to be Dirichlet and Neumann for the normal and tangential velocities, respectively.
+	
+\section{Summary}\label{sec:summary}
+	
+
+\pagebreak
+\bibliographystyle{plain}
+\bibliography{Zotero.bib}
+
+
+\pagebreak
+\appendix
+\section{Appendix}
+
+\subsection{Transient schemes}
+
+\end{document}
