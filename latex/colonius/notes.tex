@@ -196,9 +196,9 @@ Next, we apply the classical projection (fractional-step) algorithm to \cref{{sy
 \end{enumerate}
 Here $A^{\dagger}_{j}$ denotes the $j$-th order Taylor series expansion of $A^{-1}$ with respect to $\Delta t$. The explicit terms on the right-hand side have been grouped into $r_1$ and $r_2$. Matrices $A$ and $Q^TA^\dagger_jQ$ are constructed to be symmetric positive definite operators in order to use the conjugate-gradient method to efficiently solve for the intermediate velocity and the Lagrange multipliers. All boundary conditions are set to uniform flow $(U_{\infty}, 0, 0)$ in the streamwise direction ($x$-direction) except for the outflow boundary where a convective boundary condition:
 \begin{equation}
-  \frac{\partial\boldsymbol{v}}{\partial t} + U_\infty \frac{\partial \boldsymbol{v}}{\partial x}=0
+  \frac{\partial\boldsymbol{v}}{\partial t} + U_\infty \frac{\partial \boldsymbol{v}}{\partial x}=0,
 \end{equation}
-
+where backward first order difference scheme has to be used (without ghost velocity components) to preserve the symmetric property of matrices $A$ and $Q^TA^\dagger_jQ$.
 
 
 
