@@ -120,6 +120,10 @@ In these notes we will be concerned with the discretization of the Navier-Stokes
 \end{align}
 \end{subequations}
 which are written here in the non-dimensional form, i.e. $\epsilon \equiv Re^{-1}$ for brevity; also $\boldsymbol{v}$ is the velocity and $p$ pressure fields. The boundary conditions are assumed to be simple, i.e.  Dirichlet and Neumann for the normal and tangential velocities, respectively. Spatial variable $x$ represents position in the flow field, $\mathscrsfs{D}$, and $\xi$ denotes coordinates along the immersed boundary, $\partial \mathscrsfs{B}$ having a velocity of $\boldsymbol{v}_B$. The geometry of the immersed object $\mathscrsfs{B}$ is considered to be of arbitrary shape. 
+
+
+\section{Discretization}\label{sec:discretization}
+
 \begin{figure}[H] % here - h, bottom - b, top - t
   \centering{
   \includegraphics[width=0.55\paperwidth]{fig1}
@@ -129,8 +133,6 @@ which are written here in the non-dimensional form, i.e. $\epsilon \equiv Re^{-1
 
 The above system is discretized with a standard staggered Cartesian grid finite volume method. The mesh and variable locations are depicted in \cref{fig:1}. The computational domain, $\mathscrsfs{D}$, is represented by a Cartesian grid, ($x_i, y_i$), and the immersed boundary, $\mathscrsfs{B}$ is described by a set of Lagrangian points, ($\xi_k,\eta_k$), which can be a function of time.
 
-\section{Discretization}\label{sec:discretization}
-
 We can rewrite \cref{eqs:NSE} using discrete differential operators as 
 \begin{equation}\label[pluralequation]{eqs:discrete-nse}
 \begin{aligned}
@@ -139,7 +141,9 @@ We can rewrite \cref{eqs:NSE} using discrete differential operators as
 	Eq & = \boldsymbol{v}_B^{n+1} &\text{ (no-slip condition),}
 	\end{aligned}
 \end{equation}
-where $q=(  u\Delta y,v\Delta x )$, $p$ and $f$ are the discrete velocity flux vector, pressure, and boundary force. Discretized non-linear advective term $\boldsymbol{v}\cdot\nabla \boldsymbol{v}$ is denoted as $\mathbb{N}(q)$, whereas operators $M$,$L$ are mass matrix and discrete Laplacian respectively. Operators $G$ and $D$ are discrete gradient and divergence matrices s.t. $D=-G^T$ and \cite{Chang:2002,Perot:1993}. The rest operators $E$ and $H$ are the interpolation and regularization operators resulting from the regularization of the Dirac delta functions in momentum and no-slip equations, which are constructed in such a way that $E=-H^T$. No-slip constraint is enforced by equating the boundary velocity, $\boldsymbol{v}_B$, to the velocity value along $\partial \mathscrsfs{B}$ interpolated by $E$ from the neighbouring cells. Regularization operator diffuses the singular boundary force along $\partial \mathscrsfs{B}$ to the Cartesian grid \cite{Colonius:2008}.  \cref{eqs:discrete-nse} are represented as system of linear equations
+where $q=(  u\Delta y,v\Delta x )$, $p$ and $f$ are the discrete velocity flux vector, pressure, and boundary force. Discretized non-linear advective term $\boldsymbol{v}\cdot\nabla \boldsymbol{v}$ is denoted as $\mathbf{N}(q)$, whereas operators $M$, $L$ are mass matrix and discrete Laplacian respectively. Operators $G$ and $D$ are discrete gradient and divergence matrices s.t. $D=-G^T$ and \cite{Chang:2002,Perot:1993}. The rest operators $E$ and $H$ are the interpolation and regularization operators resulting from the regularization of the Dirac delta functions in momentum and no-slip equations, which are constructed in such a way that $E=-H^T$. No-slip constraint is enforced by equating the boundary velocity, $\boldsymbol{v}_B$, to the velocity value along $\partial \mathscrsfs{B}$ interpolated by $E$ from the neighbouring cells. Regularization operator diffuses the singular boundary force along $\partial \mathscrsfs{B}$ to the Cartesian grid \cite{Colonius:2008}.  
+
+For computational convenience \cref{eqs:discrete-nse} can represented as system of linear equations
 \begin{equation}\label[system]{sys:discrete-penult-nse}
 	\begin{bmatrix}{}
   A & G & -H \\
@@ -186,9 +190,9 @@ where $A = \frac{1}{\Delta t} M - \frac{1}{2} L$ comes from implicit treatment u
 \end{pmatrix},
 \end{equation}
 making the above system of linear algebraic equations symmetric. 
-	Here, $\tilde{f}$ is the boundary force with an incorporated scaling factor. This form of the equation is known as the Karush–Kahn–Tucker (KKT) system where $(p,\tilde{f})^T$ appear as a set of Lagrange multiplier to satisfy a set of kinematic constraints. In the discretized set of equations, the constraints are purely numerical and it is no longer necessary to distinguish the pressure and boundary force. Instead we can define a combined variable $\lambda = (p,\tilde{f})^T$ for the Lagrange multipliers and group the submatrices as $Q = [G, E^T]$. Note that by removing the boundary force and no-slip condition along $\partial \mathscrsfs{B}$, the traditional discretization of the incompressible Navier–Stokes equations can be retrieved, i.e. being equivalent to applying divergence to momentum and obtaining pressure-Poisson.
+	Here, $\tilde{f}$ is the boundary force with an incorporated scaling factor. This form of the equation is known as the Karush-Kahn-Tucker (KKT) system where $(p,\tilde{f})^T$ appear as a set of Lagrange multiplier to satisfy a set of kinematic constraints. In the discretized set of equations, the constraints are purely numerical and it is no longer necessary to distinguish the pressure and boundary force. Instead we can define a combined variable $\lambda = (p,\tilde{f})^T$ for the Lagrange multipliers and group the submatrices as $Q = [G, E^T]$. Note that by removing the boundary force and no-slip condition along $\partial \mathscrsfs{B}$, the traditional discretization of the incompressible Navier-Stokes equations can be retrieved, i.e. being equivalent to applying divergence to momentum and obtaining pressure-Poisson.
 
-Next, we apply the classical projection (fractional-step) algorithm to \cref{{sys:discrete-nse}}, which can be expressed as an approximate $LU$ decomposition of the left-hand side matrix, to produce the immersed boundary projection method \cite{Colonius:2008}:
+Next, we apply the classical projection (fractional-step) algorithm to \cref{sys:discrete-nse}, which can be expressed as an approximate $LU$ decomposition of the left-hand side matrix, to produce the immersed boundary projection method \cite{Colonius:2008}:
 \begin{enumerate}
 	\item $A q^*=r_1, \quad$ (Solve for intermediate velocity).
 	\item $Q^{\mathrm{T}} A_j^{\dagger} Q \lambda=Q^{\mathrm{T}} q^*-r_2, \quad$ (Solve a modified Poisson equation).
@@ -200,6 +204,60 @@ Here $A^{\dagger}_{j}$ denotes the $j$-th order Taylor series expansion of $A^{-
 \end{equation}
 where backward first order difference scheme has to be used (without ghost velocity components) to preserve the symmetric property of matrices $A$ and $Q^TA^\dagger_jQ$.
 
+
+\section{Nullspace method}\label{sec:nullspace}
+
+
+The nullspace or discrete streamfunction approach \cite{Chang:2002,Hall:1980} is a method for solving the \cref{sys:discrete-nse} without the immersed boundary formulation. In this case, the flow only needs to satisfy the incompressibility constraint, which leads us to the use of discrete streamfunction, $s$, such that
+\begin{equation}
+	q = C\psi,
+\end{equation}
+where $C$ is a discrete curl operator. This operator is constructed with column vectors corresponding to the basis of the nullspace of divergence matrix $D$.
+
+In this section we will show how unknown pressure variables can be eliminated from \cref{sys:discrete-nse}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that matrix $D$ is wider than tall for grids larger than $2\times 2$, hence it defines a nullspace. The nullspace of matrix $D$ is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
+
+The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
+
+In the two-dimensional case, the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
+
+%A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{C-example-2x2}
+  }
+  \caption{$2\times 2$ example for $C$ matrix.}\label{fig:C-example-2x2}
+\end{figure}
+A more intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain (\cref{fig:C-example-2x2}). If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity. After applying the above procedure we obtain
+\begin{equation*}
+  C = 
+  \begin{bmatrix*}[r]
+  1		\\
+%  0		\\
+  -1	\\
+%  0		\\
+  -1	\\
+  1		\\
+\end{bmatrix*}.
+\end{equation*}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=0.75\textwidth]{Figures/D-C-DC}
+\end{center}
+\caption{Divergence and Curl matrices.}
+\label{fig:DC}
+\end{figure}
+The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. 
+	Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. 
+%Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
+The desired product then becomes $DC=0$. 
+	$D=-G^T$ (from \cref{sec:discretization}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. 
+	Premultiplying momentum equation in \cref{sys:discrete-nse} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
+
+In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. 
+	We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator with Dirichlet boundary conditions. 
+	Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
+	Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q=C\psi$ as discussed at the beginning of this section.
 
 
 	
