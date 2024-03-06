@@ -346,6 +346,21 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	  \caption{Advection discretization.}\label{fig:ADV}
 	\end{figure}	
 	\end{frame}
+	
+	\begin{frame}{Discretization (spatial advection)}
+	\begin{multline}\label{eqn:Taylor right} 
+		u_{i+1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i+1}-x_{i}\right)+\\
+		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i+1}-x_{i}\right)^2+O\left(\Delta x^3\right).,
+	\end{multline}
+	\begin{multline}\label{eqn:Taylor left} 
+		u_{i-1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i-1}-x_{i}\right)+\\
+		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i-1}-x_{i}\right)^2+O\left(\Delta x^3\right).
+	\end{multline}
+	Subtracting \eqref{eqn:Taylor left} from \eqref{eqn:Taylor right} simplifies to
+	\begin{equation*}
+		\left.\frac{\partial u}{\partial x}\right|_{i,j}=\frac{u_{i+1,j}-u_{i-1,j}}{x_{i+1}-x_{i-1}}+O(\Delta x), \text{becomes $O(\Delta x^2)$ for uniform grids.}
+	\end{equation*}
+	\end{frame}
 
 	
 	\begin{frame}{Discretization (divergence)}
@@ -431,7 +446,7 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\begin{frame}{Discretization (pressure gradient)}
 	Notice, that matrix of coefficients below is very similar to Divergence matrix, i.e. $G=-D^T$.
 	\begin{equation}\label{eqn:gradient-matrix}
-	diag\left[\begin{array}{cccccc}
+	\operatorname{diag}\left[\begin{array}{cccccc}
 	\frac{2}{\Delta x_1+\Delta x_2} \\
 	\frac{2}{\Delta x_1+\Delta x_2} \\
 	\frac{2}{\Delta y_1+\Delta y_2} \\
