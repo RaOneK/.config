@@ -93,7 +93,7 @@
 \institute{University of Alberta}
 \begin{document}
   \maketitle
-  \section{Introduction}
+%  \section{Introduction}
   \begin{frame}{Introduction}
 	\begin{figure}[H] % here - h, bottom - b, top - t
   	\centering{
@@ -103,7 +103,7 @@
 	\end{figure}
 	\end{frame}
   
-  	\begin{frame}{Introduction}
+  	\begin{frame}{Introduction (problem statement)}
   	Let $\boldsymbol{v}(x,y,t)=[u(x,y,t),v(x,y,t)]^T$ and $\boldsymbol{p}(x,y,t)$ be solutions to incompressible Navier-Stokes system of equations on 2D domain $\Omega$ with Dirichlet Boundary conditions on $\partial\Omega$.
 	\begin{subequations}
 	\label{eqs:NSE}
@@ -122,7 +122,7 @@
 	where $\rho$ - density, $\mu$ - dynamic viscosity.
   \end{frame}
   
-  \begin{frame}{Introduction}
+  \begin{frame}{Introduction (nondimensionalization)}
   
   After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
 \begin{equation*}
@@ -152,9 +152,9 @@ we obtain the non-dimensional momentum and continuity equations (dropped prime s
   
 
   
-	\section{Discretization}
+%	\section{Discretization.\\ Transient (time), spatial (space)}
 	
-	\begin{frame}{Discretization}
+	\begin{frame}{Discretization (discrete operators)}
 	Denote discrete spatial operators as:
 \begin{enumerate}
 	\item[$\hat{L}$]:  Laplacian.
@@ -230,8 +230,8 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 		\end{pmatrix}
 		+
 		\begin{pmatrix}
-			\hat{bc}_1\\
-			\hat{bc}_2
+			\hat{bc}_1^n\\
+			\hat{bc}_2^n
 		\end{pmatrix},
 	\end{multline}	
 	
@@ -253,8 +253,8 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\end{pmatrix}
 	+
 	\begin{pmatrix}
-		\hat{bc}_1\\
-		\hat{bc}_2
+		\hat{bc}_1^n\\
+		\hat{bc}_2^n
 	\end{pmatrix}}.
 	\end{equation}
 	\end{frame}
@@ -351,7 +351,7 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\begin{frame}{Discretization (divergence)}
 	\begin{equation*}
 	\begin{gathered}
-	\hat{D}\boldsymbol{v}=\hat{bc}_2,\\
+	\hat{D}\boldsymbol{v}=\hat{bc}_2^n,\\
 	\left[ 
 	\begin{array}{ll}
 	\hat{D}_x & \hat{D}_y 	
@@ -360,15 +360,15 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	u\\
 	v
 	\end{array}
-	\right]=\hat{bc}_2
+	\right]=\hat{bc}_2^n
 	, \\
-	\frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=\hat{bc}_2, \\
+	\frac{1}{\Delta x} D_x u+\frac{1}{\Delta y} D_y v=\hat{bc}_2^n, \\
 	\frac{1}{\Delta _{xy}}\left[\begin{array}{ll}
 	D_x & D_y
 	\end{array}\right]\left[\begin{array}{l}
 	u \Delta y \\
 	v \Delta x
-	\end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2,
+	\end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2^n,
 	\end{gathered}
 	\end{equation*}	
 	where 
@@ -384,6 +384,7 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 			0		&0	&\dots	&\frac{1}{\Delta x_M\Delta y_N}
 		\end{bmatrix}.
 	\end{equation}
+	
 	\end{frame}
 	
 	\begin{frame}{Discretization (divergence)}
@@ -461,13 +462,59 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	
 	
 
+%	\section{Normalization.\\Making system symmetric.}
+	
+	\begin{frame}{Normalization. Symmetrization.}
+	\begin{align*}
+	R &\equiv\left[\begin{array}{cc}
+	\Delta y_j & 0 \\
+	0 & \Delta x_i
+	\end{array}\right], \\
+	\quad \hat{M} & \equiv\left[\begin{array}{cc}
+	\frac{1}{2}\left(\Delta x_i+\Delta x_{i-1}\right) & 0 \\
+	0 & \frac{1}{2}\left(\Delta y_j+\Delta y_{j-1}\right)
+	\end{array}\right].
+	\end{align*}
+	
+	Let $q=R\boldsymbol{v}$, then $\boldsymbol{v}=R^{-1}q$. 
+	
+	Left multiplication by $\hat{M}$ of momentum equation changes $\hat{M}^{-1}G$ to $G$.
+	
+	Left multiplication by $\hat{M}$ rescales $\hat{L}$ in one direction, right multiplication by $R^{-1}$ in another. We obtain $\hat{M}\hat{L}R^{-1}$ symmetric, $\hat{M}IR^{-1}$ diagonal, hence, $\hat{M}\hat{A}R^{-1}$ symmetric.
+	\end{frame}
+	
+	\begin{frame}{Normalization. Symmetrization.}
+	Resultant system finally becomes symmetric
+		\begin{equation}\label{eqn:NSE-dsm-bl-system-nonint}
+		\boxed{\begin{bmatrix}
+			{A} & {G} \\
+			{D} & 0
+		\end{bmatrix}
+		\begin{pmatrix}
+			q^{n+1} \\ 
+			p^{n+1}
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			{r}^n \\
+			0
+		\end{pmatrix}
+		+
+		\begin{pmatrix}
+			{bc}_1^n\\
+			0
+		\end{pmatrix}.}
+		\end{equation}
+		We will consider $\hat{bc}_2^n=0$ for Lid Driven Cavity problem. 
+	\end{frame}
 
+	
 
 
 	
 	
-	\section{Motivation}
-	\begin{frame}{Motivation}
+%	\section{Motivation.}
+	\begin{frame}{Motivation. Is it possible to remove the need to solve for pressure in our the system?}
 	Stream function $\psi(x,y,t):\boldsymbol{v}=\nabla \times \psi$ of an incompressible two-dimensional flow:
 	\begin{equation}
 	\label{eqn:streamfunction}
@@ -480,16 +527,16 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\end{equation}
 	\end{frame}
   
-  \begin{frame}{Motivation}
+  \begin{frame}{Motivation. Including Poisson equation directly into our system.}
   \eqref{eqn:streamfunction} into \eqref{eqn:vorticity} leads to
 	\begin{equation}
 			\label{eqn:vorticity-stream}
 			-\nabla ^2 \psi = \omega.
 		\end{equation}
-  Apply $(\nabla \times)$ to momentum. Since
+  Apply $(\nabla \times)$ to momentum. Since curl of gradient is zero, i.e.:
 	\begin{equation}
-	\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right) - 
-	\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
+	-\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right)  
+	+\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
 	\end{equation}
 	we get
   \begin{equation}
@@ -509,7 +556,124 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 		}
 	\end{equation}
 	\end{frame}
+	
+	
+	
+%	\section{Nullspace approach. \\}
+	
+	\begin{frame}{Nullspace approach (the main idea). Finding the analogue of $(\nabla \times)$ to eliminate pressure from the system.}
+	Recall, that we previously found out that $G=-D^T$ by construction. Matrix $D$ is wider than tall for systems greater than $2\times 2$. (Number of cells is always less than the number of unknown velocity components.)
+	
+	Let matrix $C$ be nullspace of $D$, i.e. $DC\equiv0$. 
+	Then $0\equiv-(DC)^T=-C^TD^T=C^TG$. Hence, $C^T$ is equivalent to $\nabla\times$. 
+	\end{frame}
+	
+	\begin{frame}{Nullspace approach (computing matrix C)}
+	\begin{equation*}
+		\vcenter{\hbox{\includegraphics[width=0.60\paperwidth]{C-example-2x2}}}\quad
+		C = 
+  \left[\begin{array}{c}
+  1		\\
+  -1	\\
+  -1	\\
+  1		\\
+\end{array}\right]
+	\end{equation*}
+	\end{frame}
+	
 
+	
+%	\section{Algorithm}
+	
+	\begin{frame}{Algorithm}
+		The motivation is to multiply the system 
+		\begin{equation}\label{eqn:NSE-dsm-bl-system-nonint}
+		{\begin{bmatrix}
+			{A} & {G} \\
+			{D} & 0
+		\end{bmatrix}
+		\begin{pmatrix}
+			q^{n+1} \\ 
+			p^{n+1}
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			{r}^n \\
+			0
+		\end{pmatrix}
+		+
+		\begin{pmatrix}
+			{bc}_1^n\\
+			0
+		\end{pmatrix}}
+		\end{equation}
+	by $C^T$ in order to eliminate the pressure. If we are to keep system symmetric, then need to make substitution $q=C\psi$, which results in  
+		\begin{equation}\label{eqn:NSE-dsm-bl-system-nonint}
+		{\begin{bmatrix}
+			{C^TA} & {C^TG} \\
+			{D} & 0
+		\end{bmatrix}
+		\begin{pmatrix}
+			C\psi^{n+1} \\ 
+			p^{n+1}
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			C^T{r}^n \\
+			0
+		\end{pmatrix}
+		+
+		\begin{pmatrix}
+			C^T{bc}_1^n\\
+			0
+		\end{pmatrix}}.
+		\end{equation}
+		Automatically satisfies continuity $DC\psi\equiv 0$.
+		
+	\end{frame}
+	
+	\begin{frame}{Algorithm}
+	\begin{enumerate}
+		\item Construct $\operatorname{curl}$ matrix $C$, such that $DC=0$ and $q_h=C\psi$.
+		\item Eliminate the pressure terms in the momentum equation.
+		\begin{align}
+			Aq^{n+1}&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
+			C^TAq^{n+1}&=C^Tbc_1, &\text{ use $q^{n+1}=C\psi^{n+1}$,}\notag\\
+			C^TAC\psi^{n+1}&=C^Tbc_1\label{eqn:resulting-system}.&\text{solve symmetric system for $\psi^{n+1}$.}
+		\end{align}
+		\item Obtain $q^{n+1}=C\psi^{n+1}$. Update $bc_1$ if needed, recompute RHS. 
+		\item Repeat steps (2)-(3) for $n+2$
+	\end{enumerate}
+	\end{frame}
+	
+%	\section{Results for Lid Driven Cavity Flow}
+	
+	\begin{frame}{Results for Lid Driven Cavity Flow}
+	\begin{figure}
+	\centering
+	  \includegraphics[height=0.395\textwidth]{fig2}
+	  \includegraphics[height=0.395\textwidth]{fig3}\caption{Velocities perpendicular to the the middle axises and streamfunction contour at Re=1600.}
+	\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Future work}
+	
+	We considered $\hat{bc}_2^n=0$ for Lid Driven Cavity problem in continuity equation.
+	
+	Other types of BCs. Multi-domain approach.
+	\begin{figure}[H] % here - h, bottom - b, top - t
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{fig4}
+  }
+  \caption{}\label{fig:}
+\end{figure}
 
-  \section{Algorithm}
+		
+	\end{frame}
+	
+	
+	
+	
+	
+	
 \end{document}
