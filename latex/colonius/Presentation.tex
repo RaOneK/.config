@@ -147,7 +147,28 @@ we obtain the non-dimensional momentum and continuity equations (dropped prime s
   \end{frame}
 
 
-  
+  \begin{frame}{Introduction (Projection and other schemes require pressure)}
+  Let $\tilde{\boldsymbol{v}}$ be intermediate value that satisfies
+	\begin{align}
+	\label{eqn:predictor}
+	\text{Predictor}&: & \frac{\widetilde{\boldsymbol{v}}-\boldsymbol{v}^{n}}{\Delta t} + \boldsymbol{v}^{n} \cdot \nabla \boldsymbol{v}^{*} &= \nu \nabla \cdot \nabla \boldsymbol{v}^{*}, \\
+	\label{eqn:corrector}
+	\text{Corrector}&: & 
+	\begin{split}
+		\Delta p^{n+1}=\frac{1}{\Delta t}\nabla\cdot\boldsymbol{\tilde v},\\
+		\frac{\boldsymbol{v}^{n+1}-\widetilde{\boldsymbol{v}}}{\Delta t} &= -\nabla p^{*}.
+	\end{split}
+	\end{align}
+  	
+  \end{frame}
+  \begin{frame}{Discretization (grid)}
+		\begin{figure}[H] % here, bottom, top
+		\centering{
+		\includegraphics[width=0.75\paperwidth]{fig1}
+		}
+		\caption{Domain discretization as per Harlow and Welch (1965)}\label{bl-domain-discretization}
+		\end{figure}
+	\end{frame}
   
   
 
@@ -261,14 +282,7 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 
 	
 	
-	\begin{frame}{Discretization (spatial)}
-		\begin{figure}[H] % here, bottom, top
-		\centering{
-		\includegraphics[width=0.75\paperwidth]{fig1}
-		}
-		\caption{Domain discretization as per Harlow and Welch (1965)}\label{bl-domain-discretization}
-		\end{figure}
-	\end{frame}
+	
 	
 	\begin{frame}{Discretization (spatial Laplacian)}
 	
@@ -324,6 +338,21 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\end{frame}
 	
 	\begin{frame}{Discretization (spatial advection)}
+	\begin{multline}\label{eqn:Taylor right} 
+		u_{i+1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i+1}-x_{i}\right)+\\
+		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i+1}-x_{i}\right)^2+O\left(\Delta x^3\right).,
+	\end{multline}
+	\begin{multline}\label{eqn:Taylor left} 
+		u_{i-1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i-1}-x_{i}\right)+\\
+		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i-1}-x_{i}\right)^2+O\left(\Delta x^3\right).
+	\end{multline}
+	Subtracting \eqref{eqn:Taylor left} from \eqref{eqn:Taylor right} simplifies to
+	\begin{equation*}
+		\left.\frac{\partial u}{\partial x}\right|_{i,j}=\frac{u_{i+1,j}-u_{i-1,j}}{x_{i+1}-x_{i-1}}+O(\Delta x), \text{becomes $O(\Delta x^2)$ for uniform grids.}
+	\end{equation*}
+	\end{frame}
+	
+	\begin{frame}{Discretization (spatial advection)}
 	Advection in conservative form allows to compute derivatives with simple second order central difference formula $\left.\frac{\partial u}{\partial x}\right|_{i}=\frac{u_{i+1}-u_{i-1}}{x_{i+1}-x_{i-1}}$:
 		\begin{align}\label{eqn:advection-conservative}
 		u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
@@ -347,20 +376,7 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\end{figure}	
 	\end{frame}
 	
-	\begin{frame}{Discretization (spatial advection)}
-	\begin{multline}\label{eqn:Taylor right} 
-		u_{i+1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i+1}-x_{i}\right)+\\
-		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i+1}-x_{i}\right)^2+O\left(\Delta x^3\right).,
-	\end{multline}
-	\begin{multline}\label{eqn:Taylor left} 
-		u_{i-1,j}=u_{i,j}+\left.\frac{\partial u}{\partial x}\right|_{i,j}\left(x_{i-1}-x_{i}\right)+\\
-		+\frac{1}{2}\left.\frac{\partial^2 u}{\partial x^2}\right|_{i,j}\left(x_{i-1}-x_{i}\right)^2+O\left(\Delta x^3\right).
-	\end{multline}
-	Subtracting \eqref{eqn:Taylor left} from \eqref{eqn:Taylor right} simplifies to
-	\begin{equation*}
-		\left.\frac{\partial u}{\partial x}\right|_{i,j}=\frac{u_{i+1,j}-u_{i-1,j}}{x_{i+1}-x_{i-1}}+O(\Delta x), \text{becomes $O(\Delta x^2)$ for uniform grids.}
-	\end{equation*}
-	\end{frame}
+	
 
 	
 	\begin{frame}{Discretization (divergence)}
@@ -466,11 +482,9 @@ Then initial system \eqref{eqs:NSE-nondim} can be rewritten using these operator
 	\end{bmatrix}
 	+\left[\begin{array}{c}
 	0 \\
-	p_{3,1} \\
 	0 \\
-	 p_{3,2} \\
 	0 \\
-	0
+	0 
 	\end{array}\right]\right).
 	\end{equation}
 	\end{frame}
