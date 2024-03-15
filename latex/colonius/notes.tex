@@ -77,6 +77,11 @@
 \crefrangeformat{diagram}{#3Diagrams (#1)#4 to #5(#2)#6}
 \crefmultiformat{diagram}{#2Diagrams (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
 \crefrangemultiformat{diagram}{#3Diagrams ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+%algorithm
+\crefformat{algorithm}{#2Algorithm (#1)#3}
+\crefrangeformat{algorithm}{#3Algorithms (#1)#4 to #5(#2)#6}
+\crefmultiformat{algorithm}{#2Algorithms (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{algorithm}{#3Algorithms ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
 
 
 
@@ -192,8 +197,8 @@ where $A = \frac{1}{\Delta t} M - \frac{1}{2} L$ comes from implicit treatment u
 making the above system of linear algebraic equations symmetric. 
 	Here, $\tilde{f}$ is the boundary force with an incorporated scaling factor. This form of the equation is known as the Karush-Kahn-Tucker (KKT) system where $(p,\tilde{f})^T$ appear as a set of Lagrange multiplier to satisfy a set of kinematic constraints. In the discretized set of equations, the constraints are purely numerical and it is no longer necessary to distinguish the pressure and boundary force. Instead we can define a combined variable $\lambda = (p,\tilde{f})^T$ for the Lagrange multipliers and group the submatrices as $Q = [G, E^T]$. Note that by removing the boundary force and no-slip condition along $\partial \mathscrsfs{B}$, the traditional discretization of the incompressible Navier-Stokes equations can be retrieved, i.e. being equivalent to applying divergence to momentum and obtaining pressure-Poisson.
 
-Next, we apply the classical projection (fractional-step) algorithm to \cref{sys:discrete-nse}, which can be expressed as an approximate $LU$ decomposition of the left-hand side matrix, to produce the immersed boundary projection method \cite{Colonius:2008}:
-\begin{enumerate}
+Next, we apply the classical projection (fractional-step) algorithm to \cref{sys:discrete-nse}, which can be expressed as an approximate $LU$ decomposition of the left-hand side matrix, to produce the algorithm of immersed boundary projection method \cite{Colonius:2008}:
+\begin{enumerate}\label[algorithm]{algorithm:projection}
 	\item $A q^*=r_1, \quad$ (Solve for intermediate velocity).
 	\item $Q^{\mathrm{T}} A_j^{\dagger} Q \lambda=Q^{\mathrm{T}} q^*-r_2, \quad$ (Solve a modified Poisson equation).
 	\item $q^{n+1}=q^*-A_j^{\dagger} Q \lambda, \quad$(Projection step).
@@ -204,11 +209,15 @@ Here $A^{\dagger}_{j}$ denotes the $j$-th order Taylor series expansion of $A^{-
 \end{equation}
 where backward first order difference scheme has to be used (without ghost velocity components) to preserve the symmetric property of matrices $A$ and $Q^TA^\dagger_jQ$.
 
+\section{Interpolation and regularization operators}
+
+In Colonius 2007 \cite{Colonius:2007}.
+
 
 \section{Nullspace method}\label{sec:nullspace}
 
 
-The nullspace or discrete streamfunction approach \cite{Chang:2002,Hall:1980} is a method for solving the \cref{sys:discrete-nse} without the immersed boundary formulation. In this case, the flow only needs to satisfy the incompressibility constraint, which leads us to the use of discrete streamfunction, $s$, such that
+The nullspace or discrete streamfunction approach \cite{Chang:2002,Hall:1980} is a method for solving \cref{sys:discrete-nse} without the immersed boundary formulation. In this case, the flow only needs to satisfy the incompressibility constraint, which leads us to the use of discrete streamfunction, $s$, such that
 \begin{equation}
 	q = C\psi,
 \end{equation}
@@ -258,6 +267,136 @@ In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetr
 	We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator with Dirichlet boundary conditions. 
 	Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
 	Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q=C\psi$ as discussed at the beginning of this section.
+	
+	\cref{sys:discrete-nse} 
+\begin{equation}
+\left[\begin{array}{cc}
+C^{\mathrm{T}} A C & C^{\mathrm{T}} E^{\mathrm{T}} \\
+E C & 0
+\end{array}\right]\left(\begin{array}{c}
+\psi^{n+1} \\
+\tilde{f}
+\end{array}\right)=\left(\begin{array}{c}
+C^{\mathrm{T}} r_1^n \\
+\boldsymbol{v}_{\mathrm{B}}^{n+1}
+\end{array}\right) .
+\end{equation}
+
+The left-hand side matrix is symmetric but in general indefinite, making a direct solution less efficient. The projection (fractional step) approach mimics Eqs. (9)-(11), and we obtain
+\begin{equation}
+  \begin{aligned}
+& C^{\mathrm{T}} A C \psi^*=C^{\mathrm{T}} r_1^n, \\
+& E C\left(C^{\mathrm{T}} A C\right)^{-1}(E C)^{\mathrm{T}} \tilde{f}=E C s^*-\boldsymbol{v}_{\mathrm{B}}^{n+1}, \\
+& \psi^{n+1}=\psi^*-\left(C^{\mathrm{T}} A C\right)^{-1}(E C)^{\mathrm{T}} \tilde{f},
+\end{aligned}
+\end{equation}
+
+	
+\section{Fast method for uniform grid and simple boundary conditions}\label{sec:fast-method}
+
+In this section we will show that a similar system to \cref{eqs:discrete-nse} can be solved using fast sine transforms, this method is, however, restricted to uniform grids. Mass matrix $M$ in this case becomes diagonal identity matrix. It is assumed that the values of the velocity are known in the region outside the computational domain, thus, we will apply simple Dirichlet BC's for normal and Neumann to tangential velocity components at the boundaries. Let us operate with $C^T$ on momentum equation from \cref{{eqs:discrete-nse}} in order to eliminate the pressure. We will obtain 
+\begin{equation}
+	\frac{\partial \gamma}{\partial t} + C^TE^T\tilde{f} = -\frac{1}{\operatorname{Re} \Delta ^2} C^TC\gamma + C^T \mathbf{N}(q)+ bc_{\gamma},
+\end{equation}
+where $\gamma=C^Tq$ is circulation, $\Delta$ stands for constant spacing in uniform grid and we used the fact that $Lq=-\frac{1}{\operatorname{Re}\Delta ^2} CC^Tq=-\frac{1}{\operatorname{Re}\Delta ^2} C\gamma$, since $Dq=0$. The last part is equivalent to $\nabla^2\boldsymbol{v}=\nabla(\nabla\cdot\boldsymbol{v})-\nabla\times\nabla\times\boldsymbol{v}=-\nabla\times\nabla\times\boldsymbol{v}$ taking into account continuity equation $\nabla\cdot\boldsymbol{v}=0$)
+
+BC's we apply result in zero Dirichlet BC's for $\gamma$. The discrete Laplacian is diagonalized by a sine transform that is computed in $O(N \log_2 N)$ operations (here $N$ stands for the number of unknown $\gamma$ components). The sine transform pair is denoted as 
+\begin{equation}
+  \hat\gamma = S\gamma\leftrightarrow\gamma=S\hat\gamma,
+\end{equation} 
+where the operator $S$ is equal to inverse of itself due to the possible normalization process. For convenience the combination of fast sine transform with Laplace operator we denote 
+\begin{equation}
+  \Lambda = SC^TCS,
+\end{equation}
+which is a diagonal matrix with eigenvalues of $C^TC$ with integer coefficients. 
+
+Using the same time marching procedure as in \cref{sec:discretization} we obtain 
+%\begin{equation}
+\begin{align}
+& S\left(I+\frac{\beta \Delta t}{2} \Lambda\right) S \gamma^*=\left(I-\frac{\beta \Delta t}{2} C^{\mathrm{T}} C\right) \gamma^n +\frac{\Delta t}{2}\left(3 C^{\mathrm{T}} \mathbf{N}\left(q^n\right)-C^{\mathrm{T}} \mathbf{N}\left(q^{n-1}\right)\right)  +\Delta t b c_\gamma, \\
+& E C\left(S \Lambda^{-1}\left(I+\frac{\beta \Delta t}{2} \Lambda\right)^{-1} S\right)(E C)^{\mathrm{T}} \tilde{f}=E C S \Lambda^{-1} S \gamma^*-\boldsymbol{v}_{\mathrm{B}}^{n+1},\label{eqn:modified-poisson} \\
+& \gamma^{n+1}=\gamma^*-S\left(I+\frac{\beta \Delta t}{2} \Lambda\right)^{-1} S(E C)^{\mathrm{T}} \bar{f}.
+\end{align}
+%\end{equation}
+We can obtain vector $\boldsymbol{v}$ for all previous time steps using
+\begin{equation}
+	q^n=C\psi^n + bc_q, \psi^n=S\Lambda^{-1}S\gamma^n + bc_\psi.
+\end{equation}
+
+In the new system of equations only one linear system (\cref{eqn:modified-poisson}) needs to be solved. This linear system has positive definite left-hand side operator. This system requires 
+\begin{equation}
+	O(N(2\log_2 N + N_{bw} + 4d))
+\end{equation}
+against
+\begin{equation}
+	O(N(N_{bw} + (2d+1)j + 4d))
+\end{equation}
+in step 2 of \cref{algorithm:projection}, where $N_{bw}$ is the bandwidth of the body-force regularization or interpolation operators, $d$ is the dimension of the problem (2 or 3 dimensions) and $j$ is the order of approximate Taylor-series inverse of matrix $A$. The speedup for $128\times128$ grid  in 2D is about 10, and 30 for $128\times128\times128$ in 3D. It should be mentioned that there is no iterative error in solving the equation, only round-off error remains. In the case of stationery body the Poisson-alike equation for body forces can be efficiently solved using Cholesky decomposition. 
+
+In conclusion of this section it is required to say that this fast method can only be applied to simple boundary conditions, which take only a small portion of all possible scenarios. Nevertheless, in the next section we will discuss the workaround for implementing boundary conditions with a small trade-off.
+
+\section{Multi-domain approach}\label{sec:multi-domain-approach}
+
+The fast sine transform method relies on simple boundary conditions (Dirichlet for normal and Neumann for tangential velocities at the boundary). Stating this for the small domain will result in two sources of errors
+\begin{enumerate}
+  \item Extensive, algebraically decaying potential flow induced by the body.
+  \item Vorticity may advect or diffuse through the boundary. 
+\end{enumerate}
+These errors are minimized by using a large non-uniform domain as well as using convective boundary conditions discussed in \cref{sec:discretization} which are incompatible with fast sine method in \cref{sec:fast-method}. In this section we present the way of keeping these error minimizing strategies as well as applying fast sine method together. 
+
+The basic idea is to consider nested domains as in \cref{fig:multi-domain}. The circulation $\gamma$ on the inner mesh is interpolated onto the coarser (larger) mesh couple of times, then the Poisson equation is solved on the outer domain. This solution is then interpolated along the boundary of the inner mesh and the Poisson equation is solved with the "corrected" boundary values on smaller meshes.  This technique is used recursively a number of times. The domain coarsening factor is 2 at each grid level. 
+
+\begin{figure}[H] % here - h, bottom - b, top - t
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{fig4}
+  }
+  \caption{Three layer multi-domain.}\label{fig:multi-domain}
+\end{figure}
+
+
+The method is described as follows. Let us defined the domain of each grid as $\mathscrsfs{D}^{(k)}$, $k=1,2,3,\dots,N_g$, where $k=1$ and $k=N_g$ stand for the smallest and largest domains respectively. We then define a multi-domain inverse Laplacian
+\begin{equation}
+	\tilde\psi=S\overline{\Lambda^{-1}}S\tilde\gamma,
+\end{equation}
+where $\tilde\gamma$ is an arbitrary input vector, $\tilde\psi$ is streamfunction solution, and the operator $S\overline{\Lambda^{-1}}S$ implies the following operations:
+\begin{align}
+	&\tilde\gamma^{(1)}=\tilde\gamma\\
+	&\tilde\gamma^{(k)}=
+		\begin{cases}
+			\tilde\gamma^{(k)} \text{ for } x\in \mathscrsfs{D}^{(k)}\backslash\mathscrsfs{D}^{(k-1)},\\
+			P^{(k-1)\to(k)}(\tilde\gamma^{(k-1)}) \text{ for } x\in\mathscrsfs{D}^{(k-1)},\\
+			\qquad k=2,3,\dots,N_g,
+		\end{cases}\\
+	&\tilde\psi^{(N_g+1)}=0,\\
+	&\tilde\psi^{(k)}=S\Lambda^{-1}S\tilde\gamma^{(k)} + bc_\psi\left[P^{(k+1)\to(k)}(\tilde\psi^{(k+1)}) \right], k=N_g,N_g-1,\dots,1,\\
+	&\tilde\psi = S\overline{\Lambda^{-1}}S\tilde\gamma=\tilde\psi^{(1)}.
+\end{align}
+In the process above $P^{(k-1)\to(k)}$ and $P^{(k+1)\to(k)}$ are fine-to-coarse and coarse-to-fine interpolation operators. In 2D case the fine-to-coarse interpolation uses 9-point stencil, that is
+\begin{equation}\label{eqn:fine-to-coarse}
+\begin{aligned}
+	P^{(k-1) \rightarrow(k)}\left(\tilde{\gamma}^{(k-1)}\right)_{2 i, 2 j}= 
+	& \tilde{\gamma}_{i, j}^{(k-1)}+\frac{1}{2} \tilde{\gamma}_{i-1, j}^{(k-1)}+\frac{1}{2} \tilde{\gamma}_{i+1, j}^{(k-1)} +\frac{1}{2} \tilde{\gamma}_{i, j-1}^{(k-1)}+\frac{1}{2} \tilde{\gamma}_{i, j+1}^{(k-1)}+\\
+	&+\frac{1}{4} \tilde{\gamma}_{i-1, j-1}^{(k-1)} +\frac{1}{4} \tilde{\gamma}_{i+1, j-1}^{(k-1)}+\frac{1}{4} \tilde{\gamma}_{i-1, j+1}^{(k-1)}  +\frac{1}{4} \tilde{\gamma}_{i+1, j+1}^{(k-1)}.
+\end{aligned}
+\end{equation}
+The coefficients in \cref{eqn:fine-to-coarse} add up to 4, since the circulation $\tilde\gamma$  is the vorticity multiplied by the area and coarsification of the grid by factor of two leads to increase in a factor of 4 increase in cell area. The reverse coarse-to-fine interpolation is performed linearly in case of a mid-point and by taking the value from the coarser mesh if points coincide, note, that this only has to be performed along the boundary of the finer mesh (i.e. four straight segments). 
+Using the multi-domain approach for circulation and solving the Poisson equation, we can finally write the system of equations to be solved for each time step. 
+\begin{equation}
+\begin{aligned}
+&\begin{aligned}
+& S\left(I+\frac{\beta \Delta t}{2} \Lambda\right) S \gamma^{(k)^*} \\
+& =\left(I-\frac{\beta \Delta t}{2} C^{\mathrm{T}} C\right) \gamma^{(k)^n}+\frac{\Delta t}{2}\left(3 C^{\mathrm{T}} \mathscr{N}\left(q^{(k)^n}\right)-C^{\mathrm{T}} \mathscr{N}\left(q^{(k)^{n-1}}\right)\right) \\
+& \quad+\frac{\Delta t}{2} b c_\gamma\left(\left[P^{(k+1) \rightarrow(k)}\left(\gamma^{(k+1)^*}\right)\right]+\left[P^{(k+1) \rightarrow(k)}\left(\gamma^{(k+1)^n}\right)\right]\right) \\
+& \quad k=N_g, N_{g-1}, \ldots, 1, \\
+& E C\left(S \overline{\Lambda^{-1}}\left(I+\frac{\beta \Delta t}{2} \Lambda\right)^{-1} S\right)(E C)^{\mathrm{T}} \tilde{f}=E C S \overline{\Lambda^{-1}} S \gamma^{(1)^*}-\boldsymbol{v}_{\mathrm{B}}^{n+1},
+\end{aligned}\\
+&\gamma^{n+1}=\gamma^{(1)^*}-S\left(I+\frac{\beta \Delta t}{2} \Lambda\right)^{-1} S(E C)^{\mathrm{T}} \tilde{f}\\
+&\psi^{n+1}=S \overline{\Lambda^{-1}} S \gamma^{n+1} .
+\end{aligned}
+\end{equation}
+
+When the vorticity crosses the boundary of a grid level, $\gamma^{(j)}$ fields are not smooth across the interfaces, especially at the coarsest levels. Results show the propagation of a vortex through mesh levels and slight reflections of the circulation near the boundary, however, the errors remain confined to a small region near the boundary and diffused over time by the physical viscosity. 
+
 
 
 	
