@@ -937,42 +937,16 @@ which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref
 %	v_{m+\frac{1}{2},j+\frac{1}{2}}=v_{m-1,j\pm\frac{1}{2}}+2\frac{v_{m,j\pm\frac{1}{2}}-v_{m-1,j\pm\frac{1}{2}}}{\Delta x_{m-1}+\Delta x_m}\left(\Delta x_m + \frac{1}{2}\Delta x_{m-1}\right).
 %\end{equation}
 
-\subsubsection{Normal boundary conditions for advection}\label{subsubsec:advection-left}
+\subsubsection{Using boundary conditions for advection discretization}\label{subsubsec:advection-near-boundary}
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.30\paperwidth]{ADV-left}
   }
-  \caption{Left boundary advection.}\label{fig:ADV-left}
+  \caption{Left boundary advection. Disregard ghost velocity $uu_g$. Elements $vv_{1,j}$ are located at the same coordinates as $uu_{1,j}$.}\label{fig:ADV-left}
 \end{figure}
-The exact value of the $uu_g$ element located outside the boundary (\cref{fig:ADV-left}) is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
+Exact values of the $uv_{\frac{1}{2},j+\frac{1}{2}},uv_{\frac{1}{2},j-\frac{1}{2}}$ located at the boundary  (\cref{fig:ADV-left}) are known from \cref{{eqn:NSE-bc-normal-dimensional},{eqn:NSE-bc-tangential-dimensional}}. The element $vv_{1,j}$ can be expressed directly from computed values $v_{1,j+\frac{1}{2}},v_{1,j-\frac{1}{2}}$ of previous time steps, whereas $uu_{1,j}$ can be obtained form normal boundary condition $u_{\frac{1}{2},j}$ and previously computed $u_{\frac{3}{2},j}$. The process is verbatim for advection components near the top, right and bottom boundaries.
 
-\subsubsection{Top boundary}\label{subsubsec:laplacian-top}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.35\paperwidth]{ADV-top}
-  }
-  \caption{Top boundary advection.}\label{fig:ADV-top}
-\end{figure}
-%The symmetric \cref{eqn:symmetric-bc} defines a mirror surface, which has the same effect on the solution as the semi-infinite boundary condition if the boundary layer thickness is less than the truncated domain height. Mathematically such boundary condition can be written as $v=\frac{\partial v}{\partial y}=0,\frac{\partial p}{\partial y}=0$. 
-Since the exact values of the velocity $u_{BC}$ and $v_{BC}=0$ in a freestream are known from \cref{eqn:symmetric-bc}, we can directly use them in our advection term computation making the second summand $uv=0$, in particular
-\begin{equation}
-	\left( \frac{\partial uu}{\partial x}+\frac{\partial uv}{\partial y}\right)_{i-\frac{1}{2},N}=2\frac{\left( uu\right)_{i,N}-\left( uu\right)_{i-1,N}}{\Delta x_i + \Delta x_{i-1}}+0.
-\end{equation}
 
-\subsubsection{Bottom boundary}\label{subsubsec:advection-bottom}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.30\paperwidth]{ADV-bottom}
-  }
-  \caption{Bottom boundary advection}\label{fig:ADV-bottom}
-\end{figure}
-Computation of the advective terms just above the bottom boundary is the same as for the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary, due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
-
-The advective terms in the $y$-momentum equation are computed similarly. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
-
-\subsubsection{Right boundary}\label{subsubsec:advection-right}
-
-Similarly to Laplacian for the right side in \cref{subsubsec:laplacian-right} we need explicit values of $u$ and  $v$ at and beyond the boundary. These values are yet to be known, hence, it is not possible to utilize the inner part advection formulas from \cref{subsubsec:advection-inner} to rightmost unknown velocities at time steps $n,n-1$ directly. These values are to be determined using artificial boundary conditions in \cref{subsec:advection-ABC}. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Divergence}\label{subsec:divergence}
 
