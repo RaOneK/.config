@@ -1,0 +1,22 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Oscillations on collocated grids}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Boundary conditions for pressure}{5}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Marker-and-cell scheme}{6}{section.2}%
+\contentsline {section}{\numberline {3}Chorin's Projection Scheme}{6}{section.3}%
+\contentsline {section}{\numberline {4}Pressure-correction methods: general view}{7}{section.4}%
+\contentsline {section}{\numberline {5}Spatial Discretization}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Magnetization formulation, not needed?}{9}{subsection.5.1}%
+\contentsline {section}{\numberline {6}Modern schemes for solving Navier-Stokes equations}{9}{section.6}%
+\contentsline {subsection}{\numberline {6.1}SIMPLE - Semi-Implicit Method for Pressure Linked Equations}{9}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}PISO - Pressure Implicit with Splitting of Operators}{10}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Discrete Streamfunction method}{11}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Symmetricity}{11}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Nullspace method}{12}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Resulting algorithm}{13}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Finding a particular solution to discrete continuity equation}{14}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Particular solution using Lagrange multipliers}{14}{subsubsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.2}Particular solution using Graph Theory}{14}{subsubsection.7.4.2}%
+\contentsline {section}{\numberline {8}Other interesting methods for solving Naver Stokes (may include algorithms from articles \cite {Brown:2001, Dukowicz:1992, Kim:1985, Perot:1993})}{15}{section.8}%
+\contentsline {section}{\numberline {9}Vorticity-Streamfunction formulation}{15}{section.9}%
+\contentsline {section}{\numberline {A}Appendix}{17}{appendix.A}%

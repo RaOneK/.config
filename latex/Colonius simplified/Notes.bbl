@@ -1,0 +1,108 @@
+\begin{thebibliography}{10}
+
+\bibitem{Biringen:2011}
+S.~Biringen and C.-Y. Chow.
+\newblock {\em An Introduction to Computational Fluid Mechanics by Example}.
+\newblock {John Wiley \& Sons, Inc.}, 2011.
+
+\bibitem{Brown:2001}
+D.~L. Brown, R.~Cortez, and M.~L. Minion.
+\newblock Accurate projection methods for the incompressible {{Navier-Stokes}} equations.
+\newblock {\em Journal of Computational Physics}, 168:464--499, 2001.
+
+\bibitem{Chang:2002}
+Wang Chang, Francis Giraldo, and Blair Perot.
+\newblock Analysis of an exact fractional step method.
+\newblock {\em Journal of Computational Physics}, 180(1):183--199, 2002.
+
+\bibitem{Chorin:1968}
+A.~J. Chorin.
+\newblock Numerical solution of the {{Navier}}\textendash{{Stokes}} equations.
+\newblock {\em Mathematics of Computation}, 22:745--762, 1968.
+
+\bibitem{Colonius:2008}
+Tim Colonius and Kunihiko Taira.
+\newblock A fast immersed boundary method using a nullspace approach and multi-domain far-field boundary conditions.
+\newblock {\em Computer Methods in Applied Mechanics and Engineering}, 197:2131--2146, April 2008.
+
+\bibitem{Dukowicz:1992}
+J.~Dukowicz and A.~Dvinsky.
+\newblock Approximate factorisation as a high order splitting for the incompressible flow equations.
+\newblock {\em Journal of Computational Physics}, 102:336--347, 1992.
+
+\bibitem{Gresho:1987}
+Philip~M. Gresho and Robert~L. Sani.
+\newblock On pressure boundary conditions for the incompressible {{Navier-Stokes}} equations.
+\newblock {\em International Journal for Numerical Methods in Fluids}, 7(10):1111--1145, 1987.
+
+\bibitem{Hall:1980}
+C.~Hall, T.~Porsching, R.~Dougall, R.~Amit, A.~Cha, C.~Cullen, George Mesina, and Samir Moujaes.
+\newblock Numerical methods for thermally expandable two-phase flow-computational techniques for steam generator modeling.
+\newblock {\em NASA STI/Recon Technical Report N}, 1980.
+
+\bibitem{Hall:1985}
+Charles~A. Hall.
+\newblock Numerical solution of {{Navier}}\textendash{{Stokes}} problems by the dual variable method.
+\newblock {\em SIAM Journal on Algebraic Discrete Methods}, 6:220--236, 1985.
+
+\bibitem{Harlow:1965}
+F.~Harlow and E.~Welch.
+\newblock Numerical calculation of time-dependent viscous incompressible flow of fluid with free surface.
+\newblock {\em Physics of Fluids}, 8:2182--2189, 1965.
+
+\bibitem{Issa:1985}
+R.~I. Issa.
+\newblock Solution of the implicitly discretized fluid flow equations by operator splitting.
+\newblock 62:40--65, 1985.
+
+\bibitem{Issa:1986}
+R.~I. Issa, A.~D. Gosman, and A.~P. Watkins.
+\newblock The computation of compressible and incompressible recirculating flows by a non-iterative implicit scheme.
+\newblock 62:66--82, 1986.
+
+\bibitem{Kim:1985}
+J.~Kim and P.~Moin.
+\newblock Application of a fractional-step method to incompressible {{Navier-Stokes}} equations.
+\newblock {\em Journal of Computational Physics}, 59:308--323, 1985.
+
+\bibitem{Patankar:1980}
+S.~V. Patankar.
+\newblock {\em Numerical Heat Transfer and Fluid Flow}.
+\newblock {Hemisphere, Washington, D.C.}, 1980.
+
+\bibitem{Patankar:1972}
+S.~V. Patankar and D.~B. Spalding.
+\newblock A calculation procedure for heat, mass and momentum transfer in three-dimensional parabolic flows.
+\newblock {\em International Journal of Heat and Mass Transfer}, 15:1787--1806, 1972.
+
+\bibitem{Perot:1993}
+J.~B. Perot.
+\newblock An analysis of the fractional step method.
+\newblock {\em Journal of Computational Physics}, 108:249, 1993.
+
+\bibitem{Rhie:1983}
+C.~M. Rhie and W.~L. Chow.
+\newblock Numerical study of the turbulent flow past an airfoil with trailing edge separation.
+\newblock {\em AIAA Journal}, 21(11):1525--1532, 1983.
+
+\bibitem{Temam:1969a}
+{R.T\'emam}.
+\newblock Sur l'approximation de la solution des \'equations de {{Navier-Stokes}} par la m\'ethode des pas fractionnaires ({{I}}).
+\newblock {\em Archive for Rational Mechanics and Analysis}, 32:135--153, 1969.
+
+\bibitem{Temam:1969b}
+{R.T\'emam}.
+\newblock Sur l'approximation de la solution des \'equations de {{Navier-Stokes}} par la m\'ethode des pas fractionnaires ({{II}}).
+\newblock {\em Archive for Rational Mechanics and Analysis}, 33:377--385, 1969.
+
+\bibitem{Yanenko:1971}
+N.~N. Yanenko.
+\newblock {\em The Method of Fractional Steps}.
+\newblock {Springer-Verlag, New York}, 1971.
+
+\bibitem{Zikanov:2010}
+O.~Zikanov.
+\newblock {\em Essential Computational Fluid Dynamics}.
+\newblock {Wiley, Hoboken, N.J.}, 2010.
+
+\end{thebibliography}
