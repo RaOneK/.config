@@ -89,7 +89,7 @@
 
 
 
-\title{Discrete stream function method for the incompressible Navier-Stokes equations with simple boundary conditions}
+\title{Discrete stream function method for the incompressible Navier-Stokes equations with full Dirichlet boundary conditions}
 \author{Rauan}
 
 \begin{document}
@@ -574,7 +574,7 @@ where $\hat{\mathbf{n}},\hat{\mathbf{t}}$ are normal and tangential unit vectors
 \section{Nondimensionalization}\label{sec:nondimensionalization}
 In numerical computations, it is advantageous to maintain variables of comparable magnitude. This ensures that operations such as the multiplication of a large dimensional pressure variable with a small velocity are not performed. 
 
-We will truncate the domain and normalize all equations by width $L$ and maximum velocity at the boundary $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
+We will truncate the domain and normalize all equations by width $L$ and maximum velocity of the boundary condition $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
 \begin{equation*}
 	x\to Lx^{\prime},  \quad 
 	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
@@ -642,11 +642,7 @@ The $u$ velocity components are stored at the centres of vertically oriented fac
 	The number of unknown components inside the domain (excluding boundaries) is $M(N-1)$ for $v$ and $(M-1)N$ for $u$. 
 	At the line (row) with coordinate $y_1$ there are $M-1$ unknown $u$ components located inside the domain with a total of $N$ such $y$ horizontal lines. 
 
-In \cref{eqn:NSE-dsm-bl-bc-outlet}, the values of $u$ for the outlet are not explicitly defined. 
-	To address this, we will express the values on the boundary using \cref{eqn:NSE-dsm-bl-bc-outlet} in terms of data from inner part of the domain. 
-	These arrays for $u$ and $v$ are then concatenated into a single vector $\boldsymbol{v}$ of size $M(N-1)+(M-1)N$.
-
-Increasing the accuracy closer to the wall and the outlet does look advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. 
+Increasing the accuracy closer to the boundary of interest looks advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. 
 	
 
 
@@ -720,44 +716,7 @@ Attack \cref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Col
 	\end{equation}
 \end{enumerate}
 
-The above schemes result in the following time-discretized system:
-\begin{equation}\label[system]{eqn:NSE-dsm-bl-system-schemes}
-	\begin{bmatrix}
-		\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
-		\hat{D} & 0
-	\end{bmatrix}
-	\begin{pmatrix}
-		\boldsymbol{v}^{n+1} \\ 
-		p^{n+1}
-	\end{pmatrix}
-	=
-	\begin{pmatrix}
-		\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \boldsymbol{v}^n - \left[\frac{3}{2}\hat{\mathbf{H}}(\boldsymbol{v}^n) - \frac{1}{2}\hat{\mathbf{H}}(\boldsymbol{v}^{n-1})\right]\\
-		0
-	\end{pmatrix}
-	+
-	\begin{pmatrix}
-		\hat{bc}_1\\
-		\hat{bc}_2
-	\end{pmatrix}
-\end{equation}
-and \cref{eqn:Jin-Braza-bc} 
-\begin{equation}\label[bc]{eqn:Jin-Braza-bc-transient-consistent}
-\begin{gathered}
-\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\left[\frac{3}{2}{u^n}\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n}-\frac{1}{2}{u^{n-1}}\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n-1}\right] \\
-=\epsilon\left[\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^{n+1}+\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^{n}\right],
-\end{gathered}
-\end{equation}
-however, the results produced with such \cref{eqn:Jin-Braza-bc-transient-consistent} schemes are yet to be known and should be compared with \cref{eqn:Jin-Braza-bc-transient} from the corresponding paper of Jin-Braza\cite{Jin:1993}, which was said to be 
-\begin{equation}\label[bc]{eqn:Jin-Braza-bc-transient}
-\begin{gathered}
-\frac{\boldsymbol{v}^{n+1}-\boldsymbol{v}^n}{\Delta t}+\frac{u^n}{2}\left[\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^{n+1}+\left(\frac{\partial \boldsymbol{v}}{\partial x}\right)^n\right] \\
-=\epsilon\left(\frac{\partial^2 \boldsymbol{v}}{\partial y^2}\right)^n.
-\end{gathered}
-\end{equation}
-We will first use discretized \cref{eqn:Jin-Braza-bc-transient} from Jin-Braza~\cite{Jin:1993} as it was shown to be stable and produced solid results. Later on we can proceed with discretized \cref{eqn:Jin-Braza-bc-transient-consistent} which is consistent with our schemes after developing the necessary techniques.
-
-After applying the discrete operators listed in the following \cref{subsec:advection,sec:laplacian,subsec:divergence,subsec:gradient}, we rewrite \cref{eqn:NSE-dsm-bl-system-schemes}  as
+After applying the discrete operators listed in the following \cref{subsec:advection,sec:laplacian,subsec:divergence,subsec:gradient}, we rewrite \cref{eqn:nse-matrix}  as
 \begin{equation}\label[system]{eqn:NSE-dsm-bl-system-nonint}
 	\boxed{\begin{bmatrix}
 		\hat{A} & \hat{G} \\
@@ -784,7 +743,7 @@ where $\hat{r}^n$ includes viscous, non-linear and gradient terms from time step
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Laplacian}\label{sec:laplacian}
 
-As per \cref{eqn:NSE-dsm-bl-system-schemes} it is required to approximate implicit viscous terms spatially. In order to obtain the discrete operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
+As per \cref{eqn:nse-matrix} it is required to approximate implicit viscous terms spatially. In order to obtain the discrete operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
 \begin{equation*}
 	\hat L=
 	\begin{bmatrix}
@@ -825,8 +784,8 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 
 
 
-\subsubsection{Normal velocity to the boundary for Laplacian}\label{subsubsec:normal-bc}
-The exact value  of the normal velocity to the boundary ($u_{\frac{1}{2},j}$ on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values are moved to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-schemes}.
+\subsubsection{Using normal velocity at the boundary for Laplacian}\label{subsubsec:normal-bc}
+The exact value  of the normal velocity to the boundary ($u_{\frac{1}{2},j}$ on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition, hence, it is possible to move the corresponding terms together with the coefficients to the right-hand side of the linear system and treat the values explicitly. The values contribute to the vector $\hat{bc}_1$ on the right-hand side of \cref{eqn:NSE-dsm-bl-system-nonint}.
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.55\paperwidth]{Luxx-left}
@@ -834,20 +793,20 @@ The exact value  of the normal velocity to the boundary ($u_{\frac{1}{2},j}$ on 
   \caption{$\hat{L}^u_{xx}$ at the left boundary.}\label{fig:luxx-left}
 \end{figure}
 In this particular case on the left side of the domain we have
-\begin{align}\label{eqn:laplacian-discretization-non-uniform-dx}
+\begin{align}\label{eqn:laplacian-discretization-non-uniform-dx-bc}
 \left.\frac{\partial^2 u}{\partial x^2}\right|_{\frac{1}{2}+1,j} 
 & \approx \frac{1}{h_c h_e}u_{\frac{1}{2}+2,j} - \frac{2}{h_w h_e}u_{\frac{1}{2}+1,j} + \frac{1}{h_c h_w}u_{\frac{1}{2},j} + O(\Delta x),\\
 & \approx \frac{1}{h_c h_e}u_{\frac{1}{2}+2,j} - \frac{2}{h_w h_e}u_{\frac{1}{2}+1,j} + \frac{1}{h_c h_w}\boldsymbol{v}_\mathbf{\hat{n}}(t,x,y) + O(\Delta x),\\
 \end{align}
-then for the corresponding row of a linear system we get
+then for the corresponding row of a linear system we get Laplacian contribution as
 \begin{equation}
 	\frac{1}{h_c h_e}u_{\frac{1}{2}+2,j} - \frac{2}{h_w h_e}u_{\frac{1}{2}+1,j} =- \frac{1}{h_c h_w}\boldsymbol{v}_\mathbf{\hat{n}}(t,x,y),
 \end{equation}
-where the left side contains unknowns to be solved for, and the right hand side contains explicit boundary condition.
+where the left side contains unknowns to be solved for, and the right hand side contains explicit boundary condition. Contribution of $\hat{L}^v_{yy}$ is verbatim to the above process - it uses normal velocity component at the horizontal boundaries. 
 
 
-\subsubsection{Tangential velocity at the boundary for Laplacian}\label{subsubsec:laplacian-top}
-Most of the flow that differs much from the freestream is likely to happen closer to the wall, thus, we can incorporate symmetric boundary conditions over the top. \cref{eqn:symmetric-bc} leads to $v_{\text{top}}=0, u_{\text{top}}=u_{\text{freestream}}$, which affects only the $\hat{L}^u_{yy}$ and $\hat{L}^v_{yy}$ due to the 5-point stencil discretization. We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{yy}$ is computed in a similar manner. 
+\subsubsection{Using tangential velocity at the boundary for Laplacian}\label{subsubsec:laplacian-top}
+
 \begin{figure}[H]
 \centering{
   \includegraphics[width=0.45\paperwidth]{Luxx-top.jpg}
@@ -855,22 +814,22 @@ Most of the flow that differs much from the freestream is likely to happen close
   \caption{$\hat{L}^u_{yy}$ at top boundary.}\label{fig:luxx-top}
 \end{figure}
 
-Consider the neighbouring cells near the wall as in \cref{fig:luxx-top}. Resultant \cref{eqn:laplacian-discretization-non-uniform-dx}  can be written as
+We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{xx}$ is computed in a similar manner. Consider the neighbouring cells near the boundary as in \cref{fig:luxx-top}. Resultant \cref{eqn:laplacian-discretization-non-uniform-dx}  can be written as
 \begin{equation}\label{eqn:laplacian-discretization-non-uniform-dy}
 \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{u_g\left(h_s\right)+u_{i-\frac{1}{2},N}\left(-2 h_c\right)+u_{i-\frac{1}{2},N-1}\left(h_n\right)}{h_n h_s h_c},
 \end{equation}
 where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
-It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per \cref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},N-1}$ are set to be equidistant from $u_{i-\frac{1}{2},N}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of freestream velocity $\boldsymbol{v}_\mathbf{\hat{t}}(t,x,y)=u_{f} = \frac{u_g+u_{i-\frac{1}{2},N}}{2}\implies u_g=2u_{f}-u_{i-\frac{1}{2},N}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} from above to obtain
+It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per \cref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},N-1}$ are set to be equidistant from $u_{i-\frac{1}{2},N}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of freestream velocity $\boldsymbol{v}_\mathbf{\hat{t}}(t,x,y)=u_{\hat{\mathbf{t}}} = \frac{u_g+u_{i-\frac{1}{2},N}}{2}\implies u_g=2u_{\hat{\mathbf{t}}}-u_{i-\frac{1}{2},N}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} from above to obtain
 \begin{equation}
 \begin{aligned}
-& \left.\frac{\partial ^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_f h_s}{h_n h_s h_c}+u_{i-\frac{1}{2},N}\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{h_n}{u_c h_s h},\\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_f}{h_c h_c}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}, \\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_f}{h_c{ }^2}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}.
+& \left.\frac{\partial ^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}} h_s}{h_n h_s h_c}+u_{i-\frac{1}{2},N}\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{h_n}{u_c h_s h},\\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}}}{h_c h_c}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}, \\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}}}{h_c{ }^2}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}.
 \end{aligned}
 \end{equation}
 
-The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in \cref{eqn:NSE-dsm-bl-system-schemes}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix. The resultant contribution to the corresponding linear equation from Laplace operator becomes
+The first summand from the above equation is treated explicitly, i.e. moved to the vector $\hat{bc}_1$ on the right-hand side in \cref{eqn:NSE-dsm-bl-system-nonint}, while the other two coefficients are used as elements for the $\hat{L}^u_{yy}$ matrix. The resultant contribution to the corresponding linear equation from Laplace operator becomes
 \begin{equation}
 	u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}=-\frac{2 \boldsymbol{v}_\mathbf{\hat{t}}(t,x,y)}{h_c^2},
 \end{equation}
@@ -983,10 +942,10 @@ v \Delta x
 \begin{equation}\label{eqn:delta-xy}
 	\Delta _{xy}=
 	\begin{bmatrix}{}
-		\frac{1}{\Delta x_1\Delta y_1}		&0	&\dots	&0\\
-		0		&\frac{1}{\Delta x_2\Delta y_1}	&\dots	&0\\
+		{\Delta x_1\Delta y_1}		&0	&\dots	&0\\
+		0		&{\Delta x_2\Delta y_1}	&\dots	&0\\
 		\vdots		&\vdots	&\ddots	&\vdots\\
-		0		&0	&\dots	&\frac{1}{\Delta x_M\Delta y_N}
+		0		&0	&\dots	&{\Delta x_M\Delta y_N}
 	\end{bmatrix}
 \end{equation}
 is $MN\times MN$ diagonal matrix with entries corresponding to the inverse volumes of cells. 
@@ -1062,8 +1021,8 @@ $$
 & V_{2,2}: \frac{u_{\frac{5}{2},2}-u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}}-v_{2,\frac{3}{2}}}{\Delta y_2}=0 .
 \end{aligned}
 $$
-16
-After applying the boundary conditions (circled on the figure 7) to the above equations, we obtain the system
+
+After applying normal boundary conditions to the above equations, we obtain the system
 \begin{equation}\label[system]{eqn:divergence-matrix}
 \left[\begin{array}{cccc}
 \frac{1}{\Delta x_1 \Delta y_1} & 0 & 0 & 0 \\
@@ -1071,28 +1030,28 @@ After applying the boundary conditions (circled on the figure 7) to the above eq
 0 & 0 & \frac{1}{\Delta x_1 \Delta y_2} & 0 \\
 0 & 0 & 0 & \frac{1}{\Delta x_2 \Delta y_2}
 \end{array}\right]\left[\begin{array}{rrrrrr}
-1 & 0 & 0 & 0 & 1 & 0 \\
--1 & 1 & 0 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 & -1 & 0 \\
-0 & 0 & -1 & 1 & 0 & -1
+1  & 0  & 1 & 0 \\
+-1 & 0  & 0 & 1 \\
+0 & 1  & -1 & 0 \\
+0 & -1  & 0 & -1
 \end{array}\right]\left[\begin{array}{l}
 u_{\frac{3}{2},1} \Delta y_1 \\
-u_{\frac{5}{2},1} \Delta y_1 \\
+%u_{\frac{5}{2},1} \Delta y_1 \\
 u_{\frac{3}{2},2} \Delta y_2 \\
-u_{\frac{5}{2},2} \Delta y_2 \\
+%u_{\frac{5}{2},2} \Delta y_2 \\
 v_{1,\frac{3}{2}} \Delta x_1 \\
 v_{2,\frac{3}{2}} \Delta x_2
 \end{array}\right]=
 \begin{bmatrix}{}
 \frac{u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{1}{2}}}{\Delta y_1} \\
-\frac{v_{2,\frac{1}{2}}}{\Delta y_1} \\
+-\frac{u_{\frac{5}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{1}{2}}}{\Delta y_1} \\
 \frac{u_{\frac{1}{2},2}}{\Delta x_1}-\frac{v_{1,\frac{5}{2}}}{\Delta y_2} \\
--\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
+-\frac{u_{\frac{5}{2},2}}{\Delta x_2}-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
 \end{bmatrix},
 \end{equation}
 which in general case is written as 
 $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
-The velocity values known at the boundaries are shifted to the right-hand side and explicitly treated. The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}.
+The right hand side vector is assumed to be zero due to mass conservation. The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}. 
 
 %\begin{figure}[hbt] % here, bottom, top
 %  \centering{
@@ -1116,7 +1075,7 @@ As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.55\paperwidth]{G-example-2x2}
+  \includegraphics[width=0.49\paperwidth]{G-example-2x2}
   }
   \caption{$2\times 2$ grid example for gradient operator.}\label{fig:G-example-2x2}
 \end{figure}
@@ -1169,30 +1128,30 @@ As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G
 %\end{equation}
 $$
 \begin{aligned}
-u_{1,2} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,1}-p_{1,1}\right), \\
-u_{1,3} & : \frac{1}{\Delta x_2}\left(p_{3,1}-p_{2,1}\right), \\
-u_{2,2} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,2}-p_{1,2}\right), \\
-u_{2,3} & : \frac{1}{\Delta x_2}\left(p_{3,2}-p_{2,2}\right), \\
-v_{2,1} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{1,2}-p_{1,1}\right), \\
-v_{2,2} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{2,2}-p_{2,1}\right) .
+\left.\frac{\partial p}{\partial x}\right|_{\frac{3}{2},1} & = \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,1}-p_{1,1}\right), \\
+%u_{1,3} & = \frac{1}{\Delta x_2}\left(p_{3,1}-p_{2,1}\right), \\
+\left.\frac{\partial p}{\partial x}\right|_{\frac{3}{2},2} & = \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,2}-p_{1,2}\right), \\
+%u_{2,3} & = \frac{1}{\Delta x_2}\left(p_{3,2}-p_{2,2}\right), \\
+\left.\frac{\partial p}{\partial y}\right|_{1,\frac{3}{2}} & = \frac{2}{\Delta y_1+\Delta y_2}\left(p_{1,2}-p_{1,1}\right), \\
+\left.\frac{\partial p}{\partial y}\right|_{2,\frac{3}{2}} & = \frac{2}{\Delta y_1+\Delta y_2}\left(p_{2,2}-p_{2,1}\right) .
 \end{aligned}
 $$
 
 The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions outside the grid. The resultant system of linear equations then becomes
 \begin{equation}\label[system]{eqn:gradient-matrix}
 \left[\begin{array}{cccccc}
-\frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 & 0 & 0 & 0 \\
-0 & \frac{1}{\Delta x_2} & 0 & 0 & 0 & 0 \\
-0 & 0 & \frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 & 0 \\
-0 & 0 & 0 & \frac{1}{\Delta x_2} & 0 & 0 \\
-0 & 0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2} & 0 \\
-0 & 0 & 0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2}
+\frac{2}{\Delta x_1+\Delta x_2}  &  0 & 0 & 0 \\
+%0 & \frac{1}{\Delta x_2} & 0 & 0 & 0 & 0 \\
+0 & \frac{2}{\Delta x_1+\Delta x_2} &  0 & 0 \\
+%0 & 0 & 0 & \frac{1}{\Delta x_2} & 0 & 0 \\
+0 &  0 & \frac{2}{\Delta y_1+\Delta y_2} & 0 \\
+0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2}
 \end{array}\right]
 \left(\left[\begin{array}{rrrr}
 -1 & 1 & 0 & 0 \\
-0 & -1 & 0 & 0 \\
+%0 & -1 & 0 & 0 \\
 0 & 0 & -1 & 1 \\
-0 & 0 & 0 & -1 \\
+%0 & 0 & 0 & -1 \\
 -1 & 0 & 1 & 0 \\
 0 & -1 & 0 & 1
 \end{array}\right]
@@ -1204,12 +1163,14 @@ The next step is to rewrite the above expressions in matrix form using the press
 \end{bmatrix}
 +\left[\begin{array}{c}
 0 \\
-p_{3,1} \\
+%p_{3,1} \\
 0 \\
- p_{3,2} \\
+% p_{3,2} \\
 0 \\
 0
-\end{array}\right]\right),
+\end{array}\right]
+\right)
+,
 \end{equation}
 which can be written in compact format as
 $$
@@ -1221,7 +1182,7 @@ p_{1,2} \\
 p_{m n+(n-1) m}
 \end{array}\right]+b c_p\right)
 $$
-where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...,p_{m n+(n-1) m}]^T$ is the vector of pressure values at the cell centres. There are some pressure BC values in ${bc}_p$ since there is a pressure gradient that has to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
+where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...,p_{(m-1) n+(n-1) m}]^T$ is the vector of pressure values at the cell centres. There is zero contribution from pressure BC values in ${bc}_p$ since there is no  pressure gradient that needs to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
 
 
 
@@ -1396,7 +1357,7 @@ p^{n+1}
 0
 \end{array}\right)+\left(\begin{array}{c}
 \hat{M}\widehat{b c}_1 \\
-\widehat{b c}_2
+0
 \end{array}\right),
 \end{equation*}
 which can be rewritten as 
@@ -1412,16 +1373,16 @@ r^n \\
 0
 \end{array}\right)+\left(\begin{array}{c}
 {b c}_1 \\
-{b c}_2
+0
 \end{array}\right),}
 \end{equation}
 where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to \cref{eqn:gradient-matrix}. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in continuity part of \cref{eqn:nse-normalized} using  \cref{eqn:divergence-matrix}. Multiplying both sides of continuity equation by $\Delta _{xy}$ matrix from \cref{eqn:delta-xy} leads to 
 \begin{align*}
-	\hat{D}\boldsymbol{v}^{n+1}&= \hat{bc}_2\notag\\
-	\left(\Delta_{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
-	\left(\Delta_{xy}\right)\frac{1}{\Delta _{xy}}{D}R\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
-	\left(\Delta_{xy}\right)\frac{1}{\Delta_{xy}}{D}q^{n+1}&=\left ( \Delta_{xy}\right ) \hat{bc}_2\notag\\
-	D{q}^{n+1}&=bc_2.
+	\hat{D}\boldsymbol{v}^{n+1}&= 0\notag\\
+	\left(\Delta_{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) 0\notag\\
+	\left(\Delta_{xy}\right)\frac{1}{\Delta _{xy}}{D}R\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) \hat0\notag\\
+	\left(\Delta_{xy}\right)\frac{1}{\Delta_{xy}}{D}q^{n+1}&=\left ( \Delta_{xy}\right ) 0\notag\\
+	D{q}^{n+1}&=0.
 \end{align*}
 
 
@@ -1487,79 +1448,75 @@ Hence, the final chord of this method is the introduction of new variable called
 
 Let us consider the solution to discretized \cref{eqn:nse-normalized}
 \begin{equation*}
-	q^{n+1}=q^{n+1}_p+q^{n+1}_h,
+	q^{n+1}=q^{n+1}_h,
 \end{equation*}
 where $q^{n+1}_h$ is a solution of homogeneous continuity equation 
 \begin{equation}\label{eqn:discrete-homogeneous-continuity}
-	Dq^{n+1}_h=0,
+	Dq^{n+1}_h=0ю
 \end{equation}
-and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equation
-\begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
-	Dq^{n+1}_p=bc_2.
-\end{equation}
+%and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equation
+%\begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
+%	Dq^{n+1}_p=bc_2.
+%\end{equation}
 
 %%%%%%%%%%%%%%
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
 
 We assume that momentum equation from \cref{eqn:nse-normalized} is modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
-The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
-Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
+%The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
+%Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
 
 
 Taking into account continuous operator identities in \cref{sec:prelude-algorithm}, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
 	\item Construct $\operatorname{curl}$ matrix $C$, such that $DC=0$ and $q_h=C\psi$.\label[step]{step:1}
-	\item Rewrite $q^{n+1}=q^{n+1}_p+q^{n+1}_h$.\label[step]{step:2}
-	\item Find $q^{n+1}_p$ from the non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method described in next \cref{sec:particular-solution}.\label[step]{step:3}
-	\item Split the solution $q^{n+1}$ into homogeneous and particular, then eliminate the pressure terms in the momentum equation.\label[step]{step:4}
+	\item Eliminate the pressure terms in the momentum equation.\label[step]{step:4}
 		\begin{align}
 			Aq^{n+1}&=-Gp^{n+1}+bc_1,\notag\\
-			A(q^{n+1}_h+q^{n+1}_p)&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
-			C^TAq^{n+1}_h&=C^T(bc_1-Aq^{n+1}_p), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
-			C^TAC\psi^{n+1}&=C^T(bc_1-Aq^{n+1}_p)\label[system]{eqn:resulting-system}.
+			A(q^{n+1}_h)&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
+			C^TAq^{n+1}_h&=C^T(bc_1), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
+			C^TAC\psi^{n+1}&=C^T(bc_1)\label[system]{eqn:resulting-system}.
 		\end{align}
-		The above \cref{eqn:resulting-system} is solving \cref{eqn:biharmonic-streamfunction} using Euler scheme $\frac{\partial \psi}{\partial t}=\frac{\psi^{n+1}-\psi^{n}}{\Delta t}$.
 	\item Solve resulting \cref{eqn:resulting-system} for $\psi^{n+1}$. \label[step]{step:5}
 	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.\label[step]{step:6}
-	\item Compute $q^{n+1}=q^{n+1}_p+q^{n+1}_h$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
-	\item Transition to the next time instance by repeating \cref{step:3,step:4,step:5,step:6,step:7} using the new boundary values from $q^{n+1}$.\label[step]{step:8}
+	\item Compute $q^{n+1}=q^{n+1}_h$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
+	\item Transition to the next time instance by repeating \cref{step:5,step:6,step:7}.
 \end{enumerate}
-\cref{step:3,step:7} and changing values at the boundary of \cref{step:8} were not necessary in Colonius-Taira\cite{Colonius:2008}, whereas \cref{step:2} used homogeneous property $bc_2=0$ of continuity \cref{eqn:discrete-non-homogeneous-continuity}, making $q^{n+1}=q^{n+1}_h$.
 
 
-
-%\subsection{A particular solution to the discrete continuity equation}\label{sec:particular-solution}
-\pagebreak
-\section{Particular solution using Lagrange multipliers}\label{sec:particular-solution}
-It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
-\begin{equation}\label{eqn:lagrange-multipliers}
-	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
-\|q_p\|^2+\lambda^T(bc_2-D q_p).
-\end{equation}
-
-Differentiating w.r.t $q_p$ and finding the minimum (derivative equal to zero) yields to
-\begin{equation}\label{eqn:flux-minimum}
-2 q_p-D^T \lambda=0.
-\end{equation}
-
-We may premultiply by $D$ to obtain
-\begin{equation*}
-2 D q_p-D D^T \lambda=0,
-\end{equation*}
-then the substitution of $bc_2=D q_p$ will lead to
-
-\begin{equation*}
-\begin{aligned}
-2 bc_2&=D D^T \lambda,\\
-\lambda &=2\left(D D^T\right)^{-1} bc_2,
-\end{aligned}
-\end{equation*}
-plugging the above into~\cref{eqn:flux-minimum} results in
-\begin{equation*}
-q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
-\end{equation*}
-where $D^\dagger=D^T\left(D D^T\right)^{-1}$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
+%
+%%\subsection{A particular solution to the discrete continuity equation}\label{sec:particular-solution}
+%\pagebreak
+%\section{Particular solution using Lagrange multipliers}\label{sec:particular-solution}
+%It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
+%\begin{equation}\label{eqn:lagrange-multipliers}
+%	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
+%\|q_p\|^2+\lambda^T(bc_2-D q_p).
+%\end{equation}
+%
+%Differentiating w.r.t $q_p$ and finding the minimum (derivative equal to zero) yields to
+%\begin{equation}\label{eqn:flux-minimum}
+%2 q_p-D^T \lambda=0.
+%\end{equation}
+%
+%We may premultiply by $D$ to obtain
+%\begin{equation*}
+%2 D q_p-D D^T \lambda=0,
+%\end{equation*}
+%then the substitution of $bc_2=D q_p$ will lead to
+%
+%\begin{equation*}
+%\begin{aligned}
+%2 bc_2&=D D^T \lambda,\\
+%\lambda &=2\left(D D^T\right)^{-1} bc_2,
+%\end{aligned}
+%\end{equation*}
+%plugging the above into~\cref{eqn:flux-minimum} results in
+%\begin{equation*}
+%q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
+%\end{equation*}
+%where $D^\dagger=D^T\left(D D^T\right)^{-1}$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
  
 %%%% REMOVE?$ %%%%%
 %\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
