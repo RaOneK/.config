@@ -123,7 +123,7 @@ Such a grid has the name of a \textit{collocated} or \textit{regular} grid.
 Albeit simple and easy in operation, the collocated grids were out of favor for a long time because of their tendency to generate spurious oscillations in the solution (cf. \S 10.2 in \cite{Zikanov:2010}) and hence staggered grids are used since the work of Harlow and Welch \cite{Harlow:1965} introducing the marker-and-cell (MAC) method, cf. \cref{fig:grid-MAC}. 
 Colonius~\cite{Colonius:2008} uses MAC grid~\cref{fig:grid-MAC}, where the indexing uses only integer indices, i.e.  $u_{i-\frac{1}{2},j},v_{i,j-\frac{1}{2}}$ are denoted as $u_{i,j},v_{i,j}$ and lie on left and bottom sides of cell $i,j$.  
 
-\textbf{HAVE TO EITHER CHANGE ALL INDICES TO MATCH \cref{fig:grid-staggered}, or change indexation in \cref{fig:grid-staggered} to match Harlow-Welch \cite{Harlow:1965}.}
+%\textbf{HAVE TO EITHER CHANGE ALL INDICES TO MATCH \cref{fig:grid-staggered}, or change indexation in \cref{fig:grid-staggered} to match Harlow-Welch \cite{Harlow:1965}.}
 
 In this paper grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{M+\frac{1}{2}},y_{N+\frac{1}{2}})=(1,1)$. 
 	The width $\Delta x$ and height $\Delta y$ of each cell have the same indexation as the corresponding cells they belong to. 
@@ -290,7 +290,7 @@ The remainder of the present paper is organized as follows.
 
 
 \pagebreak
-\section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}
+\section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}\label{sec:prelude}
 
 %This establishes the first two connections in \cref{diag:div-curl-grad}.
 %Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
@@ -484,17 +484,17 @@ Our goal is to obtain equation in terms of $\psi$ by modifying \cref{eqn:momentu
 	\end{equation}
 where the right hand side contains boundary conditions (in numerical sense) and non-linear advective terms, which were initially stated in terms of $\boldsymbol{v},p$ and transformed through premultiplication by $\operatorname{curl}^T$. 
 
-Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
-\begin{equation}
-	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
-\end{equation}
-where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
-We will discuss the numerical details of this approach in \cref{sec:discrete-operators,sec:algorithm}.
-	Vector field $\boldsymbol{v}_h$ considers the solution of biharmonic \cref{eqn:biharmonic-streamfunction} for $\psi$ vanishing at the boundary $\partial \Omega$, which matches the numerical computations of the Laplacian operator for $\psi$ in \cref{sec:nullspace-method}.
-	\cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions \textbf{(LOOKS LIKE NONZERO, BUT PURE DIRICHLET, CHECKING THE CODE NOW)}, whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
-	\begin{equation}
-		\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
-	\end{equation}
+%Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
+%\begin{equation}
+%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
+%\end{equation}
+%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
+%We will discuss the numerical details of this approach in \cref{sec:discrete-operators,sec:algorithm}.
+%	Vector field $\boldsymbol{v}_h$ considers the solution of biharmonic \cref{eqn:biharmonic-streamfunction} for $\psi$ vanishing at the boundary $\partial \Omega$, which matches the numerical computations of the Laplacian operator for $\psi$ in \cref{sec:nullspace-method}.
+%	\cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions, whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
+%	\begin{equation}
+%		\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
+%	\end{equation}
 
 
 \subsection{Vector fields that vanish at the boundary}
@@ -717,6 +717,28 @@ Attack \cref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Col
 \end{enumerate}
 
 After applying the discrete operators listed in the following \cref{subsec:advection,sec:laplacian,subsec:divergence,subsec:gradient}, we rewrite \cref{eqn:nse-matrix}  as
+
+	\begin{equation}
+		\begin{bmatrix}
+			\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L} & \hat{G} \\
+			\hat{D} & 0
+		\end{bmatrix}
+		\begin{pmatrix}
+			\boldsymbol{v}^{n+1} \\ 
+			p^{n+1}
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \boldsymbol{v}^n - \left[\frac{3}{2}\hat{\mathbf{H}}(\boldsymbol{v}^n) - \frac{1}{2}\hat{\mathbf{H}}(\boldsymbol{v}^{n-1})\right]\\
+			0
+		\end{pmatrix}
+		+
+		\begin{pmatrix}
+			\hat{bc}_1^n\\
+			\hat{bc}_2^n
+		\end{pmatrix},
+	\end{equation}	
+which in short becomes
 \begin{equation}\label[system]{eqn:NSE-dsm-bl-system-nonint}
 	\boxed{\begin{bmatrix}
 		\hat{A} & \hat{G} \\
@@ -735,9 +757,9 @@ After applying the discrete operators listed in the following \cref{subsec:advec
 	\begin{pmatrix}
 		\hat{bc}_1\\
 		\hat{bc}_2
-	\end{pmatrix},}
+	\end{pmatrix}.}
 \end{equation}
-where $\hat{r}^n$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_i$ are explicit boundary values in terms of velocity and pressure.
+Here, $\hat{r}^n$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_1,\hat{bc}_2$ are explicit boundary values in terms of velocity and pressure.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -820,12 +842,12 @@ We will focus on $\hat{L}^u_{yy}$ in this part; $\hat{L}^v_{xx}$ is computed in 
 \end{equation}
 where $h_s=y_{n}-y_{n-1}, h_n = y_{n+1}-y_n, h_c = \frac{y_{n+1}-y_{n-1}}{2}=\frac{h_s+h_n}{2}$.
 
-It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per \cref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},N-1}$ are set to be equidistant from $u_{i-\frac{1}{2},N}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of freestream velocity $\boldsymbol{v}_\mathbf{\hat{t}}(t,x,y)=u_{\hat{\mathbf{t}}} = \frac{u_g+u_{i-\frac{1}{2},N}}{2}\implies u_g=2u_{\hat{\mathbf{t}}}-u_{i-\frac{1}{2},N}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} from above to obtain
+It is possible to make the order of the scheme $O(\Delta y^2)$ near the boundary as per \cref{eqn:laplacian-discretization-non-uniform-dx} if $u_g$ and $u_{i-\frac{1}{2},N-1}$ are set to be equidistant from $u_{i-\frac{1}{2},N}$.The value of $u$ along the top face is known to be freestream velocity $u_{{f}}$, interpolation of freestream velocity $\boldsymbol{v}_\mathbf{\hat{t}}(t,x,y)=\boldsymbol{v}_\mathbf{\hat{t}} = \frac{u_g+u_{i-\frac{1}{2},N}}{2}\implies u_g=2\boldsymbol{v}_\mathbf{\hat{t}}-u_{i-\frac{1}{2},N}$, which we can plug into \cref{eqn:laplacian-discretization-non-uniform-dy} from above to obtain
 \begin{equation}
 \begin{aligned}
-& \left.\frac{\partial ^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}} h_s}{h_n h_s h_c}+u_{i-\frac{1}{2},N}\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{h_n}{u_c h_s h},\\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}}}{h_c h_c}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}, \\
-& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 u_{\hat{\mathbf{t}}}}{h_c{ }^2}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}.
+& \left.\frac{\partial ^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 \boldsymbol{v}_\mathbf{\hat{t}} h_s}{h_n h_s h_c}+u_{i-\frac{1}{2},N}\left(\frac{-h_s}{h_n h_s h_c}+\frac{-2 h_c}{h_n h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{h_n}{u_c h_s h},\\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 \boldsymbol{v}_\mathbf{\hat{t}}}{h_c h_c}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c h_s h_c}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}, \\
+& \left.\frac{\partial^2 u}{\partial y^2}\right|_{i-\frac{1}{2},N}=\frac{2 \boldsymbol{v}_\mathbf{\hat{t}}}{h_c{ }^2}+u_{i-\frac{1}{2},N}\left(\frac{-\left(2 h_c+h_s\right)}{h_c^2 h_s}\right)+u_{i-\frac{1}{2},N-1} \frac{1}{h_s h_c}.
 \end{aligned}
 \end{equation}
 
@@ -912,7 +934,7 @@ Exact values of the $uv_{\frac{1}{2},j+\frac{1}{2}},uv_{\frac{1}{2},j-\frac{1}{2
 One of the advantages of the staggered grid is that the discrete divergence $D$ and gradient $G$ operators are equal to the negative transpose of each other. 
 %Our goal is to eliminate the pressure from the system, \cref{sec:nullspace-method} will explain the use of this property in detail. 
 In this section we will show one side of why this identity is true, the other part could be found in \cref{subsec:gradient}.
-The second line of \cref{eqn:NSE-dsm-bl-system-schemes} reads
+The second line of \cref{eqn:NSE-dsm-bl-system-nonint} reads
 \begin{equation*}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=\hat{bc}_2,\\
@@ -1051,7 +1073,7 @@ v_{2,\frac{3}{2}} \Delta x_2
 \end{equation}
 which in general case is written as 
 $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
-The right hand side vector is assumed to be zero due to mass conservation. The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}. 
+The right hand side vector $\hat{bc}_2=0$ due to mass conservation \textbf{(NEED TO CLARIFY)}. The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}. 
 
 %\begin{figure}[hbt] % here, bottom, top
 %  \centering{
@@ -1065,17 +1087,17 @@ The right hand side vector is assumed to be zero due to mass conservation. The d
 %% MIGHT ALSO NEED TO CHECK WITH THE PREMULTIPLICATION OF DELTA X
 \subsection{Gradient}\label{subsec:gradient} 
 
-The pressure gradients are computed at the same coordinates as the unknown velocities according to \cref{eqn:nse-matrix}. Below we will show that the discrete gradient and divergence operators satisfy
+The pressure gradients are computed at the same coordinates as the unknown velocities according to \cref{eqn:NSE-dsm-bl-system-nonint}. Below we will show that the discrete gradient and divergence operators satisfy
 \begin{equation}\label{eqn:g-dt}
   {G}=-{D^T}
 \end{equation}
 on staggered/MAC grids by construction. 
 
-As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on \cref{fig:G-example-2x2}):
+As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (squares located at the centre of each face on \cref{fig:G-example-2x2}):
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.49\paperwidth]{G-example-2x2}
+  \includegraphics[width=0.47\paperwidth]{G-example-2x2}
   }
   \caption{$2\times 2$ grid example for gradient operator.}\label{fig:G-example-2x2}
 \end{figure}
@@ -1428,18 +1450,34 @@ The matrix $C$ has dimensions corresponding to unknown velocities times the numb
 %Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
 The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
 
-In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L$ being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-%\cref{eqn:vorticity-stream}
-Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
+%In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L_\psi$ (Laplacian for $\psi$ located at nodes) being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
+Momentum part of \cref{eqn:NSE-dsm-bl-system-nonint} becomes
+\begin{align}
+	\left(\frac{1}{\Delta t}I - \frac{1}{2}L\right)q^{n+1}=RHS, &\quad\text{which we premultiply by $C^T$ and use $q^{n+1}=C\psi$.}\\
+	\left(\frac{1}{\Delta t}C^TC - \frac{1}{2}C^TLC\right)\psi^{n+1}=C^TRHS, &\quad\text{has to be solved for $\psi^{n-1}$.}\\
+	\psi^{n+1} = \left(\frac{1}{\Delta t}C^TC - \frac{1}{2}C^TLC\right)^{-1}C^TRHS,
+	&\quad\text{In \cref{sec:prelude} we found analytically that  }\\
+	&\quad\text{$\operatorname{curl}^T\operatorname{curl}\psi=-\nabla^2\psi$ and $\operatorname{curl}^T\nabla^2\operatorname{curl}\psi^{n-1}=-\nabla^2\left(\nabla^2\psi\right)$.}\notag\\
+	&\quad\text{However, in discrete form $C^TC=L_\psi \neq L_{\boldsymbol{v}}$,}\notag\\
+	&\quad\text{since $L_\psi$ applies to $\psi$ located at the nodes,}\notag\\
+	&\quad\text{whereas $L_{\boldsymbol{v}}$ applies to $\boldsymbol{v}$ located at faces of each cell.}\notag\\
+	&\quad\text{Finding $\left(C^TC\right)^{-1}$ implies solving Poisson equation}\notag\\
+		&\quad\text{for streamfunciton $\nabla^2\psi=-\omega$.}\notag
+%	\psi^{n+1} = \left((C^T)^{-1}\frac{1}{\Delta t}C^TC - (C^T)^{-1}\frac{1}{2}C^TLC\right)^{-1}RHS.\\
+%	\psi^{n+1} = \left(\frac{1}{\Delta t}C - \frac{1}{2}LC\right)^{-1}RHS.
+\end{align}
+
 
 
 
