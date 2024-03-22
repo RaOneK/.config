@@ -101,453 +101,453 @@ The goal of these notes is to present the detailed overview of discrete stream f
 
 \tableofcontents
 
-\section{Introduction}\label{sec:introduction}
-
-In these notes we will be concerned with the discretization of the Navier-Stokes equations describing the flow of an incompressible fluid:
-\begin{subequations}
-\label[pluralequation]{eqs:NSE}
-\begin{align}
-\label{eqn:momentum-intro}
-\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} &= -\nabla p + \epsilon \nabla \cdot \nabla \boldsymbol{v} \\
-\label{eqn:continuity}
-\nabla \cdot \boldsymbol{v} &= 0,
-\end{align}
-\end{subequations}
-which are written here in the non-dimensional form, i.e. $\epsilon \equiv Re^{-1}$ for brevity; also $\boldsymbol{v}$ is the velocity and $p$ pressure fields. 
-Since both are necessarily functions of time $t$ and space $\boldsymbol{x}$, their discretization will be denoted by $f^{n}_{i}$, where $n$ is the time level $t^{n}$ and $i$ is the \textit{mesh} point $\boldsymbol{x}_{i}$: for example, in the $x$-direction the interval $x_{i} < x < x_{i+1}$ is referred to as the \textit{cell} of the mesh. 
-The cell centre corresponds to $x_{i+\frac{1}{2}}$. 
-The mesh points $x_{i}$ and cell centres $x_{i \pm \frac{1}{2}}$ can be regarded as two overlapping interpenetrating meshes, which together are said to constitute a \textit{staggered}ё mesh as illustrated in \cref{fig:grid-staggered}. 
-When designing a finite difference or finite volume scheme, we have to choose whether to use the same or different sets of grid points for velocity and pressure. 
-The obvious choice seems to have a single set of points, at which all the variables and all the equations are discretized. 
-Such a grid has the name of a \textit{collocated} or \textit{regular} grid. 
-Albeit simple and easy in operation, the collocated grids were out of favor for a long time because of their tendency to generate spurious oscillations in the solution (cf. \S 10.2 in \cite{Zikanov:2010}) and hence staggered grids are used since the work of Harlow and Welch \cite{Harlow:1965} introducing the marker-and-cell (MAC) method, cf. \cref{fig:grid-MAC}. 
-Colonius~\cite{Colonius:2008} uses MAC grid~\cref{fig:grid-MAC}, where the indexing uses only integer indices, i.e.  $u_{i-\frac{1}{2},j},v_{i,j-\frac{1}{2}}$ are denoted as $u_{i,j},v_{i,j}$ and lie on left and bottom sides of cell $i,j$.  
-
-%\textbf{HAVE TO EITHER CHANGE ALL INDICES TO MATCH \cref{fig:grid-staggered}, or change indexation in \cref{fig:grid-staggered} to match Harlow-Welch \cite{Harlow:1965}.}
-
-In this paper grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{M+\frac{1}{2}},y_{N+\frac{1}{2}})=(1,1)$. 
-	The width $\Delta x$ and height $\Delta y$ of each cell have the same indexation as the corresponding cells they belong to. 
-
-\begin{figure}[H]
-\centering
-  \subfigure[MAC]{\includegraphics[height=0.395\textwidth]{grid-MAC.jpg} \label{fig:grid-MAC}}
-  \subfigure[General]{\includegraphics[height=0.395\textwidth]{staggered} \label{fig:grid-staggered}}
-  \subfigure[Unstructured]{\includegraphics[height=0.265\textwidth]{grid-unstructured} \label{fig:grid-unstructured}}
-\caption{\small Staggered grid.}
-\end{figure}
-
-
-The staggered arrangement increases complexity of a scheme. 
-Programming becomes more difficult, since it requires accounting for three ($u,v,p$) or four ($u,v,w,p$) indexing systems. 
-Interpolations must be used to compute nonlinear terms of momentum equations. 
-Further complications arise when the grid is nonuniform. 
-All these difficulties, however, can be relatively easily handled in computations with structured grids such as those shown in \cref{fig:grid-staggered,fig:grid-MAC}. 
-%For this reason and because of the benefit of removing the splitting problem, the staggered arrangement was by far the most popular choice during early years of CFD. 
-The difficulties of handling a staggered arrangement increase significantly when unstructured (\cref{fig:grid-unstructured}) grids are used. 
-When such grids started to be broadly applied in general-purpose codes in recent years, collocated arrangements returned to favor. 
-This area of CFD is still evolving. 
-We only mention that methods have been developed to cure the splitting problem leading to pressure oscillations, but the cure is not ideal and leads to extra complexities at the implementation level.
-
-
-In numerical terms, the problem \cref{eqs:NSE} can be formulated as follows: given the solution $p^{n}$, $\boldsymbol{v}^{n}$ at the previous time layer $t^{n}$, find the next time-layer pressure $p^{n+1}$ and velocity $\boldsymbol{v}^{n+1}$ such that they together satisfy the momentum equation, and the velocity is divergence-free $\nabla \cdot \boldsymbol{v}^{n+1} = 0$ and satisfies the boundary conditions.
-
-A conspicuous feature of \cref{eqs:NSE} is that pressure $p$ is not determined by a time-evolution equation, but rather is implicitly defined by the incompressibility \cref{eqn:continuity}, which plays the role of a constraint that the velocity field $\boldsymbol{v}$ must satisfy. The pressure instantaneously adapts to the evolving velocity field in such a way as to satisfy that constraint. This is reflected in the fact that $p$ satisfies a Poisson equation, which can be derived by taking the divergence of \cref{eqn:momentum-intro} and combining the result with \cref{eqn:continuity}. From the mathematical viewpoint, this means that the incompressible flow equations have some features of an elliptic system. We can say that the equations are of the mixed hyperbolic (convective terms), parabolic (viscous terms), and elliptic (pressure and incompressibility) type. The elliptic nature of the pressure solution has a physical meaning. It shows that, in an incompressible flow, the pressure field in the entire flow domain adjusts instantaneously to any, however localized, perturbation. This is in perfect agreement with the fact that weak perturbations, for example sound waves, propagate at infinite speed in incompressible fluids.
-
-Given the Poisson equation for $p$, it may replace the continuity \cref{eqn:continuity} and its solution can in principle be substituted back into \cref{eqn:momentum-intro} to obtain an evolution equation for the velocity field alone. Alternatively, the pressure can be immediately eliminated by taking the $\mathrm{curl}$ of momentum \cref{eqn:momentum-intro}, which leads to the vorticity-stream function formulation of incompressible flow. Formal manipulations of this type are useful for various theoretical purposes, but experience has shown that they are rarely advantageous for computational purposes. In most situations, it is preferable to simply approximate and solve \cref{eqs:NSE} directly for the so-called \textit{primitive} variables $\boldsymbol{v}$ and $p$.
-
-If, however, one ends up solving the Poisson equation for pressure, an interesting and important question arises as to what boundary conditions should be used for the pressure field. Such conditions are required at every point of the boundary for the Poisson problem to be well-posed. The conditions, however, do not naturally follow from the flow physics for the boundaries between fluid and solid walls, unless, of course, a full fluid-structure interaction problem is solved. Since the latter option is, in most cases, an unnecessary complication, we have to find a way to derive the pressure boundary conditions from the equations themselves.
-
-The remainder of the present paper is organized as follows. 
-	In \cref{sec:vorticity-streamfunction,sec:prelude-algorithm}, we describe vorticity-stream function formulation and motivation for numerical scheme. 
-	Formulation of the problem in terms of PDE and boundary conditions on a finite domain is performed in \cref{sec:problem-statement-dimentional,sec:nondimensionalization,sec:problem-statement-nondimensional}. 
-	In \cref{sec:domain-discretization,sec:discrete-operators}, we discretize the problem. 
-	Boundary conditions are discussed in \cref{sec:artificial-bc}. 
-	Symmetrization of the resulting system of linear equations is performed in \cref{sec:normalization}.
-	In \cref{sec:nullspace-method}, we discuss the discrete approach to the algorithm, which is finalized in \cref{sec:algorithm}. 
-	The method to obtain a particular solution is described in \cref{sec:particular-solution}.
-	A summary and discussion are given in \cref{sec:summary}.
-	
-
-%\section{Discrete streamfunction method}\label{sec:discrete-streamfunction}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%There are a few things to add/clarify:
-%1. Non-dimensionalization.
-%2. BC discussion (analytic).
-%3. Symmetric BC on top to be included in all operators. 
-%4. Scaling of G and D operators. 
-%5. Indexation change.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\todo{
-\begin{itemize}
-%    \item \st{Non-dimensionalization.} \st{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed.} Normalized to max value of 1.
-%	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
-%    \item \st{Symmetric BC on top to be included in all operators.}
-%    \item \st{Indexing change for equations and figures.}
-    \item \st{Motivation.} Added some, where possible!
-    \item \st{BC discussion (analytic).} \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}.
-    \item \st{Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon.} Waiting for the response form UofA library since 11th Dec. 
-%    \item \st{Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.} 
-%    \item Is it ok to use "Sys. (43)" for SLAE?
-%    \item \st{Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript.} Changed dimensions to $M\times N$
-%    \item Outlet idea 1. (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. Will use three-point scheme into the domain, but then matrix L becomes asymmetric. 
-%	\item Outlet idea 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
-    \item  \st{Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\epsilon \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.} Wrote an email to author, waiting for the response. 
-    \item \st{Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall}\cite{Hall:1980}. Changed unknowns to inner part only. Values at the boundary are determined using BC. 
-    \item \st{Check algebra of diffusion and advection for $v$ component.} 
-    \item It feels like BC scheme which is consistent with inner discretization won't work, we will use Jin-Braza-Braza scheme. 
-    \item \st{Outlet BC stated early in non-dim truncated part, but discussion is much later.}
-    \item Looks like continuous analogue of $C^T$ is determined. Figured out that $C^TC=-L$ and $C^TLC=-L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
-    \item Repeating \cref{fig:luxx-right-first} from first try of Laplacian and \cref{fig:luxx-right} after Artificial BC discussion.
-    \item Paraphrase \cite{Gamtumur:2019} in \cref{sec:algorithm} since most of it is copypaste.
-    \item Boundary conditions for \cref{eqn:biharmonic-streamfunction} are zero or non-zero.
-    \item Move discrete particular solution \cref{sec:particular-solution} to the front of algorithm \cref{sec:algorithm} and include relationship of particular solution to continuity equation with $\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h$ in prelude to the algorithm \cref{sec:prelude-algorithm}?
-    \item change number of unknowns to include right bdry
-    \item D = -G looks ok, but pressure bc arises
-    \item curl* and curl with bc extra, curl* looks done on paper, indeed a ghost vector arises
-    \item NLBC -> L -> C'C. Here curl* looks to be not equal to C'.
-    \item TOP ABC
-    \item change top boundary condition from SYMMETRY to slip no penetration
-    \item find bc for psi in poisson of stream function. 
-    \item Change motivation in symmetrization to normalization.
-  \end{itemize}
-}
-
-
-
-
-\pagebreak
-\section{Vorticity-stream function formulation}\label{sec:vorticity-streamfunction}
-	The algorithm to be used is a combination of classical formulation as in \cref{eqs:NSE} and vorticity transport equation \cref{eqn:transport-vorticity}.
-	Consider:
-	
-	\begin{enumerate}
-	\item	
-
-	Stream function $\psi(x,y,t):\boldsymbol{v}=\nabla \times \psi$ of an incompressible two-dimensional flow:
-	\begin{equation}
-	\label{eqn:streamfunction}
-		u = \frac{\partial \psi}{\partial y},\quad v=-\frac{\partial \psi}{\partial x},
-	\end{equation}
-	where $\boldsymbol{v}=(u,v)$.
-	
-	The velocity vector at every point of space and every moment of time is tangential to the line $\psi = const$ and such lines represent the streamlines of the flow. 
-	\item
-	
-	Vorticity $\omega = \nabla \times \boldsymbol{v}$, in two-dimensional case (x-y-plane) the only non-zero component of $\omega$ is $z$, which leads to
-	\begin{equation}
-	\label{eqn:vorticity}
-		\omega=- \frac{\partial u}{\partial y}+\frac{\partial v}{\partial x} .
-	\end{equation}
-	\end{enumerate}
-	
-	Importantly, continuity \cref{eqn:continuity} is satisfied immediately by taking spatial derivatives of stream function \cref{eqn:streamfunction} components and adding them up. The governing \cref{eqs:NSE} can now be transformed. The new equations are changed to the following:
-	\begin{enumerate}
-		\item 
-			Transport equation for vorticity.
-			
-			Application of $(\nabla \times)$ to momentum and taking into account continuity \cref{eqn:continuity} together with the fact
-			\begin{equation}
-				\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right) - 
-				\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
-			\end{equation}
-			results in
-			\begin{equation}
-			\label{eqn:transport-vorticity}
-				\boxed{
-				\frac{\partial\omega}{\partial t} -\epsilon \left(\frac{\partial ^2 \omega}{\partial x^2} 
-				+ \frac{\partial^2 \omega}{\partial y^2} \right)
-				=-\left( u \frac{\partial\omega}{\partial x} 
-				+ v\frac{\partial\omega}{\partial y}\right),
-				}
-			\end{equation}
-			where we moved advection terms to the right hand side with intent to linearize them later.
-		\item 
-		Vorticity-Stream function equation.
-		
-		After substituting stream function \cref{eqn:streamfunction} into vorticity \cref{eqn:vorticity} we obtain
-		\begin{equation}
-			\label{eqn:vorticity-stream}
-			\boxed{\nabla ^2 \psi = -\omega.}
-		\end{equation}	
-	\end{enumerate}
-	
-	These two equations above form a coupled system, and the pressure field does not explicitly appear in neither \cref{eqn:transport-vorticity} nor \cref{eqn:vorticity-stream} and, in principle, is not needed in the solution.
-	
-	The system (\cref{eqn:transport-vorticity,eqn:vorticity-stream}) requires boundary conditions on $\psi$ and $\omega$. 
-		For the stream function, imposing physically plausible conditions is not difficult. 
-		One has to write the proper boundary conditions for the velocity components and use the definition of \cref{eqn:streamfunction} to represent them as conditions for $\psi$. 
-		Values for $\psi$ and its derivatives are obtained by integrating \cref{eqn:streamfunction}. For instance, in case of vertical boundary 
-		\begin{align}
-			&1=u=\frac{\partial\psi}{\partial y}\implies\frac{\partial\psi}{\partial y}=1\implies\psi_1(t,y)=a_1y+a_2+\psi_2(t,x),\\
-			&0=v=-\frac{\partial\psi}{\partial x}\implies\psi=\psi_1(t,y)+a_3\text{ (can be made compatible with other BCs)},		
-		\end{align}
-		where $a_1,a_2,a_3$ are constants. The situation is more difficult in the case of vorticity. 
-		There are no natural boundary conditions on $\omega$, but they can be derived from the conditions on $\psi$ by application of \cref{eqn:vorticity-stream} at the boundary. 
-		The process of finding boundary conditions of $\omega$ typically results in expressions containing second derivatives, therefore, special numerical treatment is required.
-
-
-
-
-
-\pagebreak
-\section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}\label{sec:prelude}
-
-%This establishes the first two connections in \cref{diag:div-curl-grad}.
-%Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
-%\begin{equation}\label[diagram]{diag:div-curl-grad}
-%	S F \underset{\text {-div }}{\stackrel{\text { grad }}{\rightleftarrows}} V F \underset{\text { curl }}{\stackrel{\text { curl }}{\rightleftarrows}} V F \underset{\text {-grad }}{\stackrel{\text { div }}{\leftrightarrows}} S F,
+%\section{Introduction}\label{sec:introduction}
+%
+%In these notes we will be concerned with the discretization of the Navier-Stokes equations describing the flow of an incompressible fluid:
+%\begin{subequations}
+%\label[pluralequation]{eqs:NSE}
+%\begin{align}
+%\label{eqn:momentum-intro}
+%\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} &= -\nabla p + \epsilon \nabla \cdot \nabla \boldsymbol{v} \\
+%\label{eqn:continuity}
+%\nabla \cdot \boldsymbol{v} &= 0,
+%\end{align}
+%\end{subequations}
+%which are written here in the non-dimensional form, i.e. $\epsilon \equiv Re^{-1}$ for brevity; also $\boldsymbol{v}$ is the velocity and $p$ pressure fields. 
+%Since both are necessarily functions of time $t$ and space $\boldsymbol{x}$, their discretization will be denoted by $f^{n}_{i}$, where $n$ is the time level $t^{n}$ and $i$ is the \textit{mesh} point $\boldsymbol{x}_{i}$: for example, in the $x$-direction the interval $x_{i} < x < x_{i+1}$ is referred to as the \textit{cell} of the mesh. 
+%The cell centre corresponds to $x_{i+\frac{1}{2}}$. 
+%The mesh points $x_{i}$ and cell centres $x_{i \pm \frac{1}{2}}$ can be regarded as two overlapping interpenetrating meshes, which together are said to constitute a \textit{staggered}ё mesh as illustrated in \cref{fig:grid-staggered}. 
+%When designing a finite difference or finite volume scheme, we have to choose whether to use the same or different sets of grid points for velocity and pressure. 
+%The obvious choice seems to have a single set of points, at which all the variables and all the equations are discretized. 
+%Such a grid has the name of a \textit{collocated} or \textit{regular} grid. 
+%Albeit simple and easy in operation, the collocated grids were out of favor for a long time because of their tendency to generate spurious oscillations in the solution (cf. \S 10.2 in \cite{Zikanov:2010}) and hence staggered grids are used since the work of Harlow and Welch \cite{Harlow:1965} introducing the marker-and-cell (MAC) method, cf. \cref{fig:grid-MAC}. 
+%Colonius~\cite{Colonius:2008} uses MAC grid~\cref{fig:grid-MAC}, where the indexing uses only integer indices, i.e.  $u_{i-\frac{1}{2},j},v_{i,j-\frac{1}{2}}$ are denoted as $u_{i,j},v_{i,j}$ and lie on left and bottom sides of cell $i,j$.  
+%
+%%\textbf{HAVE TO EITHER CHANGE ALL INDICES TO MATCH \cref{fig:grid-staggered}, or change indexation in \cref{fig:grid-staggered} to match Harlow-Welch \cite{Harlow:1965}.}
+%
+%In this paper grid indexation starts at $(x_{\frac{1}{2}},y_{\frac{1}{2}})=(0,0)$ and ends at $(x_{M+\frac{1}{2}},y_{N+\frac{1}{2}})=(1,1)$. 
+%	The width $\Delta x$ and height $\Delta y$ of each cell have the same indexation as the corresponding cells they belong to. 
+%
+%\begin{figure}[H]
+%\centering
+%  \subfigure[MAC]{\includegraphics[height=0.395\textwidth]{grid-MAC.jpg} \label{fig:grid-MAC}}
+%  \subfigure[General]{\includegraphics[height=0.395\textwidth]{staggered} \label{fig:grid-staggered}}
+%  \subfigure[Unstructured]{\includegraphics[height=0.265\textwidth]{grid-unstructured} \label{fig:grid-unstructured}}
+%\caption{\small Staggered grid.}
+%\end{figure}
+%
+%
+%The staggered arrangement increases complexity of a scheme. 
+%Programming becomes more difficult, since it requires accounting for three ($u,v,p$) or four ($u,v,w,p$) indexing systems. 
+%Interpolations must be used to compute nonlinear terms of momentum equations. 
+%Further complications arise when the grid is nonuniform. 
+%All these difficulties, however, can be relatively easily handled in computations with structured grids such as those shown in \cref{fig:grid-staggered,fig:grid-MAC}. 
+%%For this reason and because of the benefit of removing the splitting problem, the staggered arrangement was by far the most popular choice during early years of CFD. 
+%The difficulties of handling a staggered arrangement increase significantly when unstructured (\cref{fig:grid-unstructured}) grids are used. 
+%When such grids started to be broadly applied in general-purpose codes in recent years, collocated arrangements returned to favor. 
+%This area of CFD is still evolving. 
+%We only mention that methods have been developed to cure the splitting problem leading to pressure oscillations, but the cure is not ideal and leads to extra complexities at the implementation level.
+%
+%
+%In numerical terms, the problem \cref{eqs:NSE} can be formulated as follows: given the solution $p^{n}$, $\boldsymbol{v}^{n}$ at the previous time layer $t^{n}$, find the next time-layer pressure $p^{n+1}$ and velocity $\boldsymbol{v}^{n+1}$ such that they together satisfy the momentum equation, and the velocity is divergence-free $\nabla \cdot \boldsymbol{v}^{n+1} = 0$ and satisfies the boundary conditions.
+%
+%A conspicuous feature of \cref{eqs:NSE} is that pressure $p$ is not determined by a time-evolution equation, but rather is implicitly defined by the incompressibility \cref{eqn:continuity}, which plays the role of a constraint that the velocity field $\boldsymbol{v}$ must satisfy. The pressure instantaneously adapts to the evolving velocity field in such a way as to satisfy that constraint. This is reflected in the fact that $p$ satisfies a Poisson equation, which can be derived by taking the divergence of \cref{eqn:momentum-intro} and combining the result with \cref{eqn:continuity}. From the mathematical viewpoint, this means that the incompressible flow equations have some features of an elliptic system. We can say that the equations are of the mixed hyperbolic (convective terms), parabolic (viscous terms), and elliptic (pressure and incompressibility) type. The elliptic nature of the pressure solution has a physical meaning. It shows that, in an incompressible flow, the pressure field in the entire flow domain adjusts instantaneously to any, however localized, perturbation. This is in perfect agreement with the fact that weak perturbations, for example sound waves, propagate at infinite speed in incompressible fluids.
+%
+%Given the Poisson equation for $p$, it may replace the continuity \cref{eqn:continuity} and its solution can in principle be substituted back into \cref{eqn:momentum-intro} to obtain an evolution equation for the velocity field alone. Alternatively, the pressure can be immediately eliminated by taking the $\mathrm{curl}$ of momentum \cref{eqn:momentum-intro}, which leads to the vorticity-stream function formulation of incompressible flow. Formal manipulations of this type are useful for various theoretical purposes, but experience has shown that they are rarely advantageous for computational purposes. In most situations, it is preferable to simply approximate and solve \cref{eqs:NSE} directly for the so-called \textit{primitive} variables $\boldsymbol{v}$ and $p$.
+%
+%If, however, one ends up solving the Poisson equation for pressure, an interesting and important question arises as to what boundary conditions should be used for the pressure field. Such conditions are required at every point of the boundary for the Poisson problem to be well-posed. The conditions, however, do not naturally follow from the flow physics for the boundaries between fluid and solid walls, unless, of course, a full fluid-structure interaction problem is solved. Since the latter option is, in most cases, an unnecessary complication, we have to find a way to derive the pressure boundary conditions from the equations themselves.
+%
+%The remainder of the present paper is organized as follows. 
+%	In \cref{sec:vorticity-streamfunction,sec:prelude-algorithm}, we describe vorticity-stream function formulation and motivation for numerical scheme. 
+%	Formulation of the problem in terms of PDE and boundary conditions on a finite domain is performed in \cref{sec:problem-statement-dimentional,sec:nondimensionalization,sec:problem-statement-nondimensional}. 
+%	In \cref{sec:domain-discretization,sec:discrete-operators}, we discretize the problem. 
+%	Boundary conditions are discussed in \cref{sec:artificial-bc}. 
+%	Symmetrization of the resulting system of linear equations is performed in \cref{sec:normalization}.
+%	In \cref{sec:nullspace-method}, we discuss the discrete approach to the algorithm, which is finalized in \cref{sec:algorithm}. 
+%	The method to obtain a particular solution is described in \cref{sec:particular-solution}.
+%	A summary and discussion are given in \cref{sec:summary}.
+%	
+%
+%%\section{Discrete streamfunction method}\label{sec:discrete-streamfunction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%There are a few things to add/clarify:
+%%1. Non-dimensionalization.
+%%2. BC discussion (analytic).
+%%3. Symmetric BC on top to be included in all operators. 
+%%4. Scaling of G and D operators. 
+%%5. Indexation change.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\todo{
+%\begin{itemize}
+%%    \item \st{Non-dimensionalization.} \st{Shall we keep u component under value of 1? can multiply the freestream and inlet by 0.5 if needed.} Normalized to max value of 1.
+%%	\item \st{Scaling of G and D operators.} \textit{$\left(C^T\right)\left(\hat{M}\right)\left(\hat{G}\right)p=\left(C^T\right)\left(\hat{M}\right)\left(\hat{M}^{-1}{G}\right)p=C^TGp=(-DC)^Tp=0$.}
+%%    \item \st{Symmetric BC on top to be included in all operators.}
+%%    \item \st{Indexing change for equations and figures.}
+%    \item \st{Motivation.} Added some, where possible!
+%    \item \st{BC discussion (analytic).} \cite{Engquist:1977,Kourta:1987,Liu:1993,Sani:1994,Persillon:1998,Tsynkov:1998}.
+%    \item \st{Outlet diffusion discretization is problematic. Requested PhD thesis of Jin and Persillon through UofA library. Wrote an email to their supervisor Prof. Braza and sent a message to Persillon.} Waiting for the response form UofA library since 11th Dec. 
+%%    \item \st{Substitute all refs/eqrefs with smart \textbackslash cref and use one bracket for \textbackslash cite.} 
+%%    \item Is it ok to use "Sys. (43)" for SLAE?
+%%    \item \st{Time step $n$ is in superscript, however, domain dim's are $n\times m$, dimension index is in subscript.} Changed dimensions to $M\times N$
+%%    \item Outlet idea 1. (headache division by zero) might be using uniform grid in the direction of the flow and refine grid only vertically. Will use three-point scheme into the domain, but then matrix L becomes asymmetric. 
+%%	\item Outlet idea 2. Use extrapolation $\frac{\partial ^2 \boldsymbol{v}}{\partial x^2}=0$ or BC by Kourta $\frac{\partial ^2u}{\partial x^2}=0,\frac{\partial v}{\partial x	}=0$.
+%    \item  \st{Found this condition $\frac{\partial \boldsymbol{v}}{\partial t}+u \frac{\partial \boldsymbol{v}}{\partial x}+v \frac{\partial \boldsymbol{v}}{\partial y}-\epsilon \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0$ by G. Fournier and F. Golanski (2008, but not many citations). They claim Prandtl BL solution for advective bc $\frac{\partial \boldsymbol{v}}{\partial t} + u\frac{\partial \boldsymbol{v}}{\partial x}=0$ is wrong, while their solution matches Prandtl BL. Looks like we can express the remaining diffusive summand in terms of pressure gradient at the boundary.} Wrote an email to author, waiting for the response. 
+%    \item \st{Change computational domain to inner part only? Boundary values are to be determined by BC, not the momentum eq'n, contrary to Hall}\cite{Hall:1980}. Changed unknowns to inner part only. Values at the boundary are determined using BC. 
+%    \item \st{Check algebra of diffusion and advection for $v$ component.} 
+%    \item It feels like BC scheme which is consistent with inner discretization won't work, we will use Jin-Braza-Braza scheme. 
+%    \item \st{Outlet BC stated early in non-dim truncated part, but discussion is much later.}
+%    \item Looks like continuous analogue of $C^T$ is determined. Figured out that $C^TC=-L$ and $C^TLC=-L^2$. Some information of transpose of curl is in \href{https://www.math.mcgill.ca/gantumur/math248f19/vectorcalc.pdf}{Vector Calculus notes} on page 24 of \href{https://www.math.mcgill.ca/gantumur/math248f19/}{course by TSOGTGEREL GANTUMUR}, but the material is quite heavy.
+%    \item Repeating \cref{fig:luxx-right-first} from first try of Laplacian and \cref{fig:luxx-right} after Artificial BC discussion.
+%    \item Paraphrase \cite{Gamtumur:2019} in \cref{sec:algorithm} since most of it is copypaste.
+%    \item Boundary conditions for \cref{eqn:biharmonic-streamfunction} are zero or non-zero.
+%    \item Move discrete particular solution \cref{sec:particular-solution} to the front of algorithm \cref{sec:algorithm} and include relationship of particular solution to continuity equation with $\boldsymbol{v}=\boldsymbol{v}_p+\boldsymbol{v}_h$ in prelude to the algorithm \cref{sec:prelude-algorithm}?
+%    \item change number of unknowns to include right bdry
+%    \item D = -G looks ok, but pressure bc arises
+%    \item curl* and curl with bc extra, curl* looks done on paper, indeed a ghost vector arises
+%    \item NLBC -> L -> C'C. Here curl* looks to be not equal to C'.
+%    \item TOP ABC
+%    \item change top boundary condition from SYMMETRY to slip no penetration
+%    \item find bc for psi in poisson of stream function. 
+%    \item Change motivation in symmetrization to normalization.
+%  \end{itemize}
+%}
+%
+%
+%
+%
+%\pagebreak
+%\section{Vorticity-stream function formulation}\label{sec:vorticity-streamfunction}
+%	The algorithm to be used is a combination of classical formulation as in \cref{eqs:NSE} and vorticity transport equation \cref{eqn:transport-vorticity}.
+%	Consider:
+%	
+%	\begin{enumerate}
+%	\item	
+%
+%	Stream function $\psi(x,y,t):\boldsymbol{v}=\nabla \times \psi$ of an incompressible two-dimensional flow:
+%	\begin{equation}
+%	\label{eqn:streamfunction}
+%		u = \frac{\partial \psi}{\partial y},\quad v=-\frac{\partial \psi}{\partial x},
+%	\end{equation}
+%	where $\boldsymbol{v}=(u,v)$.
+%	
+%	The velocity vector at every point of space and every moment of time is tangential to the line $\psi = const$ and such lines represent the streamlines of the flow. 
+%	\item
+%	
+%	Vorticity $\omega = \nabla \times \boldsymbol{v}$, in two-dimensional case (x-y-plane) the only non-zero component of $\omega$ is $z$, which leads to
+%	\begin{equation}
+%	\label{eqn:vorticity}
+%		\omega=- \frac{\partial u}{\partial y}+\frac{\partial v}{\partial x} .
+%	\end{equation}
+%	\end{enumerate}
+%	
+%	Importantly, continuity \cref{eqn:continuity} is satisfied immediately by taking spatial derivatives of stream function \cref{eqn:streamfunction} components and adding them up. The governing \cref{eqs:NSE} can now be transformed. The new equations are changed to the following:
+%	\begin{enumerate}
+%		\item 
+%			Transport equation for vorticity.
+%			
+%			Application of $(\nabla \times)$ to momentum and taking into account continuity \cref{eqn:continuity} together with the fact
+%			\begin{equation}
+%				\frac{\partial}{\partial y}\left(\frac{\partial p}{\partial x}\right) - 
+%				\frac{\partial}{\partial x}\left(\frac{\partial p}{\partial y}\right)=0
+%			\end{equation}
+%			results in
+%			\begin{equation}
+%			\label{eqn:transport-vorticity}
+%				\boxed{
+%				\frac{\partial\omega}{\partial t} -\epsilon \left(\frac{\partial ^2 \omega}{\partial x^2} 
+%				+ \frac{\partial^2 \omega}{\partial y^2} \right)
+%				=-\left( u \frac{\partial\omega}{\partial x} 
+%				+ v\frac{\partial\omega}{\partial y}\right),
+%				}
+%			\end{equation}
+%			where we moved advection terms to the right hand side with intent to linearize them later.
+%		\item 
+%		Vorticity-Stream function equation.
+%		
+%		After substituting stream function \cref{eqn:streamfunction} into vorticity \cref{eqn:vorticity} we obtain
+%		\begin{equation}
+%			\label{eqn:vorticity-stream}
+%			\boxed{\nabla ^2 \psi = -\omega.}
+%		\end{equation}	
+%	\end{enumerate}
+%	
+%	These two equations above form a coupled system, and the pressure field does not explicitly appear in neither \cref{eqn:transport-vorticity} nor \cref{eqn:vorticity-stream} and, in principle, is not needed in the solution.
+%	
+%	The system (\cref{eqn:transport-vorticity,eqn:vorticity-stream}) requires boundary conditions on $\psi$ and $\omega$. 
+%		For the stream function, imposing physically plausible conditions is not difficult. 
+%		One has to write the proper boundary conditions for the velocity components and use the definition of \cref{eqn:streamfunction} to represent them as conditions for $\psi$. 
+%		Values for $\psi$ and its derivatives are obtained by integrating \cref{eqn:streamfunction}. For instance, in case of vertical boundary 
+%		\begin{align}
+%			&1=u=\frac{\partial\psi}{\partial y}\implies\frac{\partial\psi}{\partial y}=1\implies\psi_1(t,y)=a_1y+a_2+\psi_2(t,x),\\
+%			&0=v=-\frac{\partial\psi}{\partial x}\implies\psi=\psi_1(t,y)+a_3\text{ (can be made compatible with other BCs)},		
+%		\end{align}
+%		where $a_1,a_2,a_3$ are constants. The situation is more difficult in the case of vorticity. 
+%		There are no natural boundary conditions on $\omega$, but they can be derived from the conditions on $\psi$ by application of \cref{eqn:vorticity-stream} at the boundary. 
+%		The process of finding boundary conditions of $\omega$ typically results in expressions containing second derivatives, therefore, special numerical treatment is required.
+%
+%
+%
+%
+%
+%\pagebreak
+%\section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}\label{sec:prelude}
+%
+%%This establishes the first two connections in \cref{diag:div-curl-grad}.
+%%Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
+%%\begin{equation}\label[diagram]{diag:div-curl-grad}
+%%	S F \underset{\text {-div }}{\stackrel{\text { grad }}{\rightleftarrows}} V F \underset{\text { curl }}{\stackrel{\text { curl }}{\rightleftarrows}} V F \underset{\text {-grad }}{\stackrel{\text { div }}{\leftrightarrows}} S F,
+%%\end{equation}
+%%leaving only the transpose of curl. To this end, recall the identity
+%%\begin{equation}
+%%\nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})=(\nabla \times \boldsymbol{X}) \cdot \boldsymbol{Y}-\boldsymbol{X} \cdot(\nabla \times \boldsymbol{Y}).
+%%\end{equation}
+%%Since we consider only those vector fields vanishing at the boundary $\partial \Omega$, divergence theorem yields
+%%\begin{multline}
+%%	0
+%%	=	\int_{\partial \Omega}(\boldsymbol{X} \times \boldsymbol{Y}) \cdot \boldsymbol{n}\ dS
+%%	=\int_{\Omega} \nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})\ dV=\\
+%%	=\int_{\Omega} \left(\nabla \times \boldsymbol{X}\right)\cdot \boldsymbol{Y}\ dV
+%%		-\int_{\Omega} \boldsymbol{X} \cdot \left(\nabla \times \boldsymbol{Y}\right)\ dV
+%%	=\langle \operatorname{curl}\boldsymbol{X},\boldsymbol{Y}\rangle-\langle \boldsymbol{X},\operatorname{curl}^*\boldsymbol{Y}\rangle ,
+%%\end{multline}
+%%which identifies the curl as the transpose of itself in 3-dimensions:
+%%\begin{equation}\label{eqn:curl-curl-orth}
+%%\text { curl }^*=\text { curl. }	
+%%\end{equation}
+%%
+%%
+%%For 3-dimensional vector fields we can write $\operatorname{curl}$ operator in a symmetric matrix form
+%%\begin{equation}\label{eqn:curl-transpose}
+%%	\operatorname{curl}:=
+%%	\begin{bmatrix}{}
+%%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+%%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+%%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+%%\end{bmatrix}
+%%\equiv\begin{bmatrix}{}
+%%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
+%%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
+%%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
+%%\end{bmatrix}^*=:\operatorname{curl}^*.
+%%\end{equation}
+%%This agrees with \cref{eqn:curl-curl-orth}. 
+%%When we transpose $\operatorname{curl}$ operator, the transpose of each derivative changes it's sign, since integrating by parts with respect to variable $s$ of vector fields $\boldsymbol{X}(s),\boldsymbol{Y}(s)$ leads to
+%%\begin{align}
+%%\langle \frac{d}{ds}\boldsymbol{X}(s),\boldsymbol{Y}(s) \rangle
+%%	&=\int_{\Omega} \frac{d X}{d s} \boldsymbol{Y}(s)\ d s\\
+%%	&=\left.\boldsymbol{X}(s) \boldsymbol{Y}(s)\right|_{\partial \Omega}-\int_{\Omega} \boldsymbol{X}(s) \frac{d \boldsymbol{Y}(s)}{d s}\ d s\\
+%%	&=\int_{\Omega} \boldsymbol{X}(s) \left(-\frac{d }{d s} \boldsymbol{Y}(s)\right)\ d s\\
+%%	&=\langle \boldsymbol{X}(s), -\frac{d}{ds} \boldsymbol{Y}(s)\rangle,chto
+%%\end{align}
+%%where $\left.\boldsymbol{X}(s) \boldsymbol{Y}(s)\right|_{\partial \Omega}$ vanishes at the boundary $\partial\Omega$. 
+%%Thus, symmetric matrix $\operatorname{curl}^*=\operatorname{curl}$ is obtained.
+%
+%%The operator $\nabla^{\perp}$ defined by
+%%\begin{equation}\label{eqn:grad-perp}
+%%	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
+%%	=\begin{bmatrix*}[r]
+%%	\frac{\partial}{\partial y} \psi\\
+%%	-\frac{\partial}{\partial x} \psi
+%%	\end{bmatrix*}
+%%\end{equation}
+%%is called the grad-perp or the rotated gradient. The notation
+%%\begin{equation}
+%%	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
+%%\end{equation}
+%%can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
+%
+%%The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
+%%\begin{equation}
+%%\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
+%%=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
+%%=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
+%%=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
+%%=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
+%%\end{equation}
+%%yielding
+%%\begin{equation}\label{eqn:curl-grad-perp}
+%%\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
+%%\end{equation}
+%
+%We now modify momentum \cref{eqn:momentum-intro} in 2D in a similar manner as in \cref{sec:vorticity-streamfunction} with a help of differential operators. These operators can be transformed into discrete format without much difficulties. Hence, we can apply the similar process to system of linear equations generated by \cref{eqn:momentum-intro} by multiplying it with the corresponding matrices, which is discussed in \cref{sec:nullspace-method,sec:algorithm}. 
+%
+%Define
+%\begin{equation}
+%	\operatorname{curl}
+%	=
+%	\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y} \\
+%	-\frac{\partial}{\partial x}
+%	\end{bmatrix*}.
 %\end{equation}
-%leaving only the transpose of curl. To this end, recall the identity
+%Hence, by stream function \cref{eqn:streamfunction} we have $\boldsymbol{v}=\operatorname{curl}\psi$. Lastly, define
+%\begin{equation}
+%	\operatorname{curl}^*
+%	=
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y}&
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}.
+%\end{equation}
+%
+%Let us now compute $\operatorname{curl}^*$ applied to velocity vector $\boldsymbol{v}$
+%\begin{equation}\label{eqn:curl-adj-curl}
+%	\operatorname{curl}^*\boldsymbol{v}=\operatorname{curl}^*\operatorname{curl}\psi=
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y}&
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y} \\
+%	-\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\psi
+%	=\left(-\frac{\partial^2}{\partial y^2} -\frac{\partial^2 }{\partial x^2}\right) \psi =-\nabla^2 \psi.
+%\end{equation}
+%By taking into account commutativity of partial derivatives with respect to time and space we obtain
+%\begin{equation}\label{eqn:transient-laplacian-psi}
+%	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right).
+%\end{equation}
+%Applying $\operatorname{curl}^*$ to Laplacian of velocity leads to
+%\begin{align}\begin{split}\label{eqn:biharmonic-psi}
+%	\operatorname{curl}^*\nabla^2\boldsymbol{v}
+%	&=\operatorname{curl}^*\nabla^2\operatorname{curl}\psi\\
+%	&=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y}&
+%	-\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\begin{bmatrix}
+%	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
+%	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
+%	\end{bmatrix}
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y} \\
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\psi\\
+%	&=\begin{bmatrix*}[r]
+%	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
+%	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
+%	\end{bmatrix*}
+%	\begin{bmatrix*}[r]
+%	-\frac{\partial}{\partial y} \\
+%	\frac{\partial}{\partial x}
+%	\end{bmatrix*}
+%	\psi\\
+%%	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
+%%	=\operatorname{curl}^*\operatorname{curl}\nabla^2\psi
+%%	&=-\nabla^4\psi\\
+%	&=-\nabla^2\left(\nabla^2\psi\right).
+%\end{split}\end{align}
+%
+%
+%
+%
+%%We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and make them as external force function similarly to Duhammel Principle, which states that the homogeneous heat equation
+%%\begin{equation}
+%%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
+%%\end{equation}
+%%can be represented as inhomogeneous problem
+%%\begin{equation}
+%%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=0 & x \in \mathbb{R}^n\end{cases},
+%%\end{equation}
+%%but instead of inictial conditions we will apply similar procedure to BCs.
+%
+%Our goal is to obtain equation in terms of $\psi$ by modifying \cref{eqn:momentum-intro}. 
+%	The procedure lies in transforming this equation into vorticity transport \cref{eqn:transport-vorticity} with the help of vorticity stream function substitution \cref{eqn:vorticity-stream} and $\operatorname{curl}$, $\operatorname{curl}^*$ operators. 
+%	Firstly, we put transient, gradient and viscous terms to the left hand side, whereas non-linear terms are linearized and moved to the right. 
+%	Next, we substitute $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ and apply $\operatorname{curl}^*$ to rearranged momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}^*\operatorname{grad}=\begin{bmatrix*}[r]-\frac{\partial}{\partial y}&\frac{\partial}{\partial x}	\end{bmatrix*}\begin{bmatrix*}[r] \frac{\partial}{\partial x}\\ \frac{\partial}{\partial y} \end{bmatrix*}=0$). 
+%	For 2-dimensional case from \cref{eqn:biharmonic-psi,eqn:transient-laplacian-psi} , we get
+%	\begin{align}
+%		\operatorname{curl}^*\left( \frac{\partial \boldsymbol{v}}{\partial t} -\epsilon \nabla^2 \boldsymbol{v} \right)
+%			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
+%		\operatorname{curl}^*\left( \frac{\partial }{\partial t}\operatorname{curl}\psi -\epsilon \nabla^2 \operatorname{curl}\psi \right)
+%			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
+%		\left(\frac{\partial}{\partial t} -\epsilon \nabla^2\right)\left(-\nabla^2\psi\right)
+%			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\label{eqn:biharmonic-heat-eqn}
+%	\end{align}
+%	
+%%	Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
+%%\begin{equation}
+%%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
+%%\end{equation}
+%%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
+%%	Homogeneous equation $\nabla\cdot \boldsymbol{v}_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$.
+%	
+%	Solving \cref{eqn:biharmonic-heat-eqn} for $\nabla^2\psi$ is equivalent to obtaining solution for Poisson \cref{eqn:vorticity-stream}. However, we can go through \cref{eqn:biharmonic-heat-eqn} and solve it in one step by obtaining $\psi$ from biharmonic equation
+%	\begin{equation}
+%	\label{eqn:biharmonic-streamfunction}
+%		\boxed{
+%		-\frac{\partial\nabla ^2 \psi}{\partial t} 
+%		+\epsilon\nabla ^4 \psi=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right),
+%		}
+%	\end{equation}
+%where the right hand side contains boundary conditions (in numerical sense) and non-linear advective terms, which were initially stated in terms of $\boldsymbol{v},p$ and transformed through premultiplication by $\operatorname{curl}^T$. 
+%
+%%Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
+%%\begin{equation}
+%%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
+%%\end{equation}
+%%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
+%%We will discuss the numerical details of this approach in \cref{sec:discrete-operators,sec:algorithm}.
+%%	Vector field $\boldsymbol{v}_h$ considers the solution of biharmonic \cref{eqn:biharmonic-streamfunction} for $\psi$ vanishing at the boundary $\partial \Omega$, which matches the numerical computations of the Laplacian operator for $\psi$ in \cref{sec:nullspace-method}.
+%%	\cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions, whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
+%%	\begin{equation}
+%%		\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
+%%	\end{equation}
+%
+%
+%\subsection{Vector fields that vanish at the boundary}
+%This subsection contains side notes for \cref{sec:prelude-algorithm}, here we discuss some properties of differential operators in vector calculus. Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let all vector $\boldsymbol{X},\boldsymbol{Y}$ and scalar $\phi,\psi$ fields vanish at $\partial \Omega$. Denote by $SF$ the set of all scalar fields in $\Omega$, and by $VF$ the set of all vector fields in $\Omega$. In this subsection we need to have inner products in inner product space \cite{Gamtumur:2019}. Define scalar and vector inner products as
+%\begin{equation}
+%	\langle\phi, \psi\rangle=\int_{\Omega} \phi \psi\ dV,\quad
+%	\langle \boldsymbol{X}, \boldsymbol{Y}\rangle=\int_{\Omega} \boldsymbol{X} \cdot \boldsymbol{Y}\ dV.
+%\end{equation}
+%Then define the transpose of grad as an operator $\operatorname{grad}^T: V F \rightarrow S F$ such that
+%\begin{equation}
+%	\langle  \operatorname{grad} \phi,\boldsymbol{X}\rangle=\left\langle\phi, \operatorname{grad}^T \boldsymbol{X}\right\rangle,
+%\end{equation}
+%for all vector fields $\boldsymbol{X}$ and scalar fields $\phi$ vanishing at the boundary $\partial \Omega$. To identify this operator, integrate the identity
+%\begin{equation}
+%	\nabla \cdot(\phi \boldsymbol{X})= \nabla \phi\cdot \boldsymbol{X}+ \phi \nabla \cdot \boldsymbol{X},
+%\end{equation}
+%and apply the divergence theorem, to get
+%\begin{equation}\label{eqn:div-grad}
+%	\int_{\partial \Omega} \phi \boldsymbol{X} \cdot \boldsymbol{n}\ dS=\int_{\Omega} \nabla \cdot(\phi \boldsymbol{X})\ dV=\int_{\Omega} \nabla \phi\cdot \boldsymbol{X}\ dV +\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}\ dV.
+%\end{equation}
+%Since $\phi=0$ on $\partial \Omega$, left side of \cref{eqn:div-grad} vanishes. Hence, we infer
+%\begin{equation}\label{eqn:inner-grad-div}
+%	0=\langle \nabla \phi,\boldsymbol{X}\rangle+\langle\phi, \nabla \cdot \boldsymbol{X}\rangle,
+%\end{equation}
+%implying that the transpose of the gradient is the negative divergence, and the transpose of the divergence is the negative gradient:
+%\begin{equation}\label{eqn:curl-grad}
+%	\operatorname{grad}^T=- \text { div }, \quad \text { div }^T=-\operatorname{grad} .
+%\end{equation}
+%
+%We now move to 3-dimensional case, consider the following identity
 %\begin{equation}
 %\nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})=(\nabla \times \boldsymbol{X}) \cdot \boldsymbol{Y}-\boldsymbol{X} \cdot(\nabla \times \boldsymbol{Y}).
 %\end{equation}
-%Since we consider only those vector fields vanishing at the boundary $\partial \Omega$, divergence theorem yields
+%Navier-Stokes \cref{eqs:NSE} are defined in the whole domain from $-\infty$ to $+\infty$ in each axis. 
+%	In our problem and operators $\operatorname{curl},\operatorname{grad},\operatorname{div}$ are local. 
+%	Therefore, we are allowed to let velocity vector fields vanish at the boundaries $\pm\infty$.
+%	Since we consider only those vector fields that go to zero at $\partial \Omega$, divergence theorem yields
 %\begin{multline}
 %	0
 %	=	\int_{\partial \Omega}(\boldsymbol{X} \times \boldsymbol{Y}) \cdot \boldsymbol{n}\ dS
 %	=\int_{\Omega} \nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})\ dV=\\
 %	=\int_{\Omega} \left(\nabla \times \boldsymbol{X}\right)\cdot \boldsymbol{Y}\ dV
 %		-\int_{\Omega} \boldsymbol{X} \cdot \left(\nabla \times \boldsymbol{Y}\right)\ dV
-%	=\langle \operatorname{curl}\boldsymbol{X},\boldsymbol{Y}\rangle-\langle \boldsymbol{X},\operatorname{curl}^*\boldsymbol{Y}\rangle ,
+%	=\langle \operatorname{curl}\boldsymbol{X},\boldsymbol{Y}\rangle-\langle \boldsymbol{X},\operatorname{curl}^T\boldsymbol{Y}\rangle ,
 %\end{multline}
-%which identifies the curl as the transpose of itself in 3-dimensions:
+%which identifies the curl as the transpose of itself in 3D:
 %\begin{equation}\label{eqn:curl-curl-orth}
-%\text { curl }^*=\text { curl. }	
+%\operatorname{curl}^T=\operatorname{curl.}	
 %\end{equation}
-%
-%
-%For 3-dimensional vector fields we can write $\operatorname{curl}$ operator in a symmetric matrix form
-%\begin{equation}\label{eqn:curl-transpose}
-%	\operatorname{curl}:=
-%	\begin{bmatrix}{}
-%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-%\end{bmatrix}
-%\equiv\begin{bmatrix}{}
-%  0& -\frac{\partial}{\partial z}&\frac{\partial}{\partial y} \\
-%  \frac{\partial}{\partial z}& 0 &-\frac{\partial }{\partial x} \\
-%  -\frac{\partial}{\partial y}&\frac{\partial }{\partial x} &0
-%\end{bmatrix}^*=:\operatorname{curl}^*.
-%\end{equation}
-%This agrees with \cref{eqn:curl-curl-orth}. 
-%When we transpose $\operatorname{curl}$ operator, the transpose of each derivative changes it's sign, since integrating by parts with respect to variable $s$ of vector fields $\boldsymbol{X}(s),\boldsymbol{Y}(s)$ leads to
-%\begin{align}
-%\langle \frac{d}{ds}\boldsymbol{X}(s),\boldsymbol{Y}(s) \rangle
-%	&=\int_{\Omega} \frac{d X}{d s} \boldsymbol{Y}(s)\ d s\\
-%	&=\left.\boldsymbol{X}(s) \boldsymbol{Y}(s)\right|_{\partial \Omega}-\int_{\Omega} \boldsymbol{X}(s) \frac{d \boldsymbol{Y}(s)}{d s}\ d s\\
-%	&=\int_{\Omega} \boldsymbol{X}(s) \left(-\frac{d }{d s} \boldsymbol{Y}(s)\right)\ d s\\
-%	&=\langle \boldsymbol{X}(s), -\frac{d}{ds} \boldsymbol{Y}(s)\rangle,chto
-%\end{align}
-%where $\left.\boldsymbol{X}(s) \boldsymbol{Y}(s)\right|_{\partial \Omega}$ vanishes at the boundary $\partial\Omega$. 
-%Thus, symmetric matrix $\operatorname{curl}^*=\operatorname{curl}$ is obtained.
-
-%The operator $\nabla^{\perp}$ defined by
-%\begin{equation}\label{eqn:grad-perp}
-%	\nabla^{\perp} \psi=(\nabla \psi)^{\perp}
-%	=\begin{bmatrix*}[r]
-%	\frac{\partial}{\partial y} \psi\\
-%	-\frac{\partial}{\partial x} \psi
-%	\end{bmatrix*}
-%\end{equation}
-%is called the grad-perp or the rotated gradient. The notation
-%\begin{equation}
-%	\operatorname{grad}^{\perp} \psi=\nabla^{\perp} \psi
-%\end{equation}
-%can also be used. In $\Omega\subset \mathbb{R}^2$ this operator matches stream function definition \cref{eqn:streamfunction}, that is $\boldsymbol{v}=(u,v)=\nabla^\perp \psi$.
-
-%The result is dimension-independent, because the divergence theorem holds in all dimensions. To compute the transpose of the 2-dimensional curl, we proceed as
-%\begin{equation}
-%\int_{\Omega} \phi \operatorname{curl} \boldsymbol{X}\ dV
-%=\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}^{\perp}\ dV
-%=-\int_{\Omega} \boldsymbol{X}^{\perp} \cdot \nabla \phi\ dV
-%=\int_{\Omega} \boldsymbol{X} \cdot(\nabla \phi)^{\perp}\ dV
-%=\int_{\Omega} \boldsymbol{X} \cdot \nabla^{\perp} \phi\ dV,
-%\end{equation}
-%yielding
-%\begin{equation}\label{eqn:curl-grad-perp}
-%\operatorname{curl}^*=\operatorname{grad}^{\perp}, \quad\left(\operatorname{grad}^{\perp}\right)^*=\text { curl. }
-%\end{equation}
-
-We now modify momentum \cref{eqn:momentum-intro} in 2D in a similar manner as in \cref{sec:vorticity-streamfunction} with a help of differential operators. These operators can be transformed into discrete format without much difficulties. Hence, we can apply the similar process to system of linear equations generated by \cref{eqn:momentum-intro} by multiplying it with the corresponding matrices, which is discussed in \cref{sec:nullspace-method,sec:algorithm}. 
-
-Define
-\begin{equation}
-	\operatorname{curl}
-	=
-	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y} \\
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*}.
-\end{equation}
-Hence, by stream function \cref{eqn:streamfunction} we have $\boldsymbol{v}=\operatorname{curl}\psi$. Lastly, define
-\begin{equation}
-	\operatorname{curl}^*
-	=
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y}&
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}.
-\end{equation}
-
-Let us now compute $\operatorname{curl}^*$ applied to velocity vector $\boldsymbol{v}$
-\begin{equation}\label{eqn:curl-adj-curl}
-	\operatorname{curl}^*\boldsymbol{v}=\operatorname{curl}^*\operatorname{curl}\psi=
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y}&
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y} \\
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi
-	=\left(-\frac{\partial^2}{\partial y^2} -\frac{\partial^2 }{\partial x^2}\right) \psi =-\nabla^2 \psi.
-\end{equation}
-By taking into account commutativity of partial derivatives with respect to time and space we obtain
-\begin{equation}\label{eqn:transient-laplacian-psi}
-	\operatorname{curl}^*\left(\frac{\partial}{\partial t}\right)\operatorname{curl}\psi=-\frac{\partial}{\partial t}\left(\nabla^2 \psi \right).
-\end{equation}
-Applying $\operatorname{curl}^*$ to Laplacian of velocity leads to
-\begin{align}\begin{split}\label{eqn:biharmonic-psi}
-	\operatorname{curl}^*\nabla^2\boldsymbol{v}
-	&=\operatorname{curl}^*\nabla^2\operatorname{curl}\psi\\
-	&=\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}&
-	-\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\begin{bmatrix}
-	\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} & 0\\
-	0	& \frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}
-	\end{bmatrix}
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi\\
-	&=\begin{bmatrix*}[r]
-	\frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) & 0\\
-	0 & -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2} \right)
-	\end{bmatrix*}
-	\begin{bmatrix*}[r]
-	-\frac{\partial}{\partial y} \\
-	\frac{\partial}{\partial x}
-	\end{bmatrix*}
-	\psi\\
-%	&=\left( \frac{\partial}{\partial y}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right)\left(-\frac{\partial}{\partial y} \right) -\frac{\partial}{\partial x}\left(\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}\right) \left( \frac{\partial}{\partial x} \right) \right)\psi\\
-%	=\operatorname{curl}^*\operatorname{curl}\nabla^2\psi
-%	&=-\nabla^4\psi\\
-	&=-\nabla^2\left(\nabla^2\psi\right).
-\end{split}\end{align}
-
-
-
-
-%We can proceed to the algorithm now. To overcome the issue of stating boundary conditions for $\omega,\psi$ as discussed in \cref{sec:vorticity-streamfunction} we first apply boundary conditions in terms of velocity and pressure and make them as external force function similarly to Duhammel Principle, which states that the homogeneous heat equation
-%\begin{equation}
-%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=0 & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=g(x) & x \in \mathbb{R}^n\end{cases}
-%\end{equation}
-%can be represented as inhomogeneous problem
-%\begin{equation}
-%	\begin{cases}\boldsymbol{u}_t(x, t)-\Delta \boldsymbol{u}(x, t)=f(x, t) & (x, t) \in \mathbb{R}^n \times(0, \infty) \\ \boldsymbol{u}(x, 0)=0 & x \in \mathbb{R}^n\end{cases},
-%\end{equation}
-%but instead of inictial conditions we will apply similar procedure to BCs.
-
-Our goal is to obtain equation in terms of $\psi$ by modifying \cref{eqn:momentum-intro}. 
-	The procedure lies in transforming this equation into vorticity transport \cref{eqn:transport-vorticity} with the help of vorticity stream function substitution \cref{eqn:vorticity-stream} and $\operatorname{curl}$, $\operatorname{curl}^*$ operators. 
-	Firstly, we put transient, gradient and viscous terms to the left hand side, whereas non-linear terms are linearized and moved to the right. 
-	Next, we substitute $\boldsymbol{v}=\operatorname{curl}\boldsymbol{\psi}$ and apply $\operatorname{curl}^*$ to rearranged momentum~\cref{eqn:momentum-intro}, which eliminates the pressure gradient ($\operatorname{curl}^*\operatorname{grad}=\begin{bmatrix*}[r]-\frac{\partial}{\partial y}&\frac{\partial}{\partial x}	\end{bmatrix*}\begin{bmatrix*}[r] \frac{\partial}{\partial x}\\ \frac{\partial}{\partial y} \end{bmatrix*}=0$). 
-	For 2-dimensional case from \cref{eqn:biharmonic-psi,eqn:transient-laplacian-psi} , we get
-	\begin{align}
-		\operatorname{curl}^*\left( \frac{\partial \boldsymbol{v}}{\partial t} -\epsilon \nabla^2 \boldsymbol{v} \right)
-			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
-		\operatorname{curl}^*\left( \frac{\partial }{\partial t}\operatorname{curl}\psi -\epsilon \nabla^2 \operatorname{curl}\psi \right)
-			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\\
-		\left(\frac{\partial}{\partial t} -\epsilon \nabla^2\right)\left(-\nabla^2\psi\right)
-			&=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right)\label{eqn:biharmonic-heat-eqn}
-	\end{align}
-	
-%	Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
-%\begin{equation}
-%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
-%\end{equation}
-%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
-%	Homogeneous equation $\nabla\cdot \boldsymbol{v}_h=0$ means that the vector field $\boldsymbol{v}_h$ vanishes at the boundary $\partial \Omega$.
-	
-	Solving \cref{eqn:biharmonic-heat-eqn} for $\nabla^2\psi$ is equivalent to obtaining solution for Poisson \cref{eqn:vorticity-stream}. However, we can go through \cref{eqn:biharmonic-heat-eqn} and solve it in one step by obtaining $\psi$ from biharmonic equation
-	\begin{equation}
-	\label{eqn:biharmonic-streamfunction}
-		\boxed{
-		-\frac{\partial\nabla ^2 \psi}{\partial t} 
-		+\epsilon\nabla ^4 \psi=\operatorname{curl}^*\left( \boldsymbol{v}\cdot\nabla\boldsymbol{v}\right),
-		}
-	\end{equation}
-where the right hand side contains boundary conditions (in numerical sense) and non-linear advective terms, which were initially stated in terms of $\boldsymbol{v},p$ and transformed through premultiplication by $\operatorname{curl}^T$. 
-
-%Assume that the general solution to \cref{eqs:NSE} is represented as a sum of homogeneous and inhomogeneous velocity vector fields
-%\begin{equation}
-%	\boldsymbol{v}=\boldsymbol{v}_h+\boldsymbol{v}_p,
-%\end{equation}
-%where $\boldsymbol{v}_h$ satisfies momentum \cref{eqn:momentum-intro} with homogeneous continuity $\nabla\cdot \boldsymbol{v}_h=0$, whereas the particular solution is obtained from $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$. 
-%We will discuss the numerical details of this approach in \cref{sec:discrete-operators,sec:algorithm}.
-%	Vector field $\boldsymbol{v}_h$ considers the solution of biharmonic \cref{eqn:biharmonic-streamfunction} for $\psi$ vanishing at the boundary $\partial \Omega$, which matches the numerical computations of the Laplacian operator for $\psi$ in \cref{sec:nullspace-method}.
-%	\cref{eqn:biharmonic-streamfunction} is solved for $\psi$ using the zero boundary conditions, whereas the particular solution $\boldsymbol{v}_p$ is obtained from  $\nabla\cdot\boldsymbol{v}_p=\hat{{bc}}_2$ with non-zero boundary conditions. Finally, we arrive to the general solution of system of \cref{eqs:NSE} 
-%	\begin{equation}
-%		\boxed{\boldsymbol{v}=\boldsymbol{v}_p+\operatorname{curl}\psi.}
-%	\end{equation}
-
-
-\subsection{Vector fields that vanish at the boundary}
-This subsection contains side notes for \cref{sec:prelude-algorithm}, here we discuss some properties of differential operators in vector calculus. Consider continuous operators $\operatorname{div}$, $\operatorname{curl}$ and $\operatorname{grad}$ on bounded domain $\Omega$ with boundary $\partial \Omega$. Let all vector $\boldsymbol{X},\boldsymbol{Y}$ and scalar $\phi,\psi$ fields vanish at $\partial \Omega$. Denote by $SF$ the set of all scalar fields in $\Omega$, and by $VF$ the set of all vector fields in $\Omega$. In this subsection we need to have inner products in inner product space \cite{Gamtumur:2019}. Define scalar and vector inner products as
-\begin{equation}
-	\langle\phi, \psi\rangle=\int_{\Omega} \phi \psi\ dV,\quad
-	\langle \boldsymbol{X}, \boldsymbol{Y}\rangle=\int_{\Omega} \boldsymbol{X} \cdot \boldsymbol{Y}\ dV.
-\end{equation}
-Then define the transpose of grad as an operator $\operatorname{grad}^T: V F \rightarrow S F$ such that
-\begin{equation}
-	\langle  \operatorname{grad} \phi,\boldsymbol{X}\rangle=\left\langle\phi, \operatorname{grad}^T \boldsymbol{X}\right\rangle,
-\end{equation}
-for all vector fields $\boldsymbol{X}$ and scalar fields $\phi$ vanishing at the boundary $\partial \Omega$. To identify this operator, integrate the identity
-\begin{equation}
-	\nabla \cdot(\phi \boldsymbol{X})= \nabla \phi\cdot \boldsymbol{X}+ \phi \nabla \cdot \boldsymbol{X},
-\end{equation}
-and apply the divergence theorem, to get
-\begin{equation}\label{eqn:div-grad}
-	\int_{\partial \Omega} \phi \boldsymbol{X} \cdot \boldsymbol{n}\ dS=\int_{\Omega} \nabla \cdot(\phi \boldsymbol{X})\ dV=\int_{\Omega} \nabla \phi\cdot \boldsymbol{X}\ dV +\int_{\Omega} \phi \nabla \cdot \boldsymbol{X}\ dV.
-\end{equation}
-Since $\phi=0$ on $\partial \Omega$, left side of \cref{eqn:div-grad} vanishes. Hence, we infer
-\begin{equation}\label{eqn:inner-grad-div}
-	0=\langle \nabla \phi,\boldsymbol{X}\rangle+\langle\phi, \nabla \cdot \boldsymbol{X}\rangle,
-\end{equation}
-implying that the transpose of the gradient is the negative divergence, and the transpose of the divergence is the negative gradient:
-\begin{equation}\label{eqn:curl-grad}
-	\operatorname{grad}^T=- \text { div }, \quad \text { div }^T=-\operatorname{grad} .
-\end{equation}
-
-We now move to 3-dimensional case, consider the following identity
-\begin{equation}
-\nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})=(\nabla \times \boldsymbol{X}) \cdot \boldsymbol{Y}-\boldsymbol{X} \cdot(\nabla \times \boldsymbol{Y}).
-\end{equation}
-Navier-Stokes \cref{eqs:NSE} are defined in the whole domain from $-\infty$ to $+\infty$ in each axis. 
-	In our problem and operators $\operatorname{curl},\operatorname{grad},\operatorname{div}$ are local. 
-	Therefore, we are allowed to let velocity vector fields vanish at the boundaries $\pm\infty$.
-	Since we consider only those vector fields that go to zero at $\partial \Omega$, divergence theorem yields
-\begin{multline}
-	0
-	=	\int_{\partial \Omega}(\boldsymbol{X} \times \boldsymbol{Y}) \cdot \boldsymbol{n}\ dS
-	=\int_{\Omega} \nabla \cdot(\boldsymbol{X} \times \boldsymbol{Y})\ dV=\\
-	=\int_{\Omega} \left(\nabla \times \boldsymbol{X}\right)\cdot \boldsymbol{Y}\ dV
-		-\int_{\Omega} \boldsymbol{X} \cdot \left(\nabla \times \boldsymbol{Y}\right)\ dV
-	=\langle \operatorname{curl}\boldsymbol{X},\boldsymbol{Y}\rangle-\langle \boldsymbol{X},\operatorname{curl}^T\boldsymbol{Y}\rangle ,
-\end{multline}
-which identifies the curl as the transpose of itself in 3D:
-\begin{equation}\label{eqn:curl-curl-orth}
-\operatorname{curl}^T=\operatorname{curl.}	
-\end{equation}
 
 
 \pagebreak
-\section{Problem statement}\label{sec:problem-statement-dimentional}
+\section{Introduction and problem statement}\label{sec:problem-statement-dimentional}
 Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to ~\cref{eqs:NSE} on in rectangular domain $\Omega:0\leq x < L, 0\leq y < H$ together with boundary conditions on $\partial\Omega$:
 \begin{subequations}
 \label[pluralequation]{eqs:NSE-dsm-bl-dimensional}
@@ -567,41 +567,15 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \end{subequations}
 where $\hat{\mathbf{n}},\hat{\mathbf{t}}$ are normal and tangential unit vectors to the $\partial\Omega$ boundary.
 
+In \cref{sec:nondimensionalization} we display how to make the \cref{eqs:NSE-dsm-bl-dimensional} non-dimensional and show the results in \cref{sec:problem-statement-nondimensional}. Domain discretization is performed in \cref{sec:domain-discretization}. Transient discretization is performed in \cref{sec:discrete-operators}, whereas spatial discretizations can be found in \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} and symmetrization is shown in \cref{sec:normalization}. The way of obtaining matrices which modify the system is displayed in \cref{sec:nullspace-method}, whereas the resulting algorithm is shown in \cref{sec:algorithm}.
+
 
 
 %\subsubsection{Top BC}\label{subsubsec:top-bc}
 
-\section{Nondimensionalization}\label{sec:nondimensionalization}
-In numerical computations, it is advantageous to maintain variables of comparable magnitude. This ensures that operations such as the multiplication of a large dimensional pressure variable with a small velocity are not performed. 
 
-We will truncate the domain and normalize all equations by width $L$ and maximum velocity of the boundary condition $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
-\begin{equation*}
-	x\to Lx^{\prime},  \quad 
-	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
-	\nabla\to \frac{1}{L}\nabla^{\prime}, \quad 
-%	\Delta \to \frac{1}{L^2} \Delta^{\prime},  \quad 
-	p\to p^{\prime} \rho U_0^2, \quad 
-	t\to \frac{L}{U_0}t^{\prime},
-\end{equation*}
-we obtain
-\begin{equation*}
-	\frac{U_0}{\frac{L}{U_0}} \frac{\partial \boldsymbol{v}^{\prime}}{\partial t^{\prime}}+U_0\boldsymbol{v}\cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}=-\frac{1}{\rho}\left(\frac{1}{L} \nabla^{\prime}\right){p^{\prime}\rho U^2_0}+\frac{\mu}{\rho} \left(\frac{1}{L} \nabla^{\prime}\right) \cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}^{\prime}.
-\end{equation*}
-After multiplying both sides of the equation by $\frac{L}{U_0^2}$ and introducing well-known Reynolds number 
-\begin{equation*}
-\operatorname{Re}=\frac{\rho L U_0}{\mu},
-\end{equation*}
-we obtain the non-dimensional momentum equation
-\begin{equation*}
-	\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \frac{1}{\operatorname{Re}} \nabla \cdot \nabla \boldsymbol{v},
-\end{equation*}
-where prime superscript $\prime$ is suppressed for the dimensionless variables. The continuity equation is nondimensionalized in a similar manner:
-\begin{equation*}
-	\left(\frac{1}{L} \nabla^{\prime}\right) \cdot U_0\boldsymbol{v}^{\prime}=0\iff\nabla^{\prime} \cdot\boldsymbol{v}^{\prime}=0\implies\nabla \cdot\boldsymbol{v}=0,
-\end{equation*}
-where we drop prime superscripts in the last identity as well.
 
-\pagebreak
+%\pagebreak
 \section{Problem statement on truncated domain}\label{sec:problem-statement-nondimensional}
 The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-dimentional} on semi-infinite domain now become a system of partial differential equations on a unit square domain 
 \begin{subequations}
@@ -622,27 +596,7 @@ The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-d
 \end{align}
 \end{subequations}
 
-\section{Domain discretization}\label{sec:domain-discretization}
-Following the nondimensionalization of the governing equations, we now turn our attention to the process of domain discretization. This crucial step involves dividing the computational domain into discrete elements, allowing us to compute variables and their derivatives on a finite set of points called grid. Consider discretizing the area into $M$ intervals horizontally and $N$ intervals vertically forming a mesh of rectangular cells. To enhance memory access it is recommended to organize the data using vectors instead of matrices. 
-The reason behind is memory access time; a single index $i$ works faster than double $i,j$ in most programming languages. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow and Welch~\cite{Harlow:1965}) to represent coordinates on the grid.
 
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.40\paperwidth]{grid-bl}
-  }
-  \caption{Domain discretization (here $m=M, n=N$)}\label{bl-domain-discretization}
-\end{figure}
-
-To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. 
-	Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
-	Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
-	This calculation on staggered grids does not require any interpolation, furthermore, it is computationally cheaper and simpler to implement. 
-
-The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
-	The number of unknown components inside the domain (excluding boundaries) is $M(N-1)$ for $v$ and $(M-1)N$ for $u$. 
-	At the line (row) with coordinate $y_1$ there are $M-1$ unknown $u$ components located inside the domain with a total of $N$ such $y$ horizontal lines. 
-
-Increasing the accuracy closer to the boundary of interest looks advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. 
 	
 
 
@@ -759,11 +713,307 @@ which in short becomes
 		\hat{bc}_2
 	\end{pmatrix}.}
 \end{equation}
-Here, $\hat{r}^n$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_1,\hat{bc}_2$ are explicit boundary values in terms of velocity and pressure.
+Here, $\hat{r}^n$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_1,\hat{bc}_2$ are explicit boundary values in terms of velocity and pressure. \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} display the spatial discretization of $\hat{L},\hat{\mathbf{H}},\hat{D},\hat{G}$ operators. \cref{sec:normalization} shows how to make the system symmetric.
 
 
+
+
+
+\pagebreak
+\section{Nullspace method and pressure elimination in terms of discrete operators}\label{sec:nullspace-method}
+
+The goal of this subsection is to show how unknown pressure variables can be eliminated from \cref{eqn:nse-normalized} similarly to vorticity-stream function formulation. 
+Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in \cref{eqn:nse-normalized} matrix $D$ is wider than tall for grids larger than $2\times 2$, hence it defines a nullspace. 
+The nullspace of matrix $D$ is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
+
+%The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
+%
+%In the two-dimensional case, the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
+
+%A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{C-example-2x2}
+  }
+  \caption{$2\times 2$ example for $C$ matrix.}\label{fig:C-example-2x2}
+\end{figure}
+An intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain (\cref{fig:C-example-2x2}). If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity. After applying the above procedure we obtain
+\begin{equation*}
+  C = 
+  \begin{bmatrix*}[r]
+  1		\\
+%  0		\\
+  -1	\\
+%  0		\\
+  -1	\\
+  1		\\
+\end{bmatrix*}.
+\end{equation*}
+
+%\begin{figure}[H]
+%\begin{center}
+%  \includegraphics[width=0.75\textwidth]{Figures/D-C-DC}
+%\end{center}
+%\caption{Divergence and Curl matrices.}
+%\label{fig:DC}
+%\end{figure}
+The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. 
+%Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. 
+%Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
+The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. 
+Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system. New Laplacian operator applied to streamfunction now becomes $C^TC$ with full Dirichlet boundary conditions.
+
+%In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L_\psi$ (Laplacian for $\psi$ located at nodes) being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%%\cref{eqn:vorticity-stream}
+%Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
+Momentum part of \cref{eqn:NSE-dsm-bl-system-nonint} becomes
+\begin{align}
+	\left(\frac{1}{\Delta t}\hat{M}R^{-1} - \frac{1}{2}L\right)q^{n+1}=RHS, &\quad\text{which we premultiply by $C^T$ and use $q^{n+1}=C\psi$.}\\
+	&\quad\text{All boundary conditions in this system are Dirichlet.}\notag\\
+	&\quad\text{$	\hat{M}R^{-1}=I$ for uniform grids.}\notag\\
+	\left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)\psi^{n+1}=C^TRHS, &\quad\text{has to be solved for $\psi^{n-1}$.}\\
+	\psi^{n+1} = \left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)^{-1}C^TRHS,
+	&\quad\text{We found analytically that  }\notag\\
+	&\quad\text{$\operatorname{curl}^T\operatorname{curl}\psi=-\nabla^2\psi$ and $\operatorname{curl}^T\nabla^2\operatorname{curl}\psi^{n-1}=-\nabla^2\left(\nabla^2\psi\right)$.}\notag\\
+	&\quad\text{However, in discrete form $C^TC=L_\psi \neq L_{\boldsymbol{v}}$,}\notag\\
+	&\quad\text{since $L_\psi$ applies to $\psi$ located at the nodes,}\notag\\
+	&\quad\text{whereas $L_{\boldsymbol{v}}$ applies to $\boldsymbol{v}$ located at faces of each cell.}\notag\\
+	&\quad\text{Finding $\left(C^T\hat{M}R^{-1}C\right)^{-1}$ implies solving Poisson equation}\notag\\
+	&\quad\text{for streamfunciton $\nabla^2\psi=-\omega$.}\notag\\
+	&\quad\text{If we are to use fully explicit scheme on uniform grid, then}\notag\\
+	\left(C^TC\right)\psi^{n+1}=C^T\left(RHS\right)\iff\\
+	-\frac{\partial }{\partial t}\omega=\frac{\partial}{\partial t}\left(\nabla^2\psi\right)=\operatorname{curl}\left(-\hat{\mathbf{H}}(\boldsymbol{v})+\epsilon\nabla^2\boldsymbol{v}\right).
+\end{align}
+
+
+
+
+%\pagebreak
+\section{Resulting algorithm}\label{sec:algorithm}
+
+Let us consider the solution to discretized \cref{eqn:nse-normalized}$q^{n+1}$,
+where $q^{n+1}$ is a solution of homogeneous continuity equation 
+\begin{equation}\label{eqn:discrete-homogeneous-continuity}
+	Dq^{n+1}=0ю
+\end{equation}
+%and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equation
+%\begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
+%	Dq^{n+1}_p=bc_2.
+%\end{equation}
+
+%%%%%%%%%%%%%%
+% REMOVE SOURCE TERM BELOW? S_1
+%%%%%%%%%%%%%%
+
+%We assume that momentum equation from \cref{eqn:nse-normalized} is modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
+%The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
+%Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
+
+
+Taking into account continuous operator identities in vorticity-stream fucntion, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
+\begin{enumerate}
+	\item Construct $\operatorname{curl}$ matrix $C$, such that $DC=0$ and $q=C\psi$.\label[step]{step:1}
+	\item Eliminate the pressure terms in the momentum equation.\label[step]{step:4}
+		\begin{align}
+			Aq^{n+1}&=-Gp^{n+1}+bc_1,\notag\\
+			A(q^{n+1})&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
+			C^TAq^{n+1}&=C^T(bc_1), &\text{ use $q^{n+1}=C\psi^{n+1}$,}\notag\\
+			C^TAC\psi^{n+1}&=C^T(bc_1)\label[system]{eqn:resulting-system}.
+		\end{align}
+	\item Solve resulting \cref{eqn:resulting-system} for $\psi^{n+1}$. \label[step]{step:5}
+	\item Obtain $q^{n+1}=C\psi^{n+1}$.\label[step]{step:6}
+	\item Convert $q^{n+1}$ to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
+	\item Transition to the next time instance by repeating \cref{step:5,step:6,step:7}.
+\end{enumerate}
+
+
+%
+%%\subsection{A particular solution to the discrete continuity equation}\label{sec:particular-solution}
+%\pagebreak
+%\section{Particular solution using Lagrange multipliers}\label{sec:particular-solution}
+%It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
+%\begin{equation}\label{eqn:lagrange-multipliers}
+%	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
+%\|q_p\|^2+\lambda^T(bc_2-D q_p).
+%\end{equation}
+%
+%Differentiating w.r.t $q_p$ and finding the minimum (derivative equal to zero) yields to
+%\begin{equation}\label{eqn:flux-minimum}
+%2 q_p-D^T \lambda=0.
+%\end{equation}
+%
+%We may premultiply by $D$ to obtain
+%\begin{equation*}
+%2 D q_p-D D^T \lambda=0,
+%\end{equation*}
+%then the substitution of $bc_2=D q_p$ will lead to
+%
+%\begin{equation*}
+%\begin{aligned}
+%2 bc_2&=D D^T \lambda,\\
+%\lambda &=2\left(D D^T\right)^{-1} bc_2,
+%\end{aligned}
+%\end{equation*}
+%plugging the above into~\cref{eqn:flux-minimum} results in
+%\begin{equation*}
+%q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
+%\end{equation*}
+%where $D^\dagger=D^T\left(D D^T\right)^{-1}$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
+ 
+%%%% REMOVE?$ %%%%%
+%\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
+%\textbf{TO KEEP OR NOT TO KEEP}
+%Another option to find a particular solution to~\eqref{eqn:discrete-non-homogeneous-continuity} was proposed by Hall in~\cite{Hall:1980} and \cite{Hall:1985}. The method uses the spanning tree of graph $\mathcal{N}$ which has nodes and edges corresponding to the cell centres and velocity vectors from our grid. This method is discussed below.
+%
+%Let us write useful notations:
+%\begin{itemize}
+%	\item $\mathcal{N}$ - directed planar network (graph). 
+%	\item $K$ - a set of nodes (control volume centres). 
+%	
+%	$N$ - number of nodes. 
+%	\item $\Lambda$ - a set of interior $\Lambda^0$ and boundary $\partial \Lambda$ links (face velocities). 
+%		
+%		$M$ - total number of links.
+%		
+%		$M^0$ - number of interior links. 
+%	\item Pendant node - a node which is an extremity of only one interior link.  
+%	\item $\mathcal{T}$ - a spanning tree of directed network $\mathcal{N}$. $\mathcal{T}$ is a connected partial network of $\mathcal{N}$ which has no cycles.
+%\end{itemize}
+%
+%The procedure for finding a particular solution is as follows:
+%\begin{enumerate}
+%	\item Construct a spanning tree $\mathcal{T}$ of $\mathcal{N}$ with the pressure specified nodes appended.
+%	\item Velocities associated with links not in the tree are set to zero.
+%	\item Choose a node in $\mathcal{T}$ which is an extremity of a boundary link and call it root. 
+%	\item Set the boundary link velocities equal to zero, except the link incident on the root.
+%	\item At each pendant node except the root, the continuity equation was reduced to a simple equation relating the velocity only at the internal connection of the tree to that node.  
+%	\item Move from the pendant node along the tree towards the root. At each node the continuity equation involves a single unknown velocity.
+%	\item Except the juncture nodes, where the chains from one or more pendant nodes connect. Before solving the continuity equation associated with such a juncture node, the velocities on the chains from pendant nodes to the juncture node have to be determined.
+%	\item The process is completed after using the continuity equation at the root to determine the final velocity of the boundary link.
+%\end{enumerate}
+
+%Let us take our momentum equation and apply the equation~\eqref{eqn:non-homogeneous} to it.
+%	\begin{equation}
+%	\begin{aligned}
+%		Aq + Gp & =bc_1,\text{ premultiply by } C^T,\\
+%		C^T A q+0 & =C^T bc_1, \\
+%		C^TA(C\psi+q_p)&=C^T bc_1,\\
+%		C^TA C\psi&=C^T bc_1 - C^TA q_p,\\
+%		C^TA C \psi & = C^T bc_1 - C^TA D_p^\dagger bc_2.
+%	\end{aligned}
+%	\end{equation}
+
+%Let us apply boundary conditions to matrix $D$, and call it $D_p$. Using the method described above we find one particular solution $q_p$  to the non-homogeneous continuity equation~\eqref{eqn:discrete-continuity}, but with $D_p$, which has the boundary conditions (Dirichlet, Neuman, or mixed) applied. 
+%
+%\begin{equation}
+%	q_p=D_p^\dagger bc_2.
+%\end{equation}
+%
+%Then, the final system of equations to be solved can be constructed using $q=q_h+q_p$ with two choices (\textbf{TO BE DETERMINED}):
+%\begin{enumerate}
+%	\item First choice is based on the assumption that the momentum equation has the solution of both particular and homogeneous continuity equation.
+%	\begin{equation}
+%	\begin{aligned}
+%		Aq + Gp & =bc_1,\text{ premultiply by } C^T,\\
+%		C^T A q+0 & =C^T bc_1, \\
+%		C^TA(q_h+q_p)&=C^T bc_1,\\
+%		C^TA q_h&=C^T bc_1 - C^TA q_p,\\
+%		C^TA C \psi_h & = C^T bc_1 - C^TA D_p^\dagger bc_2.
+%	\end{aligned}
+%	\end{equation}
+%	\item Second choice is based on the assumption that the momentum equation has the solution of homogeneous continuity equation only, which feels making more sense, since in this case $G=-D_h^T$ and will kill pressure term, where $D$ has pure Dirichlet =0 boundary conditions.
+%	\begin{equation}
+%	\begin{aligned}
+%		Aq_h + Gp & =bc_1,\text{ premultiply by } C^T,\\
+%		C^T A q_h+0 & =C^T bc_1, \\
+%		C^TA(q-q_p)&=C^T bc_1,\\
+%		C^TA q&=C^T bc_1 + C^TA q_p,\\
+%		C^TA C \psi & = C^T bc_1 + C^TA D_p^\dagger bc_2.
+%	\end{aligned}
+%	\end{equation}
+%\end{enumerate}
+
+%\section{Other interesting methods for solving Naver Stokes (may include algorithms from articles \cite{Brown:2001, Dukowicz:1992, Kim:1985, Perot:1993})}
+%
+%Citing Colonius~\cite{Colonius:2008} The second type of error associated with vorticity advecting or diffusing through the boundary is typically handled by posing outflow boundary conditions. For incompressible flow, these are usually called convective boundary conditions, whereas for compressible flow the term non-reflecting boundary condition is often used. Multidomain boundary conditions used on 3 domains: fine, medium, and coarse. 
+	
+%\section{Summary}\label{sec:summary}
+	
+
+\pagebreak
+\bibliographystyle{plain}
+\bibliography{Zotero.bib}
+
+
+\pagebreak
+\appendix
+\section{Appendix}
+
+
+\section{Nondimensionalization}\label{sec:nondimensionalization}
+In numerical computations, it is advantageous to maintain variables of comparable magnitude. This ensures that operations such as the multiplication of a large dimensional pressure variable with a small velocity are not performed. 
+
+We will truncate the domain and normalize all equations by domain width $L$ and maximum velocity of the boundary condition $U_0$. After introducing the following dimensionless variables (marked with prime ${ }^{\prime}$ ):
+\begin{equation*}
+	x\to Lx^{\prime},  \quad 
+	\boldsymbol{v}\to U_0\boldsymbol{v}^{\prime}, \quad 
+	\nabla\to \frac{1}{L}\nabla^{\prime}, \quad 
+%	\Delta \to \frac{1}{L^2} \Delta^{\prime},  \quad 
+	p\to p^{\prime} \rho U_0^2, \quad 
+	t\to \frac{L}{U_0}t^{\prime},
+\end{equation*}
+we obtain
+\begin{equation*}
+	\frac{U_0}{\frac{L}{U_0}} \frac{\partial \boldsymbol{v}^{\prime}}{\partial t^{\prime}}+U_0\boldsymbol{v}\cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}=-\frac{1}{\rho}\left(\frac{1}{L} \nabla^{\prime}\right){p^{\prime}\rho U^2_0}+\frac{\mu}{\rho} \left(\frac{1}{L} \nabla^{\prime}\right) \cdot\left(\frac{1}{L} \nabla^{\prime}\right) U_0\boldsymbol{v}^{\prime}.
+\end{equation*}
+After multiplying both sides of the equation by $\frac{L}{U_0^2}$ and introducing well-known Reynolds number 
+\begin{equation*}
+\operatorname{Re}=\frac{\rho L U_0}{\mu},
+\end{equation*}
+we obtain the non-dimensional momentum equation
+\begin{equation*}
+	\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \frac{1}{\operatorname{Re}} \nabla \cdot \nabla \boldsymbol{v},
+\end{equation*}
+where prime superscript $\prime$ is suppressed for the dimensionless variables. The continuity equation is nondimensionalized in a similar manner:
+\begin{equation*}
+	\left(\frac{1}{L} \nabla^{\prime}\right) \cdot U_0\boldsymbol{v}^{\prime}=0\iff\nabla^{\prime} \cdot\boldsymbol{v}^{\prime}=0\implies\nabla \cdot\boldsymbol{v}=0,
+\end{equation*}
+where we drop prime superscripts in the last identity as well.
+
+
+
+\section{Domain discretization}\label{sec:domain-discretization}
+Following the nondimensionalization of the governing equations, we now turn our attention to the process of domain discretization. This crucial step involves dividing the computational domain into discrete elements, allowing us to compute variables and their derivatives on a finite set of points called grid. Consider discretizing the area into $M$ intervals horizontally and $N$ intervals vertically forming a mesh of rectangular cells. To enhance memory access it is recommended to organize the data using vectors instead of matrices. 
+The reason behind is memory access time; a single index $i$ works faster than double $i,j$ in most programming languages. In this section, however, for the sake of simplicity, we use two indices $i,j$ (column and row as in Harlow and Welch~\cite{Harlow:1965}) to represent coordinates on the grid.
+
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.40\paperwidth]{grid-bl}
+  }
+  \caption{Domain discretization (here $m=M, n=N$)}\label{bl-domain-discretization}
+\end{figure}
+
+To eliminate the necessity of solving an additional equation for pressure we will be using a staggered grid arrangement. 
+	Details are discussed in \cref{subsec:divergence,subsec:gradient,sec:nullspace-method}. 
+	Moreover, the pressure gradients can be evaluated directly using central differences on such grids. 
+	This calculation on staggered grids does not require any interpolation, furthermore, it is computationally cheaper and simpler to implement. 
+
+The $u$ velocity components are stored at the centres of vertically oriented faces, while the values of $v$ are stored at the centres of horizontal ones. 
+	The number of unknown components inside the domain (excluding boundaries) is $M(N-1)$ for $v$ and $(M-1)N$ for $u$. 
+	At the line (row) with coordinate $y_1$ there are $M-1$ unknown $u$ components located inside the domain with a total of $N$ such $y$ horizontal lines. 
+
+Increasing the accuracy closer to the boundary of interest looks advantageous, hence, we will refine the grid using the standard ratio rule $\Delta x_{i+1}=k_x\Delta x_i,\Delta y_{j+1}=k_y\Delta y_j$ with constants $k_x,k_y$ close to the value of $1$. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Laplacian}\label{sec:laplacian}
+\subsection{Laplacian}\label{subsec:laplacian}
 
 As per \cref{eqn:nse-matrix} it is required to approximate implicit viscous terms spatially. In order to obtain the discrete operator acting on a velocity vector we will rewrite Laplacian as a block matrix:
 \begin{equation*}
@@ -1406,244 +1656,6 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 	\left(\Delta_{xy}\right)\frac{1}{\Delta_{xy}}{D}q^{n+1}&=\left ( \Delta_{xy}\right ) 0\notag\\
 	D{q}^{n+1}&=0.
 \end{align*}
-
-
-
-
-\pagebreak
-\section{Nullspace method and pressure elimination in terms of discrete operators}\label{sec:nullspace-method}
-
-The goal of this subsection is to show how unknown pressure variables can be eliminated from \cref{eqn:nse-normalized} similarly to \cref{sec:vorticity-streamfunction}. Publications of Chang~\cite{Chang:2002} and Hall~\cite{Hall:1980} use the idea that in \cref{eqn:nse-normalized} matrix $D$ is wider than tall for grids larger than $2\times 2$, hence it defines a nullspace. The nullspace of matrix $D$ is the set of all solutions to the homogeneous linear system $Dx = 0$, where $x$ is a vector in the null space of $D$. Let $C$ be the nullspace matrix containing such vectors $x$. 
-
-The number of rows in the nullspace $C$ is equal to the number of faces with unknown velocities ($N_f$). In two dimensions $C$ has $N_n$ columns, which is equal to the number of nodes in the grid, whereas in three dimensions the nullspace has $N_e$ columns being the number of edges. 
-
-In the two-dimensional case, the matrix $C$ has two non-zero elements in each row, which are $+1$ and $-1$. The $+1$ value corresponds to the node $90^\circ$ from the normal velocity vector, whereas $-1$ corresponds to the node $-90^\circ$ from the normal velocity vector.  For three dimensional case see Chang ~\cite{Chang:2002}.
-
-%A more intuitive way of constructing the matrix $C$ relies on the usage of a counterclockwise vorticity around the nodes inside the domain and the boundary if such nodes have adjacent velocities from $\boldsymbol{v}$. In the case of the open boundary vortices around the nodes belonging to the open segment are taken into consideration. If the direction of the velocity vector on the adjacent face matches the direction of the vorticity then $+1$ is put into the corresponding row, $-1$ in case of the opposite directions of the velocity and vorticity. The matrix $C$ has the dimension of unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} shows matrices $D$ and $C$ for a $4\times4$ grid case with an open boundary on the right side of the domain. Yellow squares indicate $+1$, whereas blue squares correspond to $-1$ entries. The desired product then becomes $DC=0$ and since $D=-G^T$ we also have $(DC)^T=C^TD^T=-C^TG=0$. 
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.40\paperwidth]{C-example-2x2}
-  }
-  \caption{$2\times 2$ example for $C$ matrix.}\label{fig:C-example-2x2}
-\end{figure}
-A more intuitive way of constructing the matrix $C$ relies on the utilization of counterclockwise vorticity around the nodes within the domain (\cref{fig:C-example-2x2}). If the direction of the velocity vector on the adjacent face aligns with the vorticity's direction, +1 is assigned to the corresponding row; conversely, -1 is assigned in the case of opposite directions of velocity and vorticity. After applying the above procedure we obtain
-\begin{equation*}
-  C = 
-  \begin{bmatrix*}[r]
-  1		\\
-%  0		\\
-  -1	\\
-%  0		\\
-  -1	\\
-  1		\\
-\end{bmatrix*}.
-\end{equation*}
-
-\begin{figure}[H]
-\begin{center}
-  \includegraphics[width=0.75\textwidth]{Figures/D-C-DC}
-\end{center}
-\caption{Divergence and Curl matrices.}
-\label{fig:DC}
-\end{figure}
-The matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. Figure~\ref{fig:DC} illustrates matrices $D$ and $C$ for a $4\times4$ grid with an open boundary on the right side of the domain. 
-%Yellow squares represent $+1$ entries, while blue squares correspond to $-1$. 
-The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which completely eliminates the pressure from our system.
-
-%In order to make use of efficient solvers, the matrix $C^TA$ can be made symmetric if multiplied by $C$ from the right. We use the property of product $C^TC=-L_\psi$ (Laplacian for $\psi$ located at nodes) being symmetric Laplacian and $C^TLC=-L^2$ being symmetric biharmonic operator as in \cref{eqn:biharmonic-streamfunction}. Matrix $C^TC=-L^2$ has zero boundary conditions for the vector it is applied to.
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%%\cref{eqn:vorticity-stream}
-%Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
-Momentum part of \cref{eqn:NSE-dsm-bl-system-nonint} becomes
-\begin{align}
-	\left(\frac{1}{\Delta t}I - \frac{1}{2}L\right)q^{n+1}=RHS, &\quad\text{which we premultiply by $C^T$ and use $q^{n+1}=C\psi$.}\\
-	\left(\frac{1}{\Delta t}C^TC - \frac{1}{2}C^TLC\right)\psi^{n+1}=C^TRHS, &\quad\text{has to be solved for $\psi^{n-1}$.}\\
-	\psi^{n+1} = \left(\frac{1}{\Delta t}C^TC - \frac{1}{2}C^TLC\right)^{-1}C^TRHS,
-	&\quad\text{In \cref{sec:prelude} we found analytically that  }\\
-	&\quad\text{$\operatorname{curl}^T\operatorname{curl}\psi=-\nabla^2\psi$ and $\operatorname{curl}^T\nabla^2\operatorname{curl}\psi^{n-1}=-\nabla^2\left(\nabla^2\psi\right)$.}\notag\\
-	&\quad\text{However, in discrete form $C^TC=L_\psi \neq L_{\boldsymbol{v}}$,}\notag\\
-	&\quad\text{since $L_\psi$ applies to $\psi$ located at the nodes,}\notag\\
-	&\quad\text{whereas $L_{\boldsymbol{v}}$ applies to $\boldsymbol{v}$ located at faces of each cell.}\notag\\
-	&\quad\text{Finding $\left(C^TC\right)^{-1}$ implies solving Poisson equation}\notag\\
-		&\quad\text{for streamfunciton $\nabla^2\psi=-\omega$.}\notag
-%	\psi^{n+1} = \left((C^T)^{-1}\frac{1}{\Delta t}C^TC - (C^T)^{-1}\frac{1}{2}C^TLC\right)^{-1}RHS.\\
-%	\psi^{n+1} = \left(\frac{1}{\Delta t}C - \frac{1}{2}LC\right)^{-1}RHS.
-\end{align}
-
-
-
-
-\pagebreak
-\section{Resulting algorithm}\label{sec:algorithm}
-
-Let us consider the solution to discretized \cref{eqn:nse-normalized}
-\begin{equation*}
-	q^{n+1}=q^{n+1}_h,
-\end{equation*}
-where $q^{n+1}_h$ is a solution of homogeneous continuity equation 
-\begin{equation}\label{eqn:discrete-homogeneous-continuity}
-	Dq^{n+1}_h=0ю
-\end{equation}
-%and $q^{n+1}_p$ is a particular solution to a non-homogeneous continuity equation
-%\begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
-%	Dq^{n+1}_p=bc_2.
-%\end{equation}
-
-%%%%%%%%%%%%%%
-% REMOVE SOURCE TERM BELOW? S_1
-%%%%%%%%%%%%%%
-
-We assume that momentum equation from \cref{eqn:nse-normalized} is modified to streamfunction \cref{eqn:biharmonic-streamfunction} with biharmonic operator satisfies homogeneous \cref{eqn:discrete-homogeneous-continuity} as in Colonius-Taira \cite{Colonius:2008}. 
-%The difference between \cite{Colonius:2008} and the method described below lies in boundary conditions. Colonius and Taira used homogeneous conditions at all boundaries (e.g. $\frac{\partial u}{\partial x}=0$ at inlet-outlet). 
-%Therefore, it was not needed for them to solve an additional non-homogeneous \cref{eqn:discrete-non-homogeneous-continuity}, whereas, in our problem statement such equation has to be solved due to non-zero Dirichlet and Neumann boundary conditions.
-
-
-Taking into account continuous operator identities in \cref{sec:prelude-algorithm}, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
-\begin{enumerate}
-	\item Construct $\operatorname{curl}$ matrix $C$, such that $DC=0$ and $q_h=C\psi$.\label[step]{step:1}
-	\item Eliminate the pressure terms in the momentum equation.\label[step]{step:4}
-		\begin{align}
-			Aq^{n+1}&=-Gp^{n+1}+bc_1,\notag\\
-			A(q^{n+1}_h)&=D^Tp^{n+1}+bc_1, &\text{ premultiply by $C^T$,} \notag\\
-			C^TAq^{n+1}_h&=C^T(bc_1), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
-			C^TAC\psi^{n+1}&=C^T(bc_1)\label[system]{eqn:resulting-system}.
-		\end{align}
-	\item Solve resulting \cref{eqn:resulting-system} for $\psi^{n+1}$. \label[step]{step:5}
-	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.\label[step]{step:6}
-	\item Compute $q^{n+1}=q^{n+1}_h$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
-	\item Transition to the next time instance by repeating \cref{step:5,step:6,step:7}.
-\end{enumerate}
-
-
-%
-%%\subsection{A particular solution to the discrete continuity equation}\label{sec:particular-solution}
-%\pagebreak
-%\section{Particular solution using Lagrange multipliers}\label{sec:particular-solution}
-%It is possible to find one particular solution to the discrete non-homogeneous continuity \cref{eqn:discrete-non-homogeneous-continuity} using the method of Lagrange multipliers as follows
-%\begin{equation}\label{eqn:lagrange-multipliers}
-%	Dq_p^{n+1}=bc_2,\implies \mathcal{L}(q_p,\lambda)=
-%\|q_p\|^2+\lambda^T(bc_2-D q_p).
-%\end{equation}
-%
-%Differentiating w.r.t $q_p$ and finding the minimum (derivative equal to zero) yields to
-%\begin{equation}\label{eqn:flux-minimum}
-%2 q_p-D^T \lambda=0.
-%\end{equation}
-%
-%We may premultiply by $D$ to obtain
-%\begin{equation*}
-%2 D q_p-D D^T \lambda=0,
-%\end{equation*}
-%then the substitution of $bc_2=D q_p$ will lead to
-%
-%\begin{equation*}
-%\begin{aligned}
-%2 bc_2&=D D^T \lambda,\\
-%\lambda &=2\left(D D^T\right)^{-1} bc_2,
-%\end{aligned}
-%\end{equation*}
-%plugging the above into~\cref{eqn:flux-minimum} results in
-%\begin{equation*}
-%q_p=D^T\left(D D^T\right)^{-1} bc_2=D^\dagger bc_2,
-%\end{equation*}
-%where $D^\dagger=D^T\left(D D^T\right)^{-1}$ is called pseudo-inverse. In the method above we minimize the square of the mass flux, which is equivalent to the minimization of kinetic energy. 
- 
-%%%% REMOVE?$ %%%%%
-%\subsubsection{Particular solution using Graph Theory}\label{subsubsec:particular-graph-theory}
-%\textbf{TO KEEP OR NOT TO KEEP}
-%Another option to find a particular solution to~\eqref{eqn:discrete-non-homogeneous-continuity} was proposed by Hall in~\cite{Hall:1980} and \cite{Hall:1985}. The method uses the spanning tree of graph $\mathcal{N}$ which has nodes and edges corresponding to the cell centres and velocity vectors from our grid. This method is discussed below.
-%
-%Let us write useful notations:
-%\begin{itemize}
-%	\item $\mathcal{N}$ - directed planar network (graph). 
-%	\item $K$ - a set of nodes (control volume centres). 
-%	
-%	$N$ - number of nodes. 
-%	\item $\Lambda$ - a set of interior $\Lambda^0$ and boundary $\partial \Lambda$ links (face velocities). 
-%		
-%		$M$ - total number of links.
-%		
-%		$M^0$ - number of interior links. 
-%	\item Pendant node - a node which is an extremity of only one interior link.  
-%	\item $\mathcal{T}$ - a spanning tree of directed network $\mathcal{N}$. $\mathcal{T}$ is a connected partial network of $\mathcal{N}$ which has no cycles.
-%\end{itemize}
-%
-%The procedure for finding a particular solution is as follows:
-%\begin{enumerate}
-%	\item Construct a spanning tree $\mathcal{T}$ of $\mathcal{N}$ with the pressure specified nodes appended.
-%	\item Velocities associated with links not in the tree are set to zero.
-%	\item Choose a node in $\mathcal{T}$ which is an extremity of a boundary link and call it root. 
-%	\item Set the boundary link velocities equal to zero, except the link incident on the root.
-%	\item At each pendant node except the root, the continuity equation was reduced to a simple equation relating the velocity only at the internal connection of the tree to that node.  
-%	\item Move from the pendant node along the tree towards the root. At each node the continuity equation involves a single unknown velocity.
-%	\item Except the juncture nodes, where the chains from one or more pendant nodes connect. Before solving the continuity equation associated with such a juncture node, the velocities on the chains from pendant nodes to the juncture node have to be determined.
-%	\item The process is completed after using the continuity equation at the root to determine the final velocity of the boundary link.
-%\end{enumerate}
-
-%Let us take our momentum equation and apply the equation~\eqref{eqn:non-homogeneous} to it.
-%	\begin{equation}
-%	\begin{aligned}
-%		Aq + Gp & =bc_1,\text{ premultiply by } C^T,\\
-%		C^T A q+0 & =C^T bc_1, \\
-%		C^TA(C\psi+q_p)&=C^T bc_1,\\
-%		C^TA C\psi&=C^T bc_1 - C^TA q_p,\\
-%		C^TA C \psi & = C^T bc_1 - C^TA D_p^\dagger bc_2.
-%	\end{aligned}
-%	\end{equation}
-
-%Let us apply boundary conditions to matrix $D$, and call it $D_p$. Using the method described above we find one particular solution $q_p$  to the non-homogeneous continuity equation~\eqref{eqn:discrete-continuity}, but with $D_p$, which has the boundary conditions (Dirichlet, Neuman, or mixed) applied. 
-%
-%\begin{equation}
-%	q_p=D_p^\dagger bc_2.
-%\end{equation}
-%
-%Then, the final system of equations to be solved can be constructed using $q=q_h+q_p$ with two choices (\textbf{TO BE DETERMINED}):
-%\begin{enumerate}
-%	\item First choice is based on the assumption that the momentum equation has the solution of both particular and homogeneous continuity equation.
-%	\begin{equation}
-%	\begin{aligned}
-%		Aq + Gp & =bc_1,\text{ premultiply by } C^T,\\
-%		C^T A q+0 & =C^T bc_1, \\
-%		C^TA(q_h+q_p)&=C^T bc_1,\\
-%		C^TA q_h&=C^T bc_1 - C^TA q_p,\\
-%		C^TA C \psi_h & = C^T bc_1 - C^TA D_p^\dagger bc_2.
-%	\end{aligned}
-%	\end{equation}
-%	\item Second choice is based on the assumption that the momentum equation has the solution of homogeneous continuity equation only, which feels making more sense, since in this case $G=-D_h^T$ and will kill pressure term, where $D$ has pure Dirichlet =0 boundary conditions.
-%	\begin{equation}
-%	\begin{aligned}
-%		Aq_h + Gp & =bc_1,\text{ premultiply by } C^T,\\
-%		C^T A q_h+0 & =C^T bc_1, \\
-%		C^TA(q-q_p)&=C^T bc_1,\\
-%		C^TA q&=C^T bc_1 + C^TA q_p,\\
-%		C^TA C \psi & = C^T bc_1 + C^TA D_p^\dagger bc_2.
-%	\end{aligned}
-%	\end{equation}
-%\end{enumerate}
-
-%\section{Other interesting methods for solving Naver Stokes (may include algorithms from articles \cite{Brown:2001, Dukowicz:1992, Kim:1985, Perot:1993})}
-%
-%Citing Colonius~\cite{Colonius:2008} The second type of error associated with vorticity advecting or diffusing through the boundary is typically handled by posing outflow boundary conditions. For incompressible flow, these are usually called convective boundary conditions, whereas for compressible flow the term non-reflecting boundary condition is often used. Multidomain boundary conditions used on 3 domains: fine, medium, and coarse. 
-	
-\section{Summary}\label{sec:summary}
-	
-
-\pagebreak
-\bibliographystyle{plain}
-\bibliography{Zotero.bib}
-
-
-\pagebreak
-\appendix
-\section{Appendix}
 
 \subsection{Transient schemes}
 
