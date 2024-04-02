@@ -548,7 +548,7 @@ The goal of these notes is to present the detailed overview of discrete stream f
 
 \pagebreak
 \section{Introduction and problem statement}\label{sec:problem-statement-dimentional}
-Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to ~\cref{eqs:NSE} on in rectangular domain $\Omega:0\leq x < L, 0\leq y < H$ together with boundary conditions on $\partial\Omega$:
+Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure $p(t,x,y)$ be the solutions to ~\cref{eqs:NSE-dsm-bl-dimensional} on in rectangular domain $\Omega:0\leq x < L, 0\leq y < H$ together with boundary conditions on $\partial\Omega$:
 \begin{subequations}
 \label[pluralequation]{eqs:NSE-dsm-bl-dimensional}
 \begin{align}
@@ -565,9 +565,9 @@ Let the velocity vector $\boldsymbol{v}(t,x,y)=(u(t,x,y),v(t,x,y))$ and pressure
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=g(x,y) \quad&\text{ in }\Omega,
 \end{align}
 \end{subequations}
-where $\hat{\mathbf{n}},\hat{\mathbf{t}}$ are normal and tangential unit vectors to the $\partial\Omega$ boundary.
+where $\hat{\mathbf{n}},\hat{\mathbf{t}}$ are normal and tangential unit vectors to $\partial\Omega$ boundary.
 
-In \cref{sec:nondimensionalization} we display how to make the \cref{eqs:NSE-dsm-bl-dimensional} non-dimensional and show the results in \cref{sec:problem-statement-nondimensional}. Domain discretization is performed in \cref{sec:domain-discretization}. Transient discretization is performed in \cref{sec:discrete-operators}, whereas spatial discretizations can be found in \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} and symmetrization is shown in \cref{sec:normalization}. The way of obtaining matrices which modify the system is displayed in \cref{sec:nullspace-method}, whereas the resulting algorithm is shown in \cref{sec:algorithm}.
+In \cref{sec:nondimensionalization} we display how to make \cref{eqs:NSE-dsm-bl-dimensional} non-dimensional and show the results in \cref{sec:problem-statement-nondimensional}. Domain discretization is performed in \cref{sec:domain-discretization}. Transient discretization is performed in \cref{sec:discrete-operators}, whereas spatial discretizations can be found in \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} and symmetrization is shown in \cref{sec:normalization}. The way of obtaining matrices which modify the system is displayed in \cref{sec:nullspace-method}, whereas the resulting algorithm is shown in \cref{sec:algorithm}.
 
 
 
@@ -577,7 +577,7 @@ In \cref{sec:nondimensionalization} we display how to make the \cref{eqs:NSE-dsm
 
 %\pagebreak
 \section{Problem statement on truncated domain}\label{sec:problem-statement-nondimensional}
-The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-dimentional} on semi-infinite domain now become a system of partial differential equations on a unit square domain 
+Original \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-dimentional} on semi-infinite domain now become a system of partial differential equations on a unit square domain 
 \begin{subequations}
 \label[pluralequation]{eqs:NSE-dsm-bl}
 \begin{align}
@@ -613,7 +613,7 @@ Denote discrete spatial operators as:
 	\item[$\hat{D}$]: Divergence.
 	\item[$\mathbf{\hat{H}}$]: Non-linear advective terms.
 \end{enumerate}
-Then initial system of \cref{eqs:NSE-dsm-bl} can be approximated using such operators as
+System of \cref{eqs:NSE-dsm-bl} can be approximated using such operators as
 \begin{equation}\label[system]{eqn:nse-matrix}
             \begin{bmatrix}
                   \mathbf{I} && 0 \\ 
@@ -670,7 +670,7 @@ Attack \cref{eqn:nse-matrix} with the following schemes as in Colonius~\cite{Col
 	\end{equation}
 \end{enumerate}
 
-After applying the discrete operators listed in the following \cref{subsec:advection,sec:laplacian,subsec:divergence,subsec:gradient}, we rewrite \cref{eqn:nse-matrix}  as
+After applying the discrete operators listed in the following \cref{subsec:advection,subsec:laplacian,subsec:gradient,subsec:divergence}, we rewrite \cref{eqn:nse-matrix}  as
 
 	\begin{equation}
 		\begin{bmatrix}
@@ -713,7 +713,7 @@ which in short becomes
 		\hat{bc}_2
 	\end{pmatrix}.}
 \end{equation}
-Here, $\hat{r}^n$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_1,\hat{bc}_2$ are explicit boundary values in terms of velocity and pressure. \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} display the spatial discretization of $\hat{L},\hat{\mathbf{H}},\hat{D},\hat{G}$ operators. \cref{sec:normalization} shows how to make the system symmetric.
+Here, $\hat{r}^n=\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \boldsymbol{v}^n - \left[\frac{3}{2}\hat{\mathbf{H}}(\boldsymbol{v}^n) - \frac{1}{2}\hat{\mathbf{H}}(\boldsymbol{v}^{n-1})\right]$ includes viscous and non-linear terms from time steps $n,n-1$. Right hand vectors $\hat{bc}_1=bc^{n+1}_{\hat{L}\boldsymbol{v}}+bc^{n+1}_{\hat{Gp}}$ and $\hat{bc}_2$ are explicit boundary values in terms of velocity and pressure at time steps $n+1$ for momentum and continuity equations respectively. \cref{subsec:laplacian} shows how to obtain contribution from boundary conditions to $bc^{n+1}_{\hat{L}\boldsymbol{v}}$ term of $\hat{bc}_1$, while $bc^{n+1}_{\hat{Gp}}$ vector can be found in \cref{subsec:gradient}. General expression for $\hat{bc}_2$ is dislpayed in \cref{subsec:divergence}. Spatial discretizations of $\hat{L},\hat{\mathbf{H}},\hat{G},\hat{D}$ operators are shown in \cref{subsec:laplacian,subsec:advection,subsec:divergence,subsec:gradient} respectively. 
 
 \subsection{Divergence}\label{subsec:divergence}
 
@@ -746,7 +746,7 @@ v \Delta x
 where vector $q=\left[\begin{array}{l}
 u \Delta y \\
 v \Delta x
-\end{array}\right]$ is referred to as velocity flux, and the matrix $D=[D_x D_y]$ without hat is the divergence matrix of integer coefficients. Matrix
+\end{array}\right]$ is referred to as velocity flux, and $D=[D_x D_y]$ without hat is divergence matrix of integer coefficients. Matrix
 \begin{equation}\label{eqn:delta-xy}
 	\Delta _{xy}=
 	\begin{bmatrix}{}
@@ -758,111 +758,157 @@ v \Delta x
 \end{equation}
 is $MN\times MN$ diagonal matrix with entries corresponding to the inverse volumes of cells. 
 
-The second-order central difference scheme was employed in the construction of $D$, the order is consistent with the other spatial schemes. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is then expressed as
-\begin{equation*}
-	\left(\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\right)_{i,j}=0,
-\end{equation*}
-which can be discretized at cell centre $i,j$ using central difference schemes into
-\begin{equation*}
-  \frac{u_{i+\frac{1}{2},j} - u_{i-\frac{1}{2},j}}{\Delta x_i}+  \frac{v_{i,j+\frac{1}{2}} - v_{i,j-\frac{1}{2}}}{\Delta y_j}=0.
-\end{equation*}
+%The second-order central difference scheme was employed in the construction of $D$, the order is consistent with the other spatial schemes. Consider a finite volume $V_{i,j}$, continuity equation for the cell centre is then expressed as
+%\begin{equation*}
+%	\left(\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\right)_{i,j}=0,
+%\end{equation*}
+%which can be discretized at cell centre $i,j$ using central difference schemes into
+%\begin{equation*}
+%  \frac{u_{i+\frac{1}{2},j} - u_{i-\frac{1}{2},j}}{\Delta x_i}+  \frac{v_{i,j+\frac{1}{2}} - v_{i,j-\frac{1}{2}}}{\Delta y_j}=0.
+%\end{equation*}
 
-\begin{figure}[H] % here, bottom, top
+%\begin{figure}[H] % here, bottom, top
+%  \centering{
+%  \includegraphics[width=0.50\paperwidth]{D-example-2x2}
+%  }
+%  \caption{$2\times 2$ grid example for divergence operator.}\label{fig:D-example-2x2}
+%\end{figure}
+%
+%To provide a good visual example, consider $2 \times 2$ grid as in \cref{fig:D-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. The partial derivatives of divergence operator evaluated at cell centres are: 
+%%\begin{equation}
+%%  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
+%%\end{equation}
+%%\begin{alignat*}{2}
+%%	V_{1,1}:\frac{u_{\frac{3}{2},1} - u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}} - v_{1,\frac{1}{2}}}{\Delta y_1}=0,\\
+%%	V_{2,1}: \frac{u_{\frac{5}{2},1} - u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}} - v_{2,\frac{1}{2}}}{\Delta y_1}=0,\\
+%%	V_{1,2}:\frac{u_{\frac{3}{2},2} - u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}} - v_{1,\frac{3}{2}}}{\Delta y_2}=0,\\
+%%	V_{2,2}:\frac{u_{\frac{5}{2},2} - u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}} - v_{2,\frac{3}{2}}}{\Delta y_2}=0.
+%%\end{alignat*}
+%%
+%%%\begin{enumerate}
+%%%	\item[$V_{1,1}$]: $\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0$.
+%%%	\item[$V_{1,2}$]: $\frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0$.
+%%%	\item[$V_{2,1}$]: $\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0$.
+%%%	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
+%%%\end{enumerate}
+%%
+%%After applying the boundary conditions to the above equations, we obtain the system
+%%\begin{equation}\label[system]{eqn:divergence-matrix}
+%%	\begin{bmatrix}{}
+%%		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
+%%		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
+%%		0		&0	&\frac{1}{\Delta x_1\Delta y_2}	&0\\
+%%		0		&0	&0	&\frac{1}{\Delta x_2\Delta y_2}
+%%	\end{bmatrix}
+%%	\begin{bmatrix*}[r]{}
+%%		1	&0	&1	&0\\
+%%		-1	&0	&0	&1\\
+%%		0	&1	&-1	&0\\
+%%		0	&-1	&0	&-1
+%%	\end{bmatrix*}
+%%	\begin{bmatrix}{}
+%%	u_{\frac{3}{2},1}	\Delta y_1\\
+%%	u_{\frac{3}{2},2}	\Delta y_2\\
+%%	v_{1,\frac{3}{2}}	\Delta x_1\\
+%%	v_{2,\frac{3}{2}}	\Delta x_2\\
+%%	\end{bmatrix}
+%%	=
+%%	\begin{bmatrix}{}
+%%	\frac{u_{\frac{1}{2},1}}{\Delta x_1}		+	\frac{v_{1,\frac{1}{2}}}{\Delta y_1}\\
+%%	-\frac{u_{\frac{5}{2},1}}{\Delta x_2}	+ 	\frac{v_{2,\frac{1}{2}}}{\Delta y_1}\\
+%%	\frac{u_{\frac{1}{2},2}}{\Delta x_1} 	-	\frac{v_{1,\frac{5}{2}}}{\Delta y_2}\\
+%%	-\frac{u_{\frac{5}{2},2}}{\Delta x_2}		-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}	
+%%	\end{bmatrix},
+%%\end{equation}
+%
+%$$
+%\begin{aligned}
+%& V_{1,1}: \frac{u_{\frac{3}{2},1}-u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}}-v_{1,\frac{1}{2}}}{\Delta y_1}=0, \\
+%& V_{1,2}: \frac{u_{\frac{5}{2},1}-u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}}-v_{2,\frac{1}{2}}}{\Delta y_1}=0, \\
+%& V_{2,1}: \frac{u_{\frac{3}{2},2}-u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}}-v_{1,\frac{3}{2}}}{\Delta y_2}=0, \\
+%& V_{2,2}: \frac{u_{\frac{5}{2},2}-u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}}-v_{2,\frac{3}{2}}}{\Delta y_2}=0 .
+%\end{aligned}
+%$$
+%
+%After applying normal boundary conditions to the above equations, we obtain the system
+%\begin{equation}\label[system]{eqn:divergence-matrix}
+%\left[\begin{array}{cccc}
+%\frac{1}{\Delta x_1 \Delta y_1} & 0 & 0 & 0 \\
+%0 & \frac{1}{\Delta x_2 \Delta y_1} & 0 & 0 \\
+%0 & 0 & \frac{1}{\Delta x_1 \Delta y_2} & 0 \\
+%0 & 0 & 0 & \frac{1}{\Delta x_2 \Delta y_2}
+%\end{array}\right]\left[\begin{array}{rrrrrr}
+%1  & 0  & 1 & 0 \\
+%-1 & 0  & 0 & 1 \\
+%0 & 1  & -1 & 0 \\
+%0 & -1  & 0 & -1
+%\end{array}\right]\left[\begin{array}{l}
+%u_{\frac{3}{2},1} \Delta y_1 \\
+%%u_{\frac{5}{2},1} \Delta y_1 \\
+%u_{\frac{3}{2},2} \Delta y_2 \\
+%%u_{\frac{5}{2},2} \Delta y_2 \\
+%v_{1,\frac{3}{2}} \Delta x_1 \\
+%v_{2,\frac{3}{2}} \Delta x_2
+%\end{array}\right]=
+%\begin{bmatrix}{}
+%\frac{u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{1}{2}}}{\Delta y_1} \\
+%-\frac{u_{\frac{5}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{1}{2}}}{\Delta y_1} \\
+%\frac{u_{\frac{1}{2},2}}{\Delta x_1}-\frac{v_{1,\frac{5}{2}}}{\Delta y_2} \\
+%-\frac{u_{\frac{5}{2},2}}{\Delta x_2}-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
+%\end{bmatrix},
+%\end{equation}
+%which in general case is written as 
+%$\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
+%The right hand side vector $\hat{bc}_2=0$ due to mass conservation.
+%The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}.
+
+\begin{figure}[H] % here - h, bottom - b, top - t
   \centering{
-  \includegraphics[width=0.50\paperwidth]{D-example-2x2}
+  \includegraphics[width=0.60\paperwidth]{d-general}
   }
-  \caption{$2\times 2$ grid example for divergence operator.}\label{fig:D-example-2x2}
+  \caption{General grid.}\label{fig:d-general}
 \end{figure}
 
-To provide a good visual example, consider $2 \times 2$ grid as in \cref{fig:D-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. The partial derivatives of divergence operator evaluated at cell centres are: 
-%\begin{equation}
-%  \frac{1}{\Delta x_i \Delta y_i}\left[1\quad -1\quad1\quad-1\right] \left[\Delta y_i u_{i+1,j}, \Delta y_i  u_{i,j}, \Delta x_i v_{i,j+1}, \Delta x_i v_{i,j}\right]^T=0.
-%\end{equation}
-%\begin{alignat*}{2}
-%	V_{1,1}:\frac{u_{\frac{3}{2},1} - u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}} - v_{1,\frac{1}{2}}}{\Delta y_1}=0,\\
-%	V_{2,1}: \frac{u_{\frac{5}{2},1} - u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}} - v_{2,\frac{1}{2}}}{\Delta y_1}=0,\\
-%	V_{1,2}:\frac{u_{\frac{3}{2},2} - u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}} - v_{1,\frac{3}{2}}}{\Delta y_2}=0,\\
-%	V_{2,2}:\frac{u_{\frac{5}{2},2} - u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}} - v_{2,\frac{3}{2}}}{\Delta y_2}=0.
-%\end{alignat*}
-%
-%%\begin{enumerate}
-%%	\item[$V_{1,1}$]: $\frac{u_{1,2} - u_{1,1}}{\Delta x_1}+\frac{v_{2,1} - v_{1,1}}{\Delta y_1}=0$.
-%%	\item[$V_{1,2}$]: $\frac{u_{1,3} - u_{1,2}}{\Delta x_2}+\frac{v_{2,2} - v_{1,2}}{\Delta y_1}=0$.
-%%	\item[$V_{2,1}$]: $\frac{u_{2,2} - u_{2,1}}{\Delta x_1}+\frac{v_{3,1} - v_{2,1}}{\Delta y_2}=0$.
-%%	\item[$V_{2,2}$]: $\frac{u_{2,3} - u_{2,2}}{\Delta x_2}+\frac{v_{3,2} - v_{2,2}}{\Delta y_2}=0$.
-%%\end{enumerate}
-%
-%After applying the boundary conditions to the above equations, we obtain the system
-%\begin{equation}\label[system]{eqn:divergence-matrix}
-%	\begin{bmatrix}{}
-%		\frac{1}{\Delta x_1\Delta y_1}		&0	&0	&0\\
-%		0		&\frac{1}{\Delta x_2\Delta y_1}	&0	&0\\
-%		0		&0	&\frac{1}{\Delta x_1\Delta y_2}	&0\\
-%		0		&0	&0	&\frac{1}{\Delta x_2\Delta y_2}
-%	\end{bmatrix}
-%	\begin{bmatrix*}[r]{}
-%		1	&0	&1	&0\\
-%		-1	&0	&0	&1\\
-%		0	&1	&-1	&0\\
-%		0	&-1	&0	&-1
-%	\end{bmatrix*}
-%	\begin{bmatrix}{}
-%	u_{\frac{3}{2},1}	\Delta y_1\\
-%	u_{\frac{3}{2},2}	\Delta y_2\\
-%	v_{1,\frac{3}{2}}	\Delta x_1\\
-%	v_{2,\frac{3}{2}}	\Delta x_2\\
-%	\end{bmatrix}
-%	=
-%	\begin{bmatrix}{}
-%	\frac{u_{\frac{1}{2},1}}{\Delta x_1}		+	\frac{v_{1,\frac{1}{2}}}{\Delta y_1}\\
-%	-\frac{u_{\frac{5}{2},1}}{\Delta x_2}	+ 	\frac{v_{2,\frac{1}{2}}}{\Delta y_1}\\
-%	\frac{u_{\frac{1}{2},2}}{\Delta x_1} 	-	\frac{v_{1,\frac{5}{2}}}{\Delta y_2}\\
-%	-\frac{u_{\frac{5}{2},2}}{\Delta x_2}		-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}	
-%	\end{bmatrix},
-%\end{equation}
+General case is represented on \cref{fig:d-general}. In linear equations below the LHS is equivalent to $\frac{1}{\Delta_{xy}} D q$ part, whereas RHS is contribution to $\hat{bc}_2$ and not always zero.
+\begin{enumerate}
+	\item For inner part ($i=2,3,\dots ,m-1;j=2,3,\dots ,n-1$)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_i}\right)\left(\Delta{y_j}\right)} \left(u_{i+\frac{1}{2},j}\Delta y_j - u_{i-\frac{1}{2},j}\Delta y_j+v_{i,j+\frac{1}{2}}\Delta x_i - v_{i,j-\frac{1}{2}}\Delta x_i\right)=0.
+		\end{equation}
+	\item Near the left boundary ($i=1;j=2,3,\dots ,n-1$)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_1}\right)\left(\Delta{y_j}\right)} \left(u_{\frac{3}{2},j}\Delta y_j +v_{1,j+\frac{1}{2}}\Delta x_1 - v_{1,j-\frac{1}{2}}\Delta x_1\right)=u_{\frac{1}{2},j}\Delta y_j.
+		\end{equation}
+	\item Near the right boundary ($i=m;j=2,3,\dots ,n-1$)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_m}\right)\left(\Delta{y_j}\right)} \left(-u_{m-\frac{1}{2},j}\Delta y_j +v_{1,j+\frac{1}{2}}\Delta x_m - v_{1,j-\frac{1}{2}}\Delta x_m\right)=-u_{m+\frac{1}{2},j}\Delta y_j.
+		\end{equation}
+	\item Near the bottom boundary ($i=2,3,\dots ,m-1;j=1$)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_i}\right)\left(\Delta{y_1}\right)} \left(u_{i+\frac{1}{2},1}\Delta y_1 - u_{i-\frac{1}{2},1}\Delta y_1+v_{i,\frac{3}{2}}\Delta x_i\right)=v_{i,\frac{1}{2}}\Delta x_i.
+		\end{equation}
+	\item Near the top boundary ($i=2,3,\dots ,m-1;j=n$)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_i}\right)\left(\Delta{y_n}\right)} \left(u_{i+\frac{1}{2},n}\Delta y_n - u_{i-\frac{1}{2},n}\Delta y_n - v_{i,n-\frac{1}{2}}\Delta x_i\right)=-v_{i,n+\frac{1}{2}}\Delta x_i.
+		\end{equation}
+	\item At corners (i=1,m,j=1,n)
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_1}\right)\left(\Delta{y_1}\right)} \left(u_{\frac{3}{2},1}\Delta y_j +v_{1,\frac{3}{2}}\Delta x_1 \right)=u_{\frac{1}{2},1}\Delta y_1+v_{1,\frac{1}{2}}\Delta x_1,
+		\end{equation}
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_1}\right)\left(\Delta{y_n}\right)} \left(u_{\frac{3}{2},n}\Delta y_n  - v_{1,n-\frac{1}{2}}\Delta x_1\right)=u_{\frac{1}{2},n}\Delta y_n-v_{1,n+\frac{1}{2}}\Delta x_1,
+		\end{equation}
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_m}\right)\left(\Delta{y_1}\right)} \left(-u_{m-\frac{1}{2},1}\Delta y_1 +v_{1,\frac{3}{2}}\Delta x_m \right)=-u_{m+\frac{1}{2},1}\Delta y_1+ v_{1,\frac{1}{2}}\Delta x_m,
+		\end{equation}
+		\begin{equation}
+			\frac{1}{\left(\Delta{x_m}\right)\left(\Delta{y_n}\right)} \left(-u_{m-\frac{1}{2},n}\Delta y_n  - v_{1,n-\frac{1}{2}}\Delta x_m\right)=-u_{m+\frac{1}{2},n}\Delta y_n-v_{1,n+\frac{1}{2}}\Delta x_m.
+		\end{equation}
+\end{enumerate}
 
-$$
-\begin{aligned}
-& V_{1,1}: \frac{u_{\frac{3}{2},1}-u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{3}{2}}-v_{1,\frac{1}{2}}}{\Delta y_1}=0, \\
-& V_{1,2}: \frac{u_{\frac{5}{2},1}-u_{\frac{3}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{3}{2}}-v_{2,\frac{1}{2}}}{\Delta y_1}=0, \\
-& V_{2,1}: \frac{u_{\frac{3}{2},2}-u_{\frac{1}{2},2}}{\Delta x_1}+\frac{v_{1,\frac{5}{2}}-v_{1,\frac{3}{2}}}{\Delta y_2}=0, \\
-& V_{2,2}: \frac{u_{\frac{5}{2},2}-u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}}-v_{2,\frac{3}{2}}}{\Delta y_2}=0 .
-\end{aligned}
-$$
 
-After applying normal boundary conditions to the above equations, we obtain the system
-\begin{equation}\label[system]{eqn:divergence-matrix}
-\left[\begin{array}{cccc}
-\frac{1}{\Delta x_1 \Delta y_1} & 0 & 0 & 0 \\
-0 & \frac{1}{\Delta x_2 \Delta y_1} & 0 & 0 \\
-0 & 0 & \frac{1}{\Delta x_1 \Delta y_2} & 0 \\
-0 & 0 & 0 & \frac{1}{\Delta x_2 \Delta y_2}
-\end{array}\right]\left[\begin{array}{rrrrrr}
-1  & 0  & 1 & 0 \\
--1 & 0  & 0 & 1 \\
-0 & 1  & -1 & 0 \\
-0 & -1  & 0 & -1
-\end{array}\right]\left[\begin{array}{l}
-u_{\frac{3}{2},1} \Delta y_1 \\
-%u_{\frac{5}{2},1} \Delta y_1 \\
-u_{\frac{3}{2},2} \Delta y_2 \\
-%u_{\frac{5}{2},2} \Delta y_2 \\
-v_{1,\frac{3}{2}} \Delta x_1 \\
-v_{2,\frac{3}{2}} \Delta x_2
-\end{array}\right]=
-\begin{bmatrix}{}
-\frac{u_{\frac{1}{2},1}}{\Delta x_1}+\frac{v_{1,\frac{1}{2}}}{\Delta y_1} \\
--\frac{u_{\frac{5}{2},1}}{\Delta x_2}+\frac{v_{2,\frac{1}{2}}}{\Delta y_1} \\
-\frac{u_{\frac{1}{2},2}}{\Delta x_1}-\frac{v_{1,\frac{5}{2}}}{\Delta y_2} \\
--\frac{u_{\frac{5}{2},2}}{\Delta x_2}-\frac{v_{2,\frac{5}{2}}}{\Delta y_2}
-\end{bmatrix},
-\end{equation}
-which in general case is written as 
-$\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
-The right hand side vector $\hat{bc}_2=0$ due to mass conservation.
-The divergence matrix $D$ contains $\pm1$, as shown in \cref{eqn:divergence-matrix}.
 
-\textbf{Q: Why $bc_2=0$ in both Colonius\cite{Colonius:2008} (p.2135 or p.5 of file, at footnotes in second column) and Chang\cite{Chang:2002} (p.187 or p.5 of file, 3 lines below eq.(6)) papers. However, Hall\cite{Hall:1980} (p.6-14 or p.101 of file, eq.(6-7)) states that source terms ($[S^m]_C=bc_2$) in continuity equation consist of both contributions of density change (disregard in isothermal case) and input mass velocities across mesh box boundaries.}
+\textbf{Q: Why $bc_2=0$ in Colonius\cite{Colonius:2008} on p. 2135 or p. 5 of file, at footnotes in second column. Also in Chang\cite{Chang:2002} on p. 187 or p. 5 of file, 3 lines below eq. 6 defines $U_f$. Eq. 9 assumes $bc_2=0$. Vector $U_f$ must contain only unknown mass fluxes. If vector $U_f$  consists of known values, then system can never become symmetric as stated 5 lines below eq. 9. Reason is that corresponding row in momentum equation will contain only one non-zero element, whereas corresponding column will be non-zero for neighbouring velocities when their Laplacian is computed. Algebraic calculations in the current notes agree with Hall\cite{Hall:1980} (p.6-14 or p.101 of file, eq. 6-7 and next 2 lines) states that source terms $[S^m]_C=bc_2$ in continuity equation consist of both contributions of density change (disregard in isothermal case) and input mass velocities across mesh box boundaries.}
  
 
 
@@ -923,26 +969,30 @@ Premultiplying momentum equation in \cref{eqn:nse-normalized} by $C^T$ creates $
 %%\cref{eqn:vorticity-stream}
 %%\cref{eqn:vorticity-stream}
 %Hence, the final chord of this method is the introduction of new variable called discrete streamfunction $\psi:q_h=C\psi$, where $q_h$ is a homogeneous solution to the \cref{eqn:nse-normalized} and $q=q_h+q_p$ decomposition is discussed in the following \cref{sec:algorithm}.
-Momentum part of \cref{eqn:NSE-dsm-bl-system-nonint} becomes
-\begin{align}
-	\left(\frac{1}{\Delta t}\hat{M}R^{-1} - \frac{1}{2}L\right)q^{n+1}=RHS, &\quad\text{which we premultiply by $C^T$ and use $q^{n+1}=C\psi$.}\\
+\cref{sec:normalization} shows how to make the system symmetric and obtain the scaling matrix $\hat{M}$ and diagonal flux matrix $R^{-1}$. Momentum part of \cref{eqn:NSE-dsm-bl-system-nonint} then becomes
+\begin{align*}
+	\left(\frac{1}{\Delta t}\hat{M}R^{-1} - \frac{1}{2}L\right)q^{n+1}=RHS, &\quad\text{which we premultiply by $C^T$ and use $q^{n+1}=C\psi$.}\notag\\
 	&\quad\text{All boundary conditions in this system are Dirichlet.}\notag\\
 	&\quad\text{$	\hat{M}R^{-1}=I$ for uniform grids.}\notag\\
-	\left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)\psi^{n+1}=C^TRHS, &\quad\text{has to be solved for $\psi^{n+1}$.}\\
-	\psi^{n+1} = \left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)^{-1}C^TRHS,
+	\left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)\psi^{n+1}=C^TRHS, &\quad\text{has to be solved for $\psi^{n+1}$.}\notag\\
+	\psi^{n+1} = \left(\frac{1}{\Delta t}C^T\hat{M}R^{-1}C - \frac{1}{2}C^TLC\right)^{-1}C^TRHS,\notag
 	&\quad\text{We found analytically that  }\notag\\
 	&\quad\text{$\operatorname{curl}^T\operatorname{curl}\psi=-\nabla^2\psi$ and $\operatorname{curl}^T\nabla^2\operatorname{curl}\psi^{n-1}=-\nabla^2\left(\nabla^2\psi\right)$.}\notag\\
 	&\quad\text{However, in discrete form $C^TC=L_\psi \neq L_{\boldsymbol{v}}$,}\notag\\
 	&\quad\text{$L_\psi$ applies to $\psi$ located at the nodes,}\notag\\
 	&\quad\text{whereas $L_{\boldsymbol{v}}$ applies to $\boldsymbol{v}$ located at faces of each cell.}\notag\\
-	&\quad\text{\textbf{Q: UNSURE WHY $C^TLC\neq C^TCC^TC$, look at \cref{fig:CTLC-4x4}}.}\notag\\
-	&\quad\text{\textbf{Chang\cite{Chang:2002} p.190 states about Poisson below eqn. (12).}}\notag\\
+	&\quad\text{\textbf{Q: UNSURE WHY $|C^TLC|\neq |C^TCC^TC|$, look at \cref{fig:CTLC-4x4}}.}\notag\\
+	&\quad\text{\textbf{Main diagonal values differ.}}\notag\\
+	&\quad\text{\text{Chang\cite{Chang:2002} p.190 states about Poisson below eqn. (12).}}\notag\\
 	&\quad\text{Finding $\left(C^T\hat{M}R^{-1}C\right)^{-1}$ implies solving Poisson equation}\notag\\
 	&\quad\text{for streamfunciton $\nabla^2\psi=-\omega$.}\notag\\
 	&\quad\text{If we are to use fully explicit scheme on uniform grid, then}\notag\\
-	\left(C^TC\right)\psi^{n+1}=C^T\left(RHS\right)\iff\\
+\end{align*}
+\begin{equation}
+\left(C^TC\right)\psi^{n+1}=C^T\left(RHS\right)\iff
 	\frac{\partial }{\partial t}\omega=-\frac{\partial}{\partial t}\left(\nabla^2\psi\right)=\operatorname{curl^T}\left(-(\boldsymbol{v}\cdot \nabla)\boldsymbol{v}+\epsilon\nabla^2\boldsymbol{v}\right).
-\end{align}
+\end{equation}
+
 
 \begin{figure}[H] % here, bottom, top
   \centering{
@@ -1466,7 +1516,7 @@ p_{1,2} \\
 p_{m n+(n-1) m}
 \end{array}\right]+b c_p\right)
 $$
-where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...,p_{(m-1) n+(n-1) m}]^T$ is the vector of pressure values at the cell centres. There is zero contribution from pressure BC values in ${bc}_p$ since there is no  pressure gradient that needs to be computed across the boundary. It can be observed from \cref{eqn:divergence-matrix,eqn:gradient-matrix} that \cref{eqn:g-dt} holds and the general case is true by construction.
+where $\hat{M}^{-1}$ is the diagonal matrix containing the distances between neighbouring pressure coordinates, ${G}$ is the gradient matrix and $[p_1,p_2,...,p_{(m-1) n+(n-1) m}]^T$ is the vector of pressure values at the cell centres. There is zero contribution from pressure BC values in ${bc}_p$ since there is no  pressure gradient that needs to be computed across the boundary. It can be observed from \cref{subsec:divergence} that \cref{eqn:g-dt} holds and the general case is true by construction.
 
 
 
@@ -1660,7 +1710,7 @@ r^n \\
 0
 \end{array}\right),}
 \end{equation}
-where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to \cref{eqn:gradient-matrix}. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in continuity part of \cref{eqn:nse-normalized} using  \cref{eqn:divergence-matrix}. Multiplying both sides of continuity equation by $\Delta _{xy}$ matrix from \cref{eqn:delta-xy} leads to 
+where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}\hat{L}R^{-1}$ is symmetric and $\hat{G}=\hat{M}^{-1}G$ according to \cref{eqn:gradient-matrix}. It is also possible to transform the divergence operator $\hat{D}$ with non-integer coefficients into $D$ with integer coefficients in continuity part of \cref{eqn:nse-normalized} using  matrix $\Delta_{xy}$. Multiplying both sides of continuity equation by $\Delta _{xy}$ matrix from \cref{eqn:delta-xy} leads to 
 \begin{align*}
 	\hat{D}\boldsymbol{v}^{n+1}&= 0\notag\\
 	\left(\Delta_{xy} \right)\hat{D}\boldsymbol{v}^{n+1}&=\left ( \Delta_{xy}\right ) 0\notag\\
@@ -1669,6 +1719,6 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 	D{q}^{n+1}&=0.
 \end{align*}
 
-\subsection{Transient schemes}
+%\subsection{Transient schemes}
 
 \end{document}

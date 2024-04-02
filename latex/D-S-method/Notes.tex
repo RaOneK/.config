@@ -290,7 +290,7 @@ The remainder of the present paper is organized as follows.
 
 
 \pagebreak
-\section{Prelude to the algorithm using continuous operators}\label{sec:prelude-algorithm}
+\section{Prelude to the algorithm using continuous operators} \label{sec:prelude-algorithm}
 
 %This establishes the first two connections in \cref{diag:div-curl-grad}.
 %Moving onto 3-dimensions, \cref{eqn:curl-grad} already populates most of the diagram
@@ -623,8 +623,9 @@ The initial \cref{eqs:NSE-dsm-bl-dimensional} from \cref{sec:problem-statement-d
 \label[bc]{eqn:NSE-dsm-bl-bc-noslip}
 \text{No-slip BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
 \label[bc]{eqn:NSE-dsm-bl-bc-outlet}
-\text{Outlet BC: } 	&\frac{\partial \boldsymbol{v}}{\partial t}+u\frac{\partial \boldsymbol{v}}{\partial x}-\epsilon \frac{\partial^2 \boldsymbol{v}}{\partial y^2}=0,\text{ discussed in \cref{sec:artificial-bc}}, \\ 
-					& (x=1).\notag\\
+\text{Outlet BC: } 	&-p(1,y,t)\boldsymbol{\hat{n}} + \epsilon\left(\boldsymbol{\hat{n}}\cdot\nabla\right)\boldsymbol{v}(1,y,t)-\left[\frac{1}{2}\left| \boldsymbol{v}(1,y,t)\right|^2 S_0\left(\boldsymbol{\hat{n}}\cdot\boldsymbol{v}(1,y,t) \right)\right]\boldsymbol{\hat{n}}=0,\\
+					&\text{where $\boldsymbol{\hat{n}}$ is unit normal vector to the boundary.} \notag\\
+					&\text{Details are discussed in \cref{sec:artificial-bc}}\notag\\
 \text{Initial condition: } &\boldsymbol{v}(0,x,y)=(0,0)\text{ or Blasius profile}.
 \end{align}
 \end{subequations}
@@ -1008,7 +1009,7 @@ One of the advantages of the staggered grid is that the discrete divergence $D$ 
 %Our goal is to eliminate the pressure from the system, \cref{sec:nullspace-method} will explain the use of this property in detail. 
 In this section we will show one side of why this identity is true, the other part could be found in \cref{subsec:gradient}.
 The second line of \cref{eqn:NSE-dsm-bl-system-schemes} reads
-\begin{equation*}
+\begin{equation}\label[pluralequation]{eqn:divergence-modification}
 \begin{gathered}
 \hat{D}\boldsymbol{v}=\hat{bc}_2,\\
 \left[ 
@@ -1029,7 +1030,7 @@ u \Delta y \\
 v \Delta x
 \end{array}\right]=\frac{1}{\Delta _{xy}} D q=\hat{bc}_2,
 \end{gathered}
-\end{equation*}
+\end{equation}
 where vector $q=\left[\begin{array}{l}
 u \Delta y \\
 v \Delta x
@@ -1116,8 +1117,8 @@ $$
 & V_{2,2}: \frac{u_{\frac{5}{2},2}-u_{\frac{3}{2},2}}{\Delta x_2}+\frac{v_{2,\frac{5}{2}}-v_{2,\frac{3}{2}}}{\Delta y_2}=0 .
 \end{aligned}
 $$
-16
-After applying the boundary conditions (circled on the figure 7) to the above equations, we obtain the system
+
+After performing operations as in \cref{eqn:divergence-modification} to continuity equation from above, we obtain the following system
 \begin{equation}\label[system]{eqn:divergence-matrix}
 \left[\begin{array}{cccc}
 \frac{1}{\Delta x_1 \Delta y_1} & 0 & 0 & 0 \\
@@ -1166,7 +1167,7 @@ The pressure gradients are computed at the same coordinates as the unknown veloc
 \end{equation}
 on staggered/MAC grids by construction. 
 
-As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. It is required to determine the pressure gradients across each unknown velocity (square nodes on \cref{fig:G-example-2x2}):
+As an illustrative example, we may consider a $2\times 2$ grid as in \cref{fig:G-example-2x2} with the same boundary conditions as in \cref{eqs:NSE-dsm-bl}. The normal distances between the computational domain and virtual pressure values located outside it are considered to be infinitesimally small~\cite{Chang:2002}4.  It is required to determine the pressure gradients across each unknown velocity (square nodes on \cref{fig:G-example-2x2}):
 
 \begin{figure}[H] % here, bottom, top
   \centering{
