@@ -696,11 +696,12 @@ where $\hat{r}^n=\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \b
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Advection}\label{subsec:advection}
 
-Since Explicit Adams-Bashforth~\cref{eqn:nonlinear-adams-bashforth} uses information from time steps $n$ and $n-1$, while we solve the system of equations for time step $n+1$, there is no need for upwind or even more complicated schemes. 
-For spatial discretization we will try to stick to the central schemes. 
-Such approximations are more stable and less dependent on the flow direction. 
-It is convenient to write these schemes for a conservative form of the advection. 
-Moreover, such an approach also keeps the error low, since there is no product of velocity with acceleration. 
+Explicit Adams-Bashforth~\cref{eqn:nonlinear-adams-bashforth} uses information from time steps $n$ and $n-1$, while we solve the system of equations for time step $n+1$. Therefore, we are free to choose between central differences and upwinding techniques. 
+Ferziger \& Peric~\cite{Ferziger:2002} state that upwind difference schemes (UDS) are expected to be more stable than central difference schemes (CDS) for high Peclet numbers $\operatorname{Pe}>2$. However, we will aim to maintain low time-step and grid sizes to enhance stability and utilize the more accurate second-order CDS (compared to the first-order accuracy of UDS). If the numerical solution exhibits instability, we may switch to UDS as a trade-off between accuracy and stability. An advanced approach for the future involves blending techniques that combine UDS and CDS, following Ferziger \& Peric’s recommendations.
+
+Central approximations are more accurate and less dependent on the flow direction. 
+It is convenient to write such schemes for a conservative form of the advection term. 
+Moreover, CDS approach also make error even lower, since there is no product of velocity with acceleration. 
 Hence, let us rewrite advective derivatives in conservative form. 
 \begin{align}\label{eqn:advection-conservative}
 	u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}
@@ -709,72 +710,76 @@ Hence, let us rewrite advective derivatives in conservative form.
 	&=\left(u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial x}\right ) +\left(u\frac{\partial v}{\partial y} +v \frac{\partial u}{\partial y}\right )\nonumber\\
 	&=\frac{\partial uu}{\partial x}+ \frac{\partial uv}{\partial y}.
 \end{align}
+ 
 Our goal now is to approximate advection components for each momentum equation. Below we will describe the discretization schemes for \cref{eqn:advection-conservative}. 
+
+
 
 \subsubsection{Inner part}\label{subsubsec:advection-inner}
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.65\paperwidth]{ADV}
+  \includegraphics[width=0.55\paperwidth]{ADV}
   }
   \caption{Advection discretization.}\label{fig:ADV}
 \end{figure}
-The advective component from $x$-momentum was expressed in conservative form by \cref{eqn:advection-conservative}. It is discretized using the standard central differencing schemes~\cite{Colonius:2008} as
+
+Discretizing through central differencing as in Colonius \& Taira~\cite{Colonius:2008} leads to
 \begin{align}\label{eqn:adv-inner}
 	\left (u\frac{\partial u}{\partial x}+v \frac{\partial u}{\partial y}\right)_{i-\frac{1}{2},j}&=\frac{(uu)_{i
 	,j}-(uu)_{i- 1,j}}{\frac{\Delta x_i+\Delta x_{i-1}}{2}}+\frac{(uv)_{i-\frac{1}{2},j+\frac{1}{2}}-(uv)_{i-\frac{1}{2},j-\frac{1}{2}}}{\Delta y_i},
 \end{align}
-which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). It is required to compute $uv$ at the nodes and $uu$ at the cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Using linear interpolation~\cite{Colonius:2008} of velocity values leads to:
+which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref{fig:ADV}). It is required to compute $uv$ at the nodes and $uu$ at the cell centres, which are triangles and circles respectively in \cref{fig:ADV}. Use of linear interpolation for velocity values leads to:
 \begin{align*}
   (uu)_{i,j}&=\left(\frac{u_{i+\frac{1}{2},j}+u_{i-\frac{1}{2},j}}{2}\right)^2,\\
   (uv)_{i-\frac{1}{2},j-\frac{1}{2}}&=\left(u_{i-\frac{1}{2},j-1} + \frac{\Delta y_{j-1}}{2}\frac{u_{i-\frac{1}{2},j}-u_{i-\frac{1}{2},j-1}}{\frac{\Delta y_{j-1} +\Delta y_j}{2}} \right) \left( v_{i-1,j-\frac{1}{2}} + \frac{\Delta x_{i-1}}{2}\frac{v_{i,j-\frac{1}{2}}-v_{i-1,j-\frac{1}{2}}}{\frac{\Delta x_{i-1} +\Delta x_i}{2}}\right)\\
   &=\left(\frac{u_{i-\frac{1}{2},j}\Delta y_{j-1} +u_{i-\frac{1}{2},j-1}\Delta y_j}{\Delta y_{j-1}+\Delta y_{j}}\right )\left ( \frac{v_{i,j-1\frac{1}{2}}\Delta x_{i-1} +v_{i-1,j-\frac{1}{2}}\Delta x_i}{\Delta x_{i-1}+\Delta x_{i}}\right).
 \end{align*}
 
+Our final system of linear equations will exclude rows and columns with known velocities. Therefore, \cref{subsubsec:advection-left-bottom} is displayed for illustrative purposes only. The actual description of open boundary advection discretization can be found in \cref{subsubsec:advection-right}, where unknown velocity components exist at the boundaries.
 
-\subsubsection{Left boundary}\label{subsubsec:advection-left}
+\subsubsection{Left boundary}\label{subsubsec:advection-left-bottom}
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.30\paperwidth]{ADV-left}
+  \subfigure[Left]{\includegraphics[width=0.30\paperwidth]{ADV-left}\label{fig:ADV-left}}
+  \subfigure[Bottom]{\includegraphics[width=0.30\paperwidth]{ADV-bottom}\label{fig:ADV-bottom}}
   }
-  \caption{Left boundary advection.}\label{fig:ADV-left}
+  \caption{Left boundary advection.}
 \end{figure}
 The exact value of the $uu_g$ element, which is located outside the boundary (\cref{fig:ADV-left}), is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
 
-\subsubsection{Bottom boundary}\label{subsubsec:advection-bottom}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.30\paperwidth]{ADV-bottom}
-  }
-  \caption{Bottom boundary advection}\label{fig:ADV-bottom}
-\end{figure}
 Computation of the advective terms just above the bottom boundary is verbatim to the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
 
 The advective terms in the $y$-momentum equation are computed in a similar manner. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
 
 \subsubsection{Right and top boundaries}\label{subsubsec:advection-right}
 
-We will use standard linear extrapolation to compute necessary velocity products $uu$, $vv$ and $uv$ that lie outside and at the boundary. Computational process for both of these are exactly the same:
-\begin{equation}
-	uu_{M+1,j}=uu_{M-1,j}+\left( \frac{\Delta x_{M-1}}{2}+\Delta x_M + \frac{\Delta x_{M+1}}{2} \right)\frac{uu_{M,j}-uu_{M-1,j}}{\frac{\Delta x_M+\Delta x_{M-1}}{2}},
-\end{equation}
-\begin{equation}
-	vv_{M+1,j}=vv_{M-1,j}+\left( \frac{\Delta x_{M-1}}{2}+\Delta x_M + \frac{\Delta x_{M+1}}{2} \right)\frac{vv_{M,j}-vv_{M-1,j}}{\frac{\Delta x_M+\Delta x_{M-1}}{2}}.
-\end{equation}
-Components $uv$ located at the nodes are approximated as
-\begin{equation}
-	uv_{M+\frac{1}{2},j-\frac{1}{2}}=uv_{M-\frac{3}{2},j}+\left( {\Delta x_{M-1}}+\Delta x_M  \right)\frac{uv_{M-\frac{1}{2},j-\frac{1}{2}}-uv_{M-\frac{3}{2},j-\frac{1}{2}}}{\Delta x_{M-1}}.
-\end{equation}
-
-
-At the top boundary $\Delta x$ will change to $\Delta y$ and extrapolation will be performed for vertical indices rather than horizontal. 
-
+There are unknown velocity variables that are located at the right and top boundaries. Therefore, in order to compute the advection term at these boundary coordinates we need to somehow represent the derivative that is perpendicular to the boundary. As per Ferziger \& Peric~\cite{Ferziger:2002} the inclusion of additional unknowns should be avoided, as the number of equations corresponds directly to the number of cells. Consequently, only cell-center (cell-faces in case of velocity) values can be considered as unknowns. Since there are no nodes beyond the boundary, these approximations typically rely on one-sided differences or extrapolations. We will stick to the extrapolation technique in computation, which will allow us to use central difference schemes of second order. 
 \begin{figure}[H] % here, bottom, top
   \centering{
   \includegraphics[width=0.55\paperwidth]{ADV-right}
   }
   \caption{Right boundary advection ($m=M,n=N$).}\label{fig:ADV-right}
 \end{figure}
+We will use standard linear extrapolation for $u$ and $v$ to compute necessary velocity products $uu$, $vv$ and $uv$ that lie outside and at the boundary. Computational process for both of these are exactly the same:
+\begin{equation}
+	u_{M+\frac{3}{2},j}=u_{M-\frac{1}{2},j}+\left( {\Delta x_{M}} + \Delta x_{M} \right)\frac{u_{M+\frac{1}{2},j}-u_{M-\frac{1}{2},j}}{\Delta x_M},
+\end{equation}
+\begin{equation}
+	v_{M+1,j-\frac{1}{2}}=v_{M-1,j-\frac{1}{2}}+\left( \frac{\Delta x_{M-1}}{2} + \frac{3\Delta x_{M}}{2} \right)\frac{v_{M,j-\frac{1}{2}}-v_{M-1,j-\frac{1}{2}}}{\frac{\Delta x_M+\Delta x_{M-1}}{2}},
+\end{equation}
+where $\Delta x_{M+1}=\Delta x_M$.
+At the top boundary $\Delta x$ will change to $\Delta y$ and extrapolation will be performed for vertical indices rather than horizontal. 
 
+
+
+\subsubsection{Top-right corner}\label{subsubsec:advection-corner}
+\begin{figure}[H] % here, bottom, top
+  \centering{
+  \includegraphics[width=0.60\paperwidth]{ADV-top-right}
+  }
+  \caption{Top-right boundary advection.}\label{fig:ADV-top-right}
+\end{figure}
+At the corner of intersection of two boundaries with unknown velocities we will linearly extrapolate vertically (dashed red lines in~\cref{fig:ADV-top-right}) and horizontally (dashed green lines in~\cref{fig:ADV-top-right}) to first compute the virtual values of $u,v$ that lie outside the computational domain. After the values of these virtual elements are computed we are able to compute the corresponding $uu,vv,uv$ values and approximate the advection terms as in~\cref{subsubsec:advection-inner}.
 
 
 
@@ -883,7 +888,6 @@ v_{2,\frac{5}{2}} \Delta x_2 \\
 0
 \end{bmatrix}.
 \end{equation}
-
 \cref{eqn:divergence-matrix} in general case is written as $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
 We have used boundary velocities in vector $\boldsymbol{v}$ (as recommended by Chang~\cite{Chang:2002}) to eliminate any explicit boundary condition treatment of the incompressibility constraint. The divergence matrix $D$ contains zeros and $\pm1$ as shown in \cref{eqn:divergence-matrix}.
 
@@ -901,7 +905,7 @@ As an illustrative example, we may consider gradient operator on $2\times 2$ gri
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.55\paperwidth]{G-example-2x2}
+  \includegraphics[width=0.45\paperwidth]{G-example-2x2}
   }
   \caption{$2\times 2$ grid example for gradient operator ($\varepsilon\to 0$).}\label{fig:G-example-2x2}
 \end{figure}
@@ -1182,9 +1186,9 @@ In numerical simulations of the fluid flow, solving problems on unbounded domain
 
 Key contributions in this area include seminal works such as from Braza and collaborators~\cite{Jin:1993, Kourta:1987,Persillon:1998}  nonreflecting outlet boundary condition for incompressible unsteady Navier-Stokes calculations. Liu \& Liu~\cite{Liu:1993} exploration of high-order finite difference methods for instability in planar channels has significantly advanced our understanding of ABCs. Studies by Sani \& Gresho~\cite{Sani:1994} on open boundary conditions and Tsynkov's~\cite{Tsynkov:1998} comprehensive review on numerical solutions for unbounded domains  provided valuable insights into the area of artificial boundary conditions.
 
-Among these foundational studies, the method proposed by Dong, Karniadakis \& Chryssostomidis in their 2014 paper stands out for its robustness and accuracy in handling outflow boundaries on severely truncated unbounded domains \cite{Dong:2014}. This method provides a reliable framework for simulating flows where conventional ABCs may fail, offering a comprehensive solution to the challenges posed by unbounded domains in CFD simulations. Notably, this method also provides Dirichlet boundary conditions for pressure at the outlet, which are essential for our discrete streamfunction method, as highlighted by Chang \cite{Chang:2002}. In the subsequent sections, we delve into the principles underlying these ABCs, with a particular focus on the method elucidated by Dong et al. 
+Among these foundational studies, the method proposed by Dong, Karniadakis \& Chryssostomidis in their 2014 paper stands out for its robustness and accuracy in handling outflow boundaries on severely truncated unbounded domains \cite{Dong:2014}. This method provided a reliable framework for simulating flows where conventional ABCs may fail, offering a comprehensive solution to the challenges posed by unbounded domains in CFD simulations. Notably, this method also stated Dirichlet boundary conditions for pressure at the outlet, which are essential for our discrete streamfunction method, as highlighted by Chang \cite{Chang:2002}. In the subsequent sections, we delve into the principles underlying these ABCs, with a particular focus on the method proposed by Dong et al. 
 
-The general equation at the open boundary is given  as
+The general equation at the open boundary is given  by
 \begin{equation}\label[bc]{eqn:dong-abc}
 -p \boldsymbol{\hat{n}}+\epsilon \boldsymbol{\hat{n}} \cdot \nabla \boldsymbol{v}-\left[\frac{1}{2}|\boldsymbol{v}|^2 S_0(\boldsymbol{\hat{n}} \cdot \boldsymbol{v})\right] \boldsymbol{\hat{n}}=\mathbf{f}_b(\mathbf{x}, t), \quad \text { on } \partial \Omega_0:=\{x=1,0\leq y\leq 1\}\cup \{ 0\leq x \leq 1, y=1\},
 \end{equation}
@@ -1523,7 +1527,7 @@ and $q^{n+1}_p$ is a particular solution to its non-homogeneous counterpart
 \begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
 	Dq^{n+1}_p=bc_2.
 \end{equation}
-Since we eliminated any explicit boundary condition treatment of the incompressibility constraint and there is no change in density we obtain $bc_2=0$. Hence, it is not required to solve inhomogeneous \cref{eqn:discrete-non-homogeneous-continuity}.
+Since we eliminated any explicit boundary condition treatment of the incompressibility constraint and there is no change in density, we obtain $bc_2=0$. Hence, it is not required to solve inhomogeneous \cref{eqn:discrete-non-homogeneous-continuity}.
 %%%%%%%%%%%%%%
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
