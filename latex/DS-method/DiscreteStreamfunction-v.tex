@@ -1311,7 +1311,7 @@ We can substitute value of $u^{n+1}_{M+\frac{3}{2},j}$ from \cref{eqn:u-ghost} i
 	\left.\frac{\partial^2 u}{\partial x^2}\right|^{n+1}_{M+\frac{1}{2},j}&=
 		u^{n+1}_{M-\frac{1}{2},j}\frac{1}{h_w h_c}
 		+u^{n+1}_{M+\frac{1}{2},j}\frac{-2}{h_e h_w}
-		+\left( -\frac{v^n_{M+1,j+\frac{1}{2}}-v^n_{M+1,j-\frac{1}{2}}}{\Delta y_j}\Delta h_e+u^{n+1}_{M+\frac{1}{2},j}\right)\frac{1}{h_e h_c}\\
+		+\left( -\frac{v^n_{M+1,j+\frac{1}{2}}-v^n_{M+1,j-\frac{1}{2}}}{\Delta y_j} h_e+u^{n+1}_{M+\frac{1}{2},j}\right)\frac{1}{h_e h_c}\\
 		&=u^{n+1}_{M-\frac{1}{2},j}\frac{1}{h_c h_w}
 		-\frac{\frac{1}{\Delta y}\left( v^n_{M+1,j+\frac{1}{2}}-v^n_{M+1,j-\frac{1}{2}} \right)}{h_c}
 		+u^{n+1}_{M+\frac{1}{2},j}\frac{h_w-2h_c}{h_c h_e h_w}.
@@ -1368,7 +1368,7 @@ The above \cref{eqn:laplacian-v-right-delta} in terms of $h_e=\frac{\Delta x_{M}
 	\iff 
 	\left[\frac{
 	v^{n+1}_{M-1,j-\frac{1}{2}}\left(h_e\right)
-	+v^{n+1}_{M,j-\frac{1}{2}}\left(-h_w\right)
+	+v^{n+1}_{M,j-\frac{1}{2}}\left(-h_e\right)
 }
 { h_w h_c h_e }\right]+\left[0\right].
 \end{equation}
