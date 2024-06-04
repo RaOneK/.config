@@ -1,28 +1,124 @@
 clc; clear; close all;
 
-M = 3; 
-N = 4;
-nt = 3;
-dt = 1e-5;
+M = 40;      % grid size in x-dir
+N = 40;      % grid size in y-dir
+nt = 90000;     % number of timesteps
+dt = 1e-5;  % timestep size
+Re = 500;   % Reynolds number
+U0 = 1;     % characteristic velocity scale
+delta = 1e-5; % chosen non-dimensional positive constant that is suﬃciently small
+filename = ['streamfunction_dim' num2str(sqrt(M*N)) '_it' num2str(nt) '_colored.gif'];
 
-kx = 1.05;
-ky = 0.95;
-lx = 1;
-ly = 1;
+kx = 1.05;  % grid ratio in x-dir
+ky = 0.95;  % grid ratio in y-dir
+kx = 1;
+ky = 1;
+lx = 1;     % x dimension scale
+ly = 1;     % y dimension scale
 
-tic
-% function names are self-explanatory
+nu = (M+1)*(N);
+nv = (M)*(N+1);
+nq = nu + nv;
+
+% function names are self-explanatory, comments are in corresponding
+% functions descriptions
+fprintf("Generating grid:");
 [dx, dy, x, y] = gridGen(M,N,kx,ky,lx,ly);
+fprintf(" done\n");
+fprintf("delQ:");
 [dxq, dyq] = delQ(M,N,dx,dy);
+fprintf(" done\n");
+fprintf("Initial Conditions:");
 [u,v,q,psi] = initialConditions(M,N,nt,dxq,dyq);
+fprintf(" done\n");
+fprintf("Generating G D C:");
 [D,G,C] = divGradCurlGen(M,N);
+fprintf(" done\n");
+fprintf("Generating L:");
 [L] = laplacianGen(M,N,dx,dy,dxq,dyq);
-[uLeftBC,uLeftBCVirtual] = LeftBC(M,N,nt,dt);
-[rnadvect] = advection(M,N,dx,dy,u,v,dxq,dyq,nt,dt);
-timeIndex = 2;
-[LbcLHS] = laplacianRHS(M,N,dx,dy,dxq,dyq,u,v,uLeftBC,timeIndex);
-
-
+fprintf(" done\n");
+fprintf("Generating M R:");
+[Mass,R] = scalingMatrices(M,N,dx,dy,dxq,dyq);
+fprintf(" done\n");
+fprintf("Computing inverse of M, R:");
+Mass = sparse(Mass);
+R = sparse(R);
+Rinv = R^(-1);
+Minv = Mass^(-1);
+fprintf(" done\n");
+% timeIndex = 2;
+sparseC = sparse(C);
+% sparseRinv = sparse(Rinv);
+fprintf("Computing LHS of system:");
+% LHS = ;
+fprintf(" done\n");
+fprintf("Converting LHS to sparse format:");
+LAP = sparse(laplacianGen(M,N,dx,dy,dxq,dyq));
+hatA = sparse(eye(nq,nq) - (dt/Re) * 0.5*LAP); % I - dt/(2Re)*hatL
+A = sparseC'*M*hatA*sparseC;
+fprintf(" done\n");
+flagDiverged = 0;
+fprintf("Initializing time loop: ");
+stepPlot = 100;
+for timeIndex = 3:nt
+    [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,timeIndex,dt);
+    [rnadvect] = advection(M,N,dx,dy,u,v,dxq,dyq,nt,dt);
+    rnADV = (1.5*advection(M,N,dx,dy,u,v,dxq,dyq,timeIndex-1,dt) - 0.5*advection(M,N,dx,dy,u,v,dxq,dyq,timeIndex-2,dt));
+    qn = Rinv*([u(:,timeIndex-1);v(:,timeIndex-1)]);
+    explicitLaplacian = (1/Re)*0.5*LAP*qn;
+    [LbcLHS] = (1/Re) *0.5* ...
+        (laplacianRHS(M,N,dx,dy,dxq,dyq,u,v,uLeftBC,timeIndex) ...
+        +laplacianRHS(M,N,dx,dy,dxq,dyq,u,v,uLeftBC,timeIndex-1));
+    [pRHS] = pressureBC(M,N,dx,dy,dxq,dyq,u,v,timeIndex,Re,U0,delta);
+    B = dt*sparseC'*(Mass*(qn/dt + explicitLaplacian-rnADV-LbcLHS)-pRHS);
+%     denseB = C'*(Mass*bcLaplacian-Mass*rnADV-pRHS);
+    psi = mldivide(A,B);
+%     psi = linsolve(denseA,denseB);
+    uvnew = Rinv*sparseC*psi;
+    u(:,timeIndex) = uvnew(1:nu);
+    v(:,timeIndex) = uvnew(nu+1:nq);
+    fprintf('\n%5d. max u = %7.5f\t min u = %7.5f\t max v = %7.5f\t min v = %7.5f',timeIndex,max((u(:,timeIndex))),min((u(:,timeIndex))),max((v(:,timeIndex))),min((v(:,timeIndex))));
+    if (mod(timeIndex,stepPlot)==0) || (timeIndex==3)
+        subplot(1,2,1);
+        title('Streamfunction contour');
+        psiPlot = reshape(psi,M+1,N+1);
+        contour(flipud(psiPlot'), 'LineColor','k', 'LevelStep',0.05); 
+        subplot(1,2,2);
+        title('minmax u minmax v');
+        plot(timeIndex,max((u(:,timeIndex))),'or'); hold on;
+        plot(timeIndex,min((u(:,timeIndex))),'xr'); hold on;
+        plot(timeIndex,max((v(:,timeIndex))),'og'); hold on;
+        plot(timeIndex,min((v(:,timeIndex))),'xg'); hold on;
+%         subplot(3,1,3)
+%         quiver(X,Y,u(:,timeIndex),v(:,timeIndex));
+        drawnow;
+            % gif creator
+            frame = getframe(1);
+            im = frame2im(frame);
+            [imind,cm] = rgb2ind(im,256);
+            if timeIndex == 3
+              imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
+            else
+              imwrite(imind,cm,filename,'gif','WriteMode','append');
+            end
+    end
+    if (max(abs(u(:,timeIndex)))) > 100
+        flagDiverged = 1;
+        break;
+    end
+    if (max(abs(v(:,timeIndex)))) > 100
+        flagDiverged = 1;
+        break;
+    end
+    
+end
+if flagDiverged == 1
+    fprintf("\n solutions diverged\n");
+else
+    fprintf("\n done\n");
+end
+% spy(round((A-A')*1e14)/1e14)
+% size(LHS)
 function [dx, dy, x, y] = gridGen(M,N,kx,ky,lx,ly)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %           GRID GENERATION         %
@@ -100,17 +196,19 @@ function [u,v,q,psi] = initialConditions(M,N,nt,dxq,dyq)
     psi = zeros(npsi,nt); % we do not need initial psi values
 
     u(:,1) = 1;     % uniform unitary horizontal u component
-    v(:,1) = 1e-5;  % slightly positive uniform vertical v component
+    v(:,1) = 0;  % slightly positive uniform vertical v component
     
     q(:,1) = [u(:,1);v(:,1)].*[dyq; dxq]; %elementwise .* multiplication
-
-    for i = 1:(M+1)*N % TEST LOOP TO VERIFY ALGEBRA
-        u(i) = i/((M+1)*N);
-    end
-
-    for i = 1:(N+1)*M % TEST LOOP TO VERIFY ALGEBRA
-        v(i) = i/((N+1)*M);
-    end
+    
+    u(:,2) = u(:,1);
+    v(:,2) = v(:,1);
+%     for i = 1:(M+1)*N % TEST LOOP TO VERIFY ALGEBRA
+%         u(i) = i/((M+1)*N);
+%     end
+% 
+%     for i = 1:(N+1)*M % TEST LOOP TO VERIFY ALGEBRA
+%         v(i) = i/((N+1)*M);
+%     end
 end
 function [D,G,C] = divGradCurlGen(M,N)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -174,7 +272,7 @@ end
 C = [Cu;Cv];
 
 end
-function [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,nt,dt)      % hardcoded BC values at the left bdry
+function [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,timeIndex,dt)      % BC values at the left bdry
     uLeftBC = zeros((M+1)*N,1);             % only few will be filled, rest are 0
     uLeftBCVirtual = zeros(N,1);            % single column non-zero only at left bc
     for i = 1:N                             % go over all rows in grid
@@ -184,7 +282,7 @@ function [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,nt,dt)      % hardcoded BC values
 %         fprintf("%d\n",iGlobal);            % global index test print
     end
 end
-function [vBotBC] = BotBC(M,N,nt,dt)        % hardcoded BC values at the bot bdry
+function [vBotBC] = BotBC(M,N,nt,dt)        % BC values at the bot bdry
     vBotBC = zeros((N+1)*M,1);              % only few will be filled, rest are 0
     for i = 1:M                             % go over all cols in grid
         iGlobal = i;                        % get global index
@@ -192,18 +290,12 @@ function [vBotBC] = BotBC(M,N,nt,dt)        % hardcoded BC values at the bot bdr
 %         fprintf("%d\n",iGlobal);            % global index test print
     end
 end
-function [uRightBC,vRightBC] = RightBC(M,N,u,v)
-    
-end
-% RIGHT AND TOP OPEN BC ARE HARDCODED INTO CORRESPONDING ADVECT/LAPLACIAN
-% function [uuRightBC,vvRightBC] = RightBC(M,N,nt,dt,u,v) %
-%     uuRightBC = zeros(N,1);     % all be filled
-%     vvRightBC = zeros(N,1);     % all be filled
-%         
+% function [uRightBC,vRightBC] = RightBC(M,N,u,v)
 %     
 % end
-
-function [rnadvect] = advection(M,N,dx,dy,u,v,dxq,dyq,nt,dt)
+% RIGHT AND TOP OPEN BC MATRIX COEFFS ARE HARDCODED INTO CORRESPONDING ADVECT/LAPLACIAN
+% RHS LAPLACIAN EXPLICIT TERMS ARE IN laplacianRHS function
+function [rnadvect] = advection(M,N,dx,dy,u,v,dxq,dyq,timeIndex,dt)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %           ADVECTION           %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,8 +309,8 @@ function [rnadvect] = advection(M,N,dx,dy,u,v,dxq,dyq,nt,dt)
     uu = zeros(nc,1);
     vv = zeros(nc,1);
     uv = zeros(nn,1);
-    [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,nt,dt);
-    [vBotBC] =  BotBC(M,N,nt,dt);
+    [uLeftBC,uLeftBCVirtual] = LeftBC(M,N,timeIndex,dt);
+    [vBotBC] =  BotBC(M,N,timeIndex,dt);
     duudx = zeros(nu,1);
     duvdy = zeros(nu,1);
     advU = zeros(nu,1); % dummy, to keep in mind preallocated memory, array is used later
@@ -642,6 +734,88 @@ function [LbcLHS] = laplacianRHS(M,N,dx,dy,dxq,dyq,u,v,uLeftBC,timeIndex)
         iVGlobal = iVGlobal + 1;
         iLeftU = iRightU;
     end
+end
+function [pRHS] = pressureBC(M,N,dx,dy,dxq,dyq,uInterpW,v,timeIndex,Re,U0,delta)
+    nu = (M+1)*N;
+    nv = M*(N+1);
+    nq = nu+nv;
+    vprev = v(:,timeIndex-1);   % prev timestep v
+    uprev = uInterpW(:,timeIndex-1);   % prev timestep u
+    pRHS  = zeros(nq,1);
+    
+    iUstart = M+1;
+    iVstart = nv-(M)+1;
+    iUSW = nu-(M+1)+1;
+    iVSW = M; % indexation in vprev starts from 1
+    for iU = iUstart:M+1:nu
+        
+        iVNW = iVSW + M;
+        iVNWW = iVNW - 1;
+        iVSWW = iVSW - 1;
+        hc = dx(M);
+        hw = 0.5*(dx(M-1)+hc);
+        he = 0.5*hc; % v located at bdry
+        vInterpS = (hw+he)*(vprev(iVSW) - vprev(iVSWW))/hw + vprev(iVSWW);
+        vInterpN = (hw+he)*(vprev(iVNW) - vprev(iVNWW))/hw + vprev(iVNWW);
+        vInterp = 0.5*(vInterpS + vInterpN);
+        kineticEnergy = 0.5 * (uprev(iU)*uprev(iU)+vInterp*vInterp);
+        Redudx = Re*(uprev(iU)-uprev(iU-1))/dx(M);
+        stepfun = 0.5 * (1-tanh(uprev(iU)/(U0 * delta)));
+        pRHS(iU) = Redudx - (kineticEnergy * stepfun);
+%         fprintf('vExtrap: %18.15f; pRHS(%3d)=%18.15f; VNE: %3d; VNEE: %3d; VSE: %3d; VSEE: %3d\n', vExtrap, iU,pRHS(iU), iVNW,iVNWW, iVSW,iVSWW);
+        iVSW = iVSW + M;
+    end
+
+    for iV = iVstart:nv
+        iUSSW = iUSW - (M+1);
+        iUSE = iUSW + 1;
+        iUSSE = iUSE - (M+1);
+        hn = 0.5*dy(N);
+        hc = dy(N);
+        hs = 0.5*(hc + dy(N-1));
+        uInterpW = (hs+hn)*(uprev(iUSW)-uprev(iUSSW))/hs + uprev(iUSSW);
+        uInterpE = (hs+hn)*(uprev(iUSE)-uprev(iUSSE))/hs + uprev(iUSSE);
+        uInterp = 0.5*(uInterpW + uInterpE);
+        kineticEnergy = 0.5 * (vprev(iV)*vprev(iV) + uInterp*uInterp);
+        Redvdy = Re * (vprev(iV) - vprev(iV - M))/dy(N);
+        stepfun = 0.5 * (1 - tanh(vprev(iV)/(U0*delta)));
+        pRHS(iV+nu) = Redvdy - (kineticEnergy * stepfun);
+%         fprintf('%3d %3d %3d %3d | iV: %3d | Redvdy: %18.15f | velocitySquare: %18.15f | stepfun: %18.15f \n', iUSW,iUSSW,iUSE,iUSSE, iV,Redvdy,kineticEnergy,stepfun);
+        iUSW = iUSW + 1;
+    end
+end
+function [Mass,R] = scalingMatrices(M,N,dx,dy,dxq,dyq)
+    R = diag([dyq; dxq]);
+    Mass = zeros((M+1)*N+M*(N+1),1);
+    rowShift = 0;
+    for row = 1:N
+        for col = 1:M+1
+            if col == 1
+                Mass(col+rowShift) = dx(1);
+            elseif col == M+1
+                Mass(col+rowShift) = dx(M);
+            else
+                Mass(col+rowShift) = 0.5*(dx(col)+dx(col-1));
+            end
+%             fprintf('%3d. M=%18.15f\n',col+rowShift,Mass(col+rowShift))
+        end
+        rowShift = rowShift + (M+1);
+    end
+    rowShift = (M+1)*N;
+    for row = 1:N+1
+        for col = 1:M
+            if row == 1
+                Mass(rowShift+col) = dy(row);
+            elseif row == N+1
+                Mass(rowShift+col) = dy(row-1);
+            else
+                Mass(rowShift+col) = 0.5*(dy(row)+dy(row-1));
+            end
+%             fprintf('%3d. M=%18.15f\n',col+rowShift,Mass(rowShift+col))
+        end
+        rowShift = rowShift + (M);
+    end
+    Mass = diag(Mass);
 end
 
 
