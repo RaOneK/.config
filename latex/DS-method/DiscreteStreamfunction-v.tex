@@ -689,6 +689,8 @@ After applying the discrete operators (listed in the following \cref{subsec:adve
 \end{equation}
 where $\hat{r}^n=\left[\frac{1}{\Delta t}\mathbf{I}-\frac{1}{2}\hat{L}\right] \boldsymbol{v}^n - \left[\frac{3}{2}\hat{\mathbf{H}}(\boldsymbol{v}^n) - \frac{1}{2}\hat{\mathbf{H}}(\boldsymbol{v}^{n-1})\right]$ includes viscous, non-linear and gradient terms from time steps $n,n-1$ and $\hat{bc}_i$ are explicit boundary values in terms of velocity and pressure.
 
+We will consider our general velocity solution vector $v^{n+1}$ being a sum of homogeneous $v^{n+1}_h$ and particular $v^{n+1}_p$ parts. In our algorithm \cite{Hall:1980,Colonius:2007,Chang:2002} $v^{n+1}_h$ is obtained from solving momentum equation with $\hat{D} v^{n+1}_h=0$, whereas $v^{n+1}_p$ is obtained from $\hat{D} v^{n+1}_p=\hat{bc}_2$.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -737,49 +739,49 @@ which is evaluated at the same points as $u_{i-\frac{1}{2},j}$ (squares in \cref
 
 Our final system of linear equations will exclude rows and columns with known velocities. Therefore, \cref{subsubsec:advection-left-bottom} is displayed for illustrative purposes only. The actual description of open boundary advection discretization can be found in \cref{subsubsec:advection-right}, where unknown velocity components exist at the boundaries.
 
-\subsubsection{Left boundary}\label{subsubsec:advection-left-bottom}
+\subsubsection{Homogeneous boundary}\label{subsubsec:advection-left-bottom}
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \subfigure[Left]{\includegraphics[width=0.30\paperwidth]{ADV-left}\label{fig:ADV-left}}
+%  \subfigure[Left]{\includegraphics[width=0.30\paperwidth]{ADV-left}\label{fig:ADV-left}}
   \subfigure[Bottom]{\includegraphics[width=0.30\paperwidth]{ADV-bottom}\label{fig:ADV-bottom}}
   }
   \caption{Left boundary advection.}
 \end{figure}
-The exact value of the $uu_g$ element, which is located outside the boundary (\cref{fig:ADV-left}), is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
+%The exact value of the $uu_g$ element, which is located outside the boundary (\cref{fig:ADV-left}), is known from the inlet boundary conditions, whereas $uv_{\frac{1}{2},j}$ is zero for all $j$ due to $v_{bc}=0$ at the inlet. 
 
-Computation of the advective terms just above the bottom boundary is verbatim to the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary due to the $u_{bc}=0$ condition on the plate (purple on \cref{fig:ADV-bottom}).
+Computation of the advective terms slightly above the boundary is verbatim to the inner part, with the only exception being $uv_{i-\frac{1}{2},\frac{1}{2}}=0$ at the boundary due to the normal velocity $v_{i,\frac{1}{2}}=0$ homogeneous condition (\cref{fig:ADV-bottom}). Note that normal velocity is considered to be zero across all boundaries, not only at the plate. 
 
-The advective terms in the $y$-momentum equation are computed in a similar manner. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
+The advective terms in both  $x$ and $y$-momentum equation are computed in a similar manner. After the derivatives are evaluated, they are moved to the right-hand side as in \cref{eqn:NSE-dsm-bl-system-schemes} and treated explicitly. 
 
-\subsubsection{Right and top boundaries}\label{subsubsec:advection-right}
-
-There are unknown velocity variables that are located at the right and top boundaries. Therefore, in order to compute the advection term at these boundary coordinates we need to somehow represent the derivative that is perpendicular to the boundary. As per Ferziger \& Peric~\cite{Ferziger:2002} the inclusion of additional unknowns should be avoided, as the number of equations corresponds directly to the number of cells. Consequently, only cell-center (cell-faces in case of velocity) values can be considered as unknowns. Since there are no nodes beyond the boundary, these approximations typically rely on one-sided differences or extrapolations. We will stick to the extrapolation technique in computation, which will allow us to use central difference schemes of second order. 
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.55\paperwidth]{ADV-right}
-  }
-  \caption{Right boundary advection ($m=M,n=N$).}\label{fig:ADV-right}
-\end{figure}
-We will use standard linear extrapolation for $u$ and $v$ to compute necessary velocity products $uu$, $vv$ and $uv$ that lie outside and at the boundary. Computational process for both of these are exactly the same:
-\begin{equation}
-	u_{M+\frac{3}{2},j}=u_{M-\frac{1}{2},j}+\left( {\Delta x_{M}} + \Delta x_{M} \right)\frac{u_{M+\frac{1}{2},j}-u_{M-\frac{1}{2},j}}{\Delta x_M},
-\end{equation}
-\begin{equation}
-	v_{M+1,j-\frac{1}{2}}=v_{M-1,j-\frac{1}{2}}+\left( \frac{\Delta x_{M-1}}{2} + \frac{3\Delta x_{M}}{2} \right)\frac{v_{M,j-\frac{1}{2}}-v_{M-1,j-\frac{1}{2}}}{\frac{\Delta x_M+\Delta x_{M-1}}{2}},
-\end{equation}
-where $\Delta x_{M+1}=\Delta x_M$.
-At the top boundary $\Delta x$ will change to $\Delta y$ and extrapolation will be performed for vertical indices rather than horizontal. 
-
-
-
-\subsubsection{Top-right corner}\label{subsubsec:advection-corner}
-\begin{figure}[H] % here, bottom, top
-  \centering{
-  \includegraphics[width=0.60\paperwidth]{ADV-top-right}
-  }
-  \caption{Top-right boundary advection.}\label{fig:ADV-top-right}
-\end{figure}
-At the corner of intersection of two boundaries with unknown velocities we will linearly extrapolate vertically (dashed red lines in~\cref{fig:ADV-top-right}) and horizontally (dashed green lines in~\cref{fig:ADV-top-right}) to first compute the virtual values of $u,v$ that lie outside the computational domain. After the values of these virtual elements are computed we are able to compute the corresponding $uu,vv,uv$ values and approximate the advection terms as in~\cref{subsubsec:advection-inner}.
+%\subsubsection{Right and top boundaries}\label{subsubsec:advection-right}
+%
+%There are unknown velocity variables that are located at the right and top boundaries. Therefore, in order to compute the advection term at these boundary coordinates we need to somehow represent the derivative that is perpendicular to the boundary. As per Ferziger \& Peric~\cite{Ferziger:2002} the inclusion of additional unknowns should be avoided, as the number of equations corresponds directly to the number of cells. Consequently, only cell-center (cell-faces in case of velocity) values can be considered as unknowns. Since there are no nodes beyond the boundary, these approximations typically rely on one-sided differences or extrapolations. We will stick to the extrapolation technique in computation, which will allow us to use central difference schemes of second order. 
+%\begin{figure}[H] % here, bottom, top
+%  \centering{
+%  \includegraphics[width=0.55\paperwidth]{ADV-right}
+%  }
+%  \caption{Right boundary advection ($m=M,n=N$).}\label{fig:ADV-right}
+%\end{figure}
+%We will use standard linear extrapolation for $u$ and $v$ to compute necessary velocity products $uu$, $vv$ and $uv$ that lie outside and at the boundary. Computational process for both of these are exactly the same:
+%\begin{equation}
+%	u_{M+\frac{3}{2},j}=u_{M-\frac{1}{2},j}+\left( {\Delta x_{M}} + \Delta x_{M} \right)\frac{u_{M+\frac{1}{2},j}-u_{M-\frac{1}{2},j}}{\Delta x_M},
+%\end{equation}
+%\begin{equation}
+%	v_{M+1,j-\frac{1}{2}}=v_{M-1,j-\frac{1}{2}}+\left( \frac{\Delta x_{M-1}}{2} + \frac{3\Delta x_{M}}{2} \right)\frac{v_{M,j-\frac{1}{2}}-v_{M-1,j-\frac{1}{2}}}{\frac{\Delta x_M+\Delta x_{M-1}}{2}},
+%\end{equation}
+%where $\Delta x_{M+1}=\Delta x_M$.
+%At the top boundary $\Delta x$ will change to $\Delta y$ and extrapolation will be performed for vertical indices rather than horizontal. 
+%
+%
+%
+%\subsubsection{Top-right corner}\label{subsubsec:advection-corner}
+%\begin{figure}[H] % here, bottom, top
+%  \centering{
+%  \includegraphics[width=0.60\paperwidth]{ADV-top-right}
+%  }
+%  \caption{Top-right boundary advection.}\label{fig:ADV-top-right}
+%\end{figure}
+%At the corner of intersection of two boundaries with unknown velocities we will linearly extrapolate vertically (dashed red lines in~\cref{fig:ADV-top-right}) and horizontally (dashed green lines in~\cref{fig:ADV-top-right}) to first compute the virtual values of $u,v$ that lie outside the computational domain. After the values of these virtual elements are computed we are able to compute the corresponding $uu,vv,uv$ values and approximate the advection terms as in~\cref{subsubsec:advection-inner}.
 
 
 
@@ -862,34 +864,32 @@ After applying the same operations as in \cref{eqn:divergence-modification} to d
 \frac{1}{\Delta x_2 \Delta y_2}
 \end{array}\right)
 \left[ \begin{array}{rrrrrrrrrrrr}
--1 & 1 & 0 & 0 & 0 & 0 & -1 & 0 & 1 & 0 & 0 & 0 \\
-0 & -1 & 1 & 0 & 0 & 0 & 0 & -1 & 0 & 1 & 0 & 0 \\
-0 & 0 & 0 & -1 & 1 & 0 & 0 & 0 & -1 & 0 & 1 & 0 \\
-0 & 0 & 0 & 0 & -1 & 1 & 0 & 0 & 0 & -1 & 0 & 1
+1 & 0 & 1 & 0 \\
+-1 & 0 & 0 & 1 \\
+0 & 1 & -1 & 0  \\
+0 & -1 & 0 & -1 
 \end{array} \right]
 \left[\begin{array}{l}
-u_{\frac{1}{2},1} \Delta y_1 \\
 u_{\frac{3}{2},1} \Delta y_1 \\
-u_{\frac{5}{2},1} \Delta y_1 \\
-u_{\frac{1}{2},2} \Delta y_2 \\
 u_{\frac{3}{2},2} \Delta y_2 \\
-u_{\frac{5}{2},2} \Delta y_2 \\
-v_{1,\frac{1}{2}} \Delta x_1 \\
-v_{2,\frac{1}{2}} \Delta x_2 \\
 v_{1,\frac{3}{2}} \Delta x_1 \\
 v_{2,\frac{3}{2}} \Delta x_2	 \\
-v_{1,\frac{5}{2}} \Delta x_1 \\
-v_{2,\frac{5}{2}} \Delta x_2 \\
 \end{array}\right]=
+\operatorname{diag}\left(\begin{array}{cccc}
+\frac{1}{\Delta x_1 \Delta y_1} \\
+\frac{1}{\Delta x_2 \Delta y_1} \\
+\frac{1}{\Delta x_1 \Delta y_2} \\
+\frac{1}{\Delta x_2 \Delta y_2}
+\end{array}\right)
 \begin{bmatrix}{}
-0 \\
-0 \\
-0 \\
-0
+u_{\frac{1}{2},1} \Delta y_1 + v_{1,\frac{1}{2}} \Delta x_1  \\
+-u_{\frac{5}{2},1} \Delta y_1 + v_{2,\frac{1}{2}} \Delta x_2 \\
+u_{\frac{1}{2},2} \Delta y_2 - v_{1,\frac{5}{2}} \Delta x_1 \\
+-u_{\frac{5}{2},2} \Delta y_2-v_{2,\frac{5}{2}} \Delta x_2
 \end{bmatrix}.
 \end{equation}
 \cref{eqn:divergence-matrix} in general case is written as $\frac{1}{\Delta_{xy}} D q=\hat{bc}_2$.
-We have used boundary velocities in vector $\boldsymbol{v}$ (as recommended by Chang~\cite{Chang:2002}) to eliminate any explicit boundary condition treatment of the incompressibility constraint. The divergence matrix $D$ contains zeros and $\pm1$ as shown in \cref{eqn:divergence-matrix}.
+We did not use boundary velocities in vector $\boldsymbol{v}$ (as recommended by Chang~\cite{Chang:2002}). Instead, normal boundary conditions are treated explicitly. Such approach makes it easy to keep the system symmetric. The divergence matrix $D$ contains zeros and $\pm1$ as shown in \cref{eqn:divergence-matrix}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -910,75 +910,36 @@ As an illustrative example, we may consider gradient operator on $2\times 2$ gri
   \caption{$2\times 2$ grid example for gradient operator ($\varepsilon\to 0$).}\label{fig:G-example-2x2}
 \end{figure}
 
-$$
+\begin{equation}
 \begin{aligned}
-u_{\frac{1}{2},1} & : \frac{2}{\Delta x_1}\left(p_{1,1}-p_{0,1}\right), \\
-u_{\frac{3}{2},1} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,1}-p_{1,1}\right), \\
-u_{\frac{5}{2},1} & : \frac{2}{\Delta x_2}\left(p_{3,1}-p_{2,1}\right), \\
-u_{\frac{1}{2},2} & : \frac{2}{\Delta x_1}\left(p_{1,2}-p_{0,2}\right), \\
-u_{\frac{3}{2},2} & : \frac{2}{\Delta x_1+\Delta x_2}\left(p_{2,2}-p_{1,2}\right), \\
-u_{\frac{5}{2},2} & : \frac{2}{\Delta x_2}\left(p_{3,2}-p_{2,2}\right), \\
-v_{1,\frac{1}{2}} & : \frac{2}{\Delta y_1}\left(p_{1,1} - p_{1,0}\right),\\
-v_{2,\frac{1}{2}} & : \frac{2}{\Delta y_1}\left(p_{2,1} - p_{2,0}\right),\\
-v_{1,\frac{3}{2}} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{1,2}-p_{1,1}\right), \\
-v_{2,\frac{3}{2}} & : \frac{2}{\Delta y_1+\Delta y_2}\left(p_{2,2}-p_{2,1}\right), \\
-v_{1,\frac{5}{2}} & : \frac{2}{\Delta y_2}\left(p_{1,3} - p_{1,2}\right),\\
-v_{2,\frac{5}{2}} & : \frac{2}{\Delta y_2}\left(p_{2,3} - p_{2,2}\right).
+& \left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2}, 1}=\frac{2}{\Delta x_1+\Delta x_2}\left(P_{1,2}-P_{1,1}\right), \\
+& \left.\frac{\partial P}{\partial x}\right|_{\frac{3}{2}, 2}=\frac{2}{\Delta x_1+\Delta x_2}\left(P_{2,2}-P_{2,1}\right), \\
+& \left.\frac{\partial P}{\partial y}\right|_{1, \frac{3}{2}}=\frac{2}{\Delta y_1+\Delta y_2}\left(P_{2,1}-P_{1,1}\right), \\
+& \left.\frac{\partial P}{\partial y}\right|_{2, \frac{3}{2}}=\frac{2}{\Delta y_1+\Delta y_2}\left(P_{2,2}-P_{1,2}\right) .
 \end{aligned}
-$$
+\end{equation}
 
 The next step is to rewrite the above expressions in matrix form using the pressure boundary conditions. The resultant system of linear equations then becomes
-\begin{equation}\label[system]{eqn:gradient-matrix}
-\operatorname{diag}\left(\begin{array}{cccccc}
-\frac{2}{\Delta x_1} \\
-\frac{2}{\Delta x_1+\Delta x_2} \\
-\frac{2}{\Delta x_2} \\
-\frac{2}{\Delta x_1} \\
-\frac{2}{\Delta x_1+\Delta x_2} \\
-\frac{2}{\Delta x_2}\\
-\frac{2}{\Delta y_1}\\
-\frac{2}{\Delta y_1}\\
-\frac{2}{\Delta y_1+\Delta y_2}\\
-\frac{2}{\Delta y_1+\Delta y_2}\\
-\frac{2}{\Delta y_2}\\
-\frac{2}{\Delta y_2}
-\end{array}\right)
-\left(\left[
-\begin{array}{rrrr}
-1 & 0 & 0 & 0 \\
+\begin{equation}\label{eqn:gradient-matrix}
+\left[\begin{array}{cccc}
+\frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 & 0 \\
+0 & \frac{2}{\Delta x_1+\Delta x_2} & 0 & 0 \\
+0 & 0 & \frac{2}{\Delta y_1+\Delta y_2} & 0 \\
+0 & 0 & 0 & \frac{2}{\Delta y_1+\Delta y_2}
+\leftrightarrow\end{array}\right]
+\left(\left[\begin{array}{rrrr}
 -1 & 1 & 0 & 0 \\
-0 & -1 & 0 & 0 \\
-0 & 0 & 1 & 0 \\
 0 & 0 & -1 & 1 \\
-0 & 0 & 0 & -1 \\
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0 \\
 -1 & 0 & 1 & 0 \\
-0 & -1 & 0 & 1 \\
-0 & 0 & -1 & 0 \\
-0 & 0 & 0 & -1
-\end{array}
-\right]
-\begin{bmatrix}{}
-  p_{1,1} \\
-  p_{2,1} \\
-  p_{1,2} \\
-  p_{2,2} 
-\end{bmatrix}
-+\left[\begin{array}{c}
-p_{0,1} \\
-0 \\
-p_{3,1} \\
-p_{0,2} \\
-0 \\
-p_{3,2} \\
-p_{1,0} \\
-p_{2,0} \\
-0 \\
-0 \\
-p_{1,3} \\
-p_{2,3}
-\end{array}\right]\right),
+0 & -1 & 0 & 1
+\end{array}\right]\left[\begin{array}{l}
+P_{1,1} \\
+P_{2,1} \\
+P_{1,2} \\
+P_{2,2}
+\end{array}\right]
++
+\left[bc_p\right]\right),
 \end{equation}
 which can be rewritten in compact format as
 $$
@@ -1014,21 +975,14 @@ A more intuitive way of constructing the matrix $C$ relies on the utilization of
 \begin{equation}
 C=\left[
 \begin{array}{rrrrrrrrr}
--1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
-0 & -1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
-0 & 0 & -1 & 0 & 0 & 1 & 0 & 0 & 0 \\
-0 & 0 & 0 & -1 & 0 & 0 & 1 & 0 & 0 \\
-0 & 0 & 0 & 0 & -1 & 0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 0 & 0 & -1 & 0 & 0 & 1 \\
-1 & -1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-0 & 1 & -1 & 0 & 0 & 0 & 0 & 0 & 0 \\
-0 & 0 & 0 & 1 & -1 & 0 & 0 & 0 & 0 \\
-0 & 0 & 0 & 0 & 1 & -1 & 0 & 0 & 0 \\
-0 & 0 & 0 & 0 & 0 & 0 & 1 & -1 & 0 \\
-0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & -1
+1\\
+-1\\
+-1\\
+1
 \end{array}
-\right].
+\right],
 \end{equation}
+for the case when all unknown velocity vectors are inside the domain and not at the boundary. 
 %Matrix $C$ has dimensions corresponding to unknown velocities times the number of nodes around which these velocities revolve. % already mentioned at the beginning
 
 The desired product then becomes $DC=0$. $D=-G^T$ (derived in \cref{subsec:divergence,subsec:gradient}) leads to important property $(DC)^T=C^TD^T=-C^TG=0$. Premultiplying momentum equation from \cref{eqn:nse-normalized} by $C^T$ creates $C^TGp=0$ term, which  eliminates the pressure from our system, however, leaves pressure boundary conditions which we will discuss in \cref{sec:artificial-bc}.
@@ -1077,8 +1031,8 @@ where $h_w=x_{i-\frac{1}{2}}-x_{i-\frac{1}{2}-1},h_c = \frac{x_{i-\frac{1}{2}+1}
 
 
 
-\subsubsection{Left boundary.}\label{sec:laplacian-left}
-The exact value at the left boundary (normal velocity $u_{\frac{1}{2},j}$ on \cref{fig:luxx-left}) is given as a Dirichlet boundary condition. The value of $u_{\frac{1}{2},j}$ is known, therefore it is possible to move it to the vector $\hat{bc}_1$. Discretization of Laplacian operator of $u_{\frac{1}{2}+1,j}$ term is then
+\subsubsection{Homogeneous boundary.}\label{sec:laplacian-left}
+The exact value at the left boundary (normal velocity $u_{\frac{1}{2},j}$ on \cref{fig:luxx-left}) is given as a zero Dirichlet boundary condition. The value of $u_{\frac{1}{2},j}$ is known, therefore it is possible to move it to the vector $\hat{bc}_1$. Discretization of Laplacian operator of $u_{\frac{1}{2}+1,j}$ term is then
 \begin{equation}\label{eqn:laplacian-discretization-u-left-deltax}
 \left.\frac{\partial^2 u}{\partial x^2}\right|_{\frac{1}{2}+1,j}=
 \frac{
@@ -1096,7 +1050,7 @@ which in terms of $h_w,h_c,h_e$ and corresponding row of $\hat{L}_{xx}^u$ become
 		+u_{\frac{1}{2}+2,j}\left(h_w\right)
 	}
 	{h_e h_c h_w}\right]
-	+\left[\frac{u_{\frac{1}{2},j}\left(h_e\right)}{h_e h_c h_w}\right],
+	+\left[0\right],
 \end{equation}
 where $\hat{L}^u_{\hat{bc}_1}$ is contribution of boundary condition from $\hat{L}^u_{xx}$ to $\hat{bc}_1$. We treat normal boundary conditions explicitly in momentum equations (Chang~\cite{Chang:2002} suggests that only incompressibility constraint to be not treated explicitly). Therefore, there is no need to discretize Laplacian at $u_{\frac{1}{2},j}$. 
 
@@ -1144,7 +1098,7 @@ Let us use \cref{eqn:laplacian-discretization-non-uniform-dx} and change the dis
 
 \begin{figure}[H] % here, bottom, top
   \centering{
-  \includegraphics[width=0.45\paperwidth]{Luxx-bottom}
+  \includegraphics[width=0.35\paperwidth]{Luxx-bottom}
   }
   \caption{$\hat{L}^u_{yy}$ at the bottom boundary.}\label{fig:luxx-bottom}
 \end{figure}
@@ -1168,8 +1122,12 @@ Computation of Laplacian at $v_{i,\frac{1}{2}+1}$ can be performed similarly to 
 \end{equation}
 where $h_s={\Delta y_1},h_n=\Delta y_2,h_c=\frac{h_s+h_n}{2}$ and wall velocity $v_{i,\frac{1}{2}+1}=0$ leads to $\left.\hat{L}^v_{\hat{bc}_1}\right|_{i,\frac{1}{2}+1}=0$.
 
+\subsection{Homogeneous normal boundary at top with non-zero tangential velocity}\label{sec:laplaciat-top}
 
-
+Similarly to \cref{sec:laplaciat-top} we have $u_{f} =\frac{u_g+u_{i-\frac{1}{2},N}}{2} \Rightarrow u_{i-\frac{1}{2},N}=-u_{i-\frac{1}{2},1}+2u_f$. This creates an explicit tangential term
+\begin{equation}
+	\left.\hat{L}_{yy}^u\right|_{i-\frac{1}{2},N}+\left.\hat{L}^u_{\hat{bc}_1}\right|_{i-\frac{1}{2},N} \iff  \left[ u_{i-\frac{1}{2},N-1}\left(\frac{1}{h_s h_c}\right)+u_{i-\frac{1}{2},N}\left(\frac{-2 h_c- h_s}{h_s h_c h_n}\right)\right]+\left[u_f\frac{2}{h_n h_c}\right].
+\end{equation}.
 
 
 
@@ -1513,8 +1471,8 @@ where $A=\hat{M}\hat{A}R^{-1}=\frac{1}{\Delta t}\hat{M}R^{-1}-\frac{1}{2}\hat{M}
 
 
 
-\pagebreak
-\section{Resulting algorithm}\label{sec:algorithm}
+%\pagebreak
+\section{Algorithm}\label{sec:algorithm}
 Let us consider the solution to discretized \cref{eqn:nse-normalized}
 \begin{equation*}
 	q^{n+1}=q^{n+1}_p+q^{n+1}_h,
@@ -1527,7 +1485,8 @@ and $q^{n+1}_p$ is a particular solution to its non-homogeneous counterpart
 \begin{equation}\label{eqn:discrete-non-homogeneous-continuity}
 	Dq^{n+1}_p=bc_2.
 \end{equation}
-Since we eliminated any explicit boundary condition treatment of the incompressibility constraint and there is no change in density, we obtain $bc_2=0$. Hence, it is not required to solve inhomogeneous \cref{eqn:discrete-non-homogeneous-continuity}.
+Since we have explicit boundary condition treatment of the incompressibility constraint we obtain $bc_2\neq0$ (even with no change in density). Hence, it is required to solve inhomogeneous \cref{eqn:discrete-non-homogeneous-continuity}. Particular solution of $Dq^{n+1}_p=bc_2$ can be obtained as $q^{n+1}_p=D^{\dagger}bc_2$, where    $D^{\dagger}$
+ is  Moore-Penrose pseudoinverse. For simplest boundary condition cases $q^{n+1}_p$ was computed both manually and using $D^{\dagger}$. Results differed by $\approx 1e^{-14}$, which is within the magnitude of machine error. 
 %%%%%%%%%%%%%%
 % REMOVE SOURCE TERM BELOW? S_1
 %%%%%%%%%%%%%%
@@ -1537,22 +1496,32 @@ We assume that momentum equation from \cref{eqn:nse-normalized} is modified to s
 Taking into account continuous operator identities in \cref{sec:prelude-algorithm}, the resulting algorithm for discrete Navier-Stokes \cref{eqn:nse-normalized} can be described as follows:
 \begin{enumerate}
 	\item Construct $\operatorname{curl}$ matrix $C$, such that $DC=0$ and $q_h=C\psi$.\label[step]{step:1}
-	\item Rewrite $q^{n+1}=q^{n+1}_h$.\label[step]{step:2}
-	\item Precompute $bc_1^n$ and $r^n$. \label[step]{step:3}
+	\item Rewrite $q^{n+1}=q^{n+1}_h+q^{n+1}_p$.\label[step]{step:2}
+	\item Precompute $bc_1^n$, $r^n$ and $q^{n+1}_p$. \label[step]{step:3}
 	\item Eliminate pressure terms in the momentum equation.\label[step]{step:4}
 		\begin{align}
 			Aq^{n+1}&=-Gp^{n+1}+r^n+bc_1^n,\notag\\
-			A(q^{n+1}_h)&=D^Tp^{n+1}+r^n+bc_1^n, &\text{ premultiply by $C^T$,} \notag\\
-			C^TAq^{n+1}_h&=C^T(r^n+bc_1^n), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
-			C^TAC\psi^{n+1}&=C^T(r^n+bc_1^n)\label[system]{eqn:resulting-system}.
+			A(q^{n+1}_h+q^{n+1}_p)&=D^Tp^{n+1}+r^n+bc_1^n, &\text{ premultiply by $C^T$,} \notag\\
+			C^TAq^{n+1}_h&=C^T(r^n+bc_1^n-Aq^{n+1}_p), &\text{ use $q^{n+1}_h=C\psi^{n+1}$,}\notag\\
+			C^TAC\psi^{n+1}&=C^T(r^n+bc_1^n-Aq^{n+1}_p)\label[system]{eqn:resulting-system}.
 		\end{align}
 		
 	\item Solve the resulting \cref{eqn:resulting-system} for $\psi^{n+1}$. This \cref{eqn:resulting-system} is equivalent to biharmonic \cref{eqn:biharmonic-streamfunction}. \label[step]{step:5}
 	\item Obtain $q_h^{n+1}=C\psi^{n+1}$.\label[step]{step:6}
-	\item Compute $q^{n+1}=q^{n+1}_h$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
+	\item Compute $q^{n+1}=q^{n+1}_h+q^{n+1}_p$ and convert it to velocity vector field $\boldsymbol{v}^{n+1}=R^{-1}q^{n+1}$.\label[step]{step:7}
 	\item Transition to next time instance by repeating \cref{step:3,step:4,step:5,step:6,step:7}.
 \end{enumerate}
 
+\pagebreak
+\section{Results}
+Simplest boundary condition case with $Re=100$, $(u,v)=(0,0)$ at the wall, $(u,v)=(1,0)$ both at inlet, outlet and freestream produced vector fields displayed in \cref{fig:simplest-bc}.
+
+\begin{figure}[H] % here - h, bottom - b, top - t
+  \centering{
+  \includegraphics[width=0.85\paperwidth]{Dirichlet_BC}
+  }
+  \caption{}\label{fig:simplest-bc}
+\end{figure}
 
 
 
