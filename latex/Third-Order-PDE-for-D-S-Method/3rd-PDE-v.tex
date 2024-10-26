@@ -1,0 +1,198 @@
+\documentclass{article}
+\LARGE
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+
+
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=cyan]{hyperref}
+\numberwithin{equation}{section}
+\usepackage{graphicx,wrapfig,lipsum,subfigure,sidecap,epsfig}
+\usepackage{caption}
+\usepackage{cancel}
+%\usepackage{graphicx,subfigure,sidecap,epsfig} % Rouslan's subfig package
+\usepackage{soul}
+%\usepackage[colorlinks=true,linkcolor=red]{hyperref}%
+\usepackage{mathtools}
+\usepackage{eqparbox}
+\usepackage{float} % \figure{}[H] IN PLACE VIEW
+\usepackage[capitalize]{cleveref} % smart references in one bracket
+\usepackage{hyperref}
+\usepackage{amssymb} % rightleft arrows
+\usepackage{cancel} % \cancelto{<value>}{expression} diagonally
+
+\usepackage{dcolumn}
+\newcolumntype{d}{D{i}{i}{0}}
+
+%
+% CREF rules
+% Equation(s)
+\crefformat{equation}{#2Eq. (#1)#3}
+\crefrangeformat{equation}{#3Eqs. (#1)#4 to #5(#2)#6}
+\crefmultiformat{equation}{#2Eqs. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{equation}{#3Eqs. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Plural eqn
+\crefformat{pluralequation}{#2Eqs.~(#1)#3}
+% System
+\crefformat{system}{#2Sys.~(#1)#3}
+\crefrangeformat{system}{#3Sys. (#1)#4 to #5(#2)#6}
+\crefmultiformat{system}{#2Sys. (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{system}{#3Sys. ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Boundary conditions
+\crefformat{bc}{#2BC (#1)#3}
+\crefrangeformat{bc}{#3BCs (#1)#4 to #5(#2)#6}
+\crefmultiformat{bc}{#2BCs (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{bc}{#3BCs ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+% Steps
+\crefformat{step}{#2Step (#1)#3}
+\crefrangeformat{step}{#3Steps (#1)#4 to #5(#2)#6}
+\crefmultiformat{step}{#2Steps (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{step}{#3Steps ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+%diagram
+\crefformat{diagram}{#2Diagram (#1)#3}
+\crefrangeformat{diagram}{#3Diagrams (#1)#4 to #5(#2)#6}
+\crefmultiformat{diagram}{#2Diagrams (#1)#3}{ and #2(#1)#3}{, #2(#1)#3}{ and #2(#1)#3}
+\crefrangemultiformat{diagram}{#3Diagrams ((#1))#4 to #5((#2))#6}{ and #3(#1)#4 to #5(#2)#6}{, #3(#1)#4 to #5(#2)#6}{ and #3(#1)#4 to #5(#2)#6}
+
+
+
+%\usepackage[sortcites=true]{biblatex} % biblatex DOEST WORK WITH LIVE TYPESETTER
+\usepackage[nocompress]{cite}
+%\bibliographystyle{ieeetr} % trash style mess up the order in bib
+
+\graphicspath{{figures/}}
+
+
+%%% Todos
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+\marginpar{\textsc{\tiny \hspace{0.5cm} ToDo}} \framebox{\begin{minipage}[c]{0.95
+\textwidth} \small \tt #1 \end{minipage}}\vspace{5 mm}\par}
+
+
+
+\title{Solving PDE}
+\author{Rauan}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\tableofcontents
+
+\newpage 
+
+\section{Problem statement}\label{sec:statement}
+
+Let $$\boldsymbol{v}(x,y,t)=\left(u\left(x,y,t\right),v\left(x,y,t\right)\right)$$
+ and onsider non-dimensionalized incompressible Navier-Stokes system of equations
+
+\begin{subequations}
+\label[pluralequation]{eqs:NSE-dsm-bl}
+\begin{align}
+\label{eqn:momentum}
+\text{Momentum: }	&\frac{\partial \boldsymbol{v}}{\partial t} + \boldsymbol{v} \cdot \nabla \boldsymbol{v} = -\nabla p + \epsilon \nabla \cdot \nabla \boldsymbol{v}, \\ 
+					&\epsilon = \frac{1}{\operatorname{Re}},0\leq x \leq 1, 0\leq y \leq 1, t\geq0.\notag\\
+\label{eqn:continuity-dsm-bl}
+\text{Continuity: }	& \nabla \cdot \boldsymbol{v} = 0, \\ 
+					&0\leq x \leq 1, 0\leq y \leq 1, t\geq0. \notag\\
+\label[bc]{eqn:NSE-dsm-bl-bc-freestream}
+\text{Inlet: } 	& \boldsymbol{v}(t,0,y)=\boldsymbol{v}(t,x,1)=\left(1 + A\cos\left( kx -\omega t + \phi_0   \right),v\right),\\
+									& \{A\leq 1,k,\omega, \phi_0\}\subset \mathbb{R}.\notag\\
+\label[bc]{eqn:NSE-dsm-bl-bc-noslip}
+\text{No-slip wall BC: } & \boldsymbol{v}(t,x,0)=(0,0). \\
+\label[bc]{eqn:NSE-dsm-bl-bc-open}
+\text{Outlet and freestream BC: } 	&\text{Artificial boundary conditions.} \\
+					&\text{}\notag\\
+\label{eqn:IC}
+\text{Initial condition: } &\boldsymbol{v}(0,x,y)=(1,0).
+\end{align}
+\end{subequations}
+
+We are to determine appropriate boundary conditions for top side of the domain. 
+Taking derivative of \cref{eqn:NSE-dsm-bl-bc-freestream} w.r.t $x$
+\begin{equation}
+	\frac{\partial u}{\partial x} = -kA\sin\left( kx -\omega t + \phi_0  \right),
+\end{equation}
+and making use of continuity~\cref{eqn:continuity-dsm-bl} leads to
+\begin{equation}\label{eqn:dv-dy}
+	\frac{\partial v}{\partial y} = kA\sin\left( kx -\omega t + \phi_0  \right).
+\end{equation}
+We can integrate \cref{eqn:dv-dy} over $d y$ to obtain general expression for vertical velocity component 
+\begin{equation}\label{eqn:v-top}
+	v(x,y,t)= ykA\sin\left( kx -\omega t + \phi_0   \right)+g(x,t).
+\end{equation}
+
+In case of $g(x,t)=0$, plugging \cref{eqn:v-top} together with \cref{eqn:NSE-dsm-bl-bc-freestream} into \cref{eqn:momentum} leads to 
+
+\begin{equation}\label{eqn:x-mom-plugged}
+	\frac{\partial p}{\partial x} = 0
+\end{equation}
+for $x$-momentum. If we now take $\frac{\partial }{\partial y}$ of \cref{eqn:x-mom-plugged} and plug into $\frac{\partial}{\partial x}$ of $y$-momentum we will obtain  
+
+\begin{equation}
+\begin{aligned}
+	\frac{A\,k^4\,y\,\cos\left(k x+\omega t + \phi_0 \right)}{\mathrm{Re}}-A\,k^2\,\omega\,y\,\sin\left(k x+\omega t + \phi_0 \right)&
+	\\-A\,k^3\,y\,\sin\left(k x+\omega t + \phi_0 \right)\,\left(A\,\cos\left(k x+\omega t + \phi_0 \right)+1\right)&
+	\\+A^2\,k^3\,y\,\cos\left(k x+\omega t + \phi_0 \right)\,\sin\left(k x+\omega t + \phi_0 \right)&=0,
+\end{aligned}
+\end{equation}
+which is obviously not always true for all $A,k,\omega$. Therefore $g(x,t)\neq0 \quad \forall x,t$.
+
+Keeping $g(x,t)$ term and repeating the above process leads to third order PDE
+\begin{equation}\begin{aligned}\label{eqn:g-third}
+	\left(\frac{\partial ^2}{\partial x^2} g\left(x,t\right)-A\,k^3\,y\,\sin\left(k x+\omega t + \phi_0 \right)\right)\,\left(A\,\cos\left(k x+\omega t + \phi_0 \right)+1\right)&
+	\\-\frac{1}{\mathrm{Re}}\left( \frac{\partial ^3}{\partial x^3} g\left(x,t\right)-A\,k^4\,y\,\cos\left(k x+\omega t + \phi_0 \right)\right)&
+	\\+\frac{\partial }{\partial x} \frac{\partial }{\partial t} g\left(x,t\right)+A\,k^2\,\cos\left(k x+\omega t + \phi_0 \right)\,\left(g\left(x,t\right)+A\,k\,y\,\sin\left(k x+\omega t + \phi_0 \right)\right)&
+	\\-A\,k^2\,w\,y\,\sin\left(k x+\omega t + \phi_0 \right)&=0.
+\end{aligned}
+\end{equation}
+
+We now need to determine boundary conditions for \cref{eqn:g-third}. It is known that at the left boundary $v(0,y,t)=0$. Then \cref{eqn:v-top}  at y=1 gives 
+\begin{equation}
+	g(x=0,t)=-kA\sin\left(-\omega t + \phi_0   \right).
+\end{equation}
+Outlet \cref{eqn:NSE-dsm-bl-bc-open} $\frac{\partial v}{\partial x}=0$ at $x=1,y=1$ with \cref{eqn:v-top} leads to 
+\begin{equation}
+	\frac{\partial }{\partial x}g(x=1,t)=-k^2A\cos\left( k -\omega t + \phi_0   \right).
+\end{equation}
+Initial condition at $t=0$ we assumed (\cref{eqn:IC}) to be $v(x,y=1,t=0)=0$, then \cref{eqn:v-top} provides us
+\begin{equation}
+	g(x,t=0)=-kA\sin\left( kx + \phi_0   \right).
+\end{equation}
+
+
+It seems to be possible to obtain pressure values up to a constant if we take $u(x,y=1,t)=1+A\cos(kx+\omega t), v(x,y=1,t)=-Ak\sin(kx+\omega t)$ and plug into $x$-momentum \cref{eqn:momentum}. Namely,
+\begin{equation}
+	\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}+v\frac{\partial v}{\partial y}=-\frac{\partial p}{\partial x}+\epsilon \left( \frac{\partial ^2 u}{\partial x^2}+\frac{\partial ^ 2 u}{\partial y^2} \right)
+\end{equation}
+becomes
+\begin{equation}
+	\frac{\partial p}{\partial x}=-A\,w\,\sin\left(k\,x+t\,w\right)+\epsilon{A\,k^2\,\cos\left(k\,x+t\,w\right)}-A\,k\,\sin\left(k\,x+t\,w\right)\,\left(A\,\cos\left(k\,x+t\,w\right)+1\right),
+\end{equation}
+which we can integrate over $dx$ and to get expression for $p(x,y,t)$ up to a constant across the top boundary.
+
+\end{document}
